@@ -98,7 +98,7 @@ export default function ProductPage({ params }: Props) {
 
             {/* Componente Cliente para el Botón */}
             <div className="mb-8">
-              <AddToCartBtn hasStock={hasStock} />
+              <AddToCartBtn product={product} />
             </div>
 
             {/* Garantías */}

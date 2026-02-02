@@ -6,6 +6,7 @@ import { Product } from "@/lib/ventify";
 import { slugify } from "@/lib/utils";
 import { Sparkles, Heart, Package, Truck } from "lucide-react";
 import { useState } from "react";
+import { useCart } from "@/context/CartContext";
 
 interface HomeClientProps {
   products: Product[];
@@ -106,6 +107,8 @@ export default function HomeClient({ products }: HomeClientProps) {
 
   // Componente de tarjeta de producto
   const ProductCard = ({ producto }: { producto: typeof enrichedProducts[0] }) => {
+    const { addToCart } = useCart();
+    
     // Lógica de stock
     const stockLabel = producto.stock === 0 
       ? 'Agotado' 
@@ -118,6 +121,12 @@ export default function HomeClient({ products }: HomeClientProps) {
       : producto.stock <= 5 
         ? 'text-orange-600' 
         : 'text-gray-600';
+
+    const handleAddToCart = () => {
+      if (producto.stock === 0) return;
+      addToCart(producto);
+      alert('¡Agregado al carrito! 💜');
+    };
 
     return (
       <div className="group">
@@ -170,7 +179,7 @@ export default function HomeClient({ products }: HomeClientProps) {
         </Link>
 
         <button 
-          onClick={() => alert('Pronto podrás comprar. Estamos terminando la web')}
+          onClick={handleAddToCart}
           disabled={producto.stock === 0}
           className={`font-lato w-full py-3 text-sm font-medium tracking-wide transition-all duration-300 rounded ${
             producto.stock === 0

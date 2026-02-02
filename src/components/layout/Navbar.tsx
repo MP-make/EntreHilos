@@ -3,10 +3,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ShoppingBag } from "lucide-react";
-import { useState } from "react";
+import { useCart } from "@/context/CartContext";
 
 export default function Navbar() {
-  const [cartCount] = useState(3); // Simulado por ahora
+  const { totalItems } = useCart();
 
   return (
     <nav className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
@@ -60,9 +60,9 @@ export default function Navbar() {
             className="relative p-2 hover:bg-[#FDF4F7] rounded-full transition-all duration-300 group"
           >
             <ShoppingBag size={22} className="text-[#5E548E] group-hover:text-[#9F86C0]" />
-            {cartCount > 0 && (
+            {totalItems > 0 && (
               <span className="absolute -top-1 -right-1 bg-[#9F86C0] text-white text-xs font-lato font-medium w-5 h-5 rounded-full flex items-center justify-center shadow-md">
-                {cartCount}
+                {totalItems}
               </span>
             )}
           </Link>

@@ -3,6 +3,7 @@ import { Playfair_Display, Lato } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { CartProvider } from "@/context/CartContext";
 
 // Tipografía para títulos (elegante, con serifas)
 const playfair = Playfair_Display({
@@ -33,9 +34,11 @@ export default function RootLayout({
       <body
         className={`${playfair.variable} ${lato.variable} antialiased`}
       >
-        <Navbar />
-        {children}
-        <Footer />
+        <CartProvider>
+          <Navbar />
+          {children}
+          <Footer />
+        </CartProvider>
       </body>
     </html>
   );
