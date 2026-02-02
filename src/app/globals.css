@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+:root {
+  --background: #FDF4F7;
+  --foreground: #4A4A4A;
+  
+  /* Paleta Boutique - Gato Morado */
+  --brand-primary: #9F86C0;      /* Lila elegante (del logo) */
+  --brand-secondary: #FDF4F7;    /* Rosa muy pálido/Blanco cálido */
+  --brand-accent: #E6B8B8;       /* Rosa palo (complementario) */
+  --brand-dark: #5E548E;         /* Morado oscuro para títulos */
+  --text-primary: #4A4A4A;       /* Gris oscuro para lectura */
+  --text-secondary: #6B6B6B;     /* Gris medio */
+  --text-title: #5E548E;         /* Morado oscuro para headings */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #FDF4F7;
+    --foreground: #4A4A4A;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-lato), system-ui, -apple-system, sans-serif;
+  background-color: var(--background);
+  color: var(--text-primary);
+}
+
+/* Tipografía para títulos (Playfair Display) */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-playfair), serif;
+  font-weight: 600;
+  color: var(--text-title);
+}
+
+/* Estilos para precios (elegantes) */
+.price {
+  font-family: var(--font-playfair), serif;
+  font-weight: 500;
+}
