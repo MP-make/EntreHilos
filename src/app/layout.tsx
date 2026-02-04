@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   title: "Entre Hilos - Crochet hecho con amor",
   description: "Creaciones únicas de crochet. Ramos, amigurumis y diseños personalizados tejidos a mano.",
   icons: {
-    icon: '/logo.jpg',
+    icon: '/Favicon-EHC.png',
   },
 };
 

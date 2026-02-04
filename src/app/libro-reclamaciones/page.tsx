@@ -79,24 +79,24 @@ _Registro generado el ${new Date().toLocaleDateString('es-PE')} a las ${new Date
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#FDF4F7] to-white">
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-[#5E548E] to-[#9F86C0] text-white py-16">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <BookOpen size={64} className="mx-auto mb-6" />
-          <h1 className="font-playfair text-4xl md:text-5xl font-bold mb-4">
+      <section className="bg-gradient-to-r from-[#5E548E] to-[#9F86C0] text-white py-12 sm:py-16">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+          <BookOpen size={48} className="sm:w-16 sm:h-16 mx-auto mb-4 sm:mb-6" />
+          <h1 className="font-playfair text-3xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4">
             Libro de Reclamaciones
           </h1>
-          <p className="font-lato text-lg font-light">
+          <p className="font-lato text-base sm:text-lg font-light px-4">
             Tu opinión es importante para nosotros. Regístrate tu reclamo o queja aquí.
           </p>
         </div>
       </section>
 
       {/* Información Legal */}
-      <section className="max-w-4xl mx-auto px-4 py-8">
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
-          <div className="flex items-start gap-4">
-            <AlertCircle className="text-blue-600 mt-1 flex-shrink-0" size={24} />
-            <div className="font-lato text-sm text-gray-700 leading-relaxed">
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 sm:p-6">
+          <div className="flex items-start gap-3 sm:gap-4">
+            <AlertCircle className="text-blue-600 mt-1 flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6" />
+            <div className="font-lato text-xs sm:text-sm text-gray-700 leading-relaxed">
               <p className="mb-2">
                 <strong>Conforme a lo establecido en el Código de Protección y Defensa del Consumidor</strong>, 
                 este Libro de Reclamaciones virtual está a tu disposición.
@@ -111,29 +111,29 @@ _Registro generado el ${new Date().toLocaleDateString('es-PE')} a las ${new Date
       </section>
 
       {/* Formulario */}
-      <section className="max-w-4xl mx-auto px-4 pb-16">
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 pb-12 sm:pb-16">
         {submitted ? (
-          <div className="bg-green-50 border-2 border-green-500 rounded-2xl p-12 text-center">
-            <CheckCircle className="mx-auto mb-6 text-green-600" size={80} />
-            <h2 className="font-playfair text-3xl font-bold text-green-800 mb-4">
+          <div className="bg-green-50 border-2 border-green-500 rounded-2xl p-8 sm:p-12 text-center">
+            <CheckCircle className="mx-auto mb-4 sm:mb-6 text-green-600 w-16 h-16 sm:w-20 sm:h-20" />
+            <h2 className="font-playfair text-2xl sm:text-3xl font-bold text-green-800 mb-3 sm:mb-4">
               ¡Registro Enviado Exitosamente!
             </h2>
-            <p className="font-lato text-lg text-gray-700 mb-6">
+            <p className="font-lato text-base sm:text-lg text-gray-700 mb-4 sm:mb-6">
               Tu {formData.tipo} ha sido registrado. Te contactaremos en un plazo máximo de 48 horas.
             </p>
-            <p className="font-lato text-sm text-gray-600">
+            <p className="font-lato text-xs sm:text-sm text-gray-600">
               Se ha abierto WhatsApp con los detalles de tu registro.
             </p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
+          <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 md:p-12">
             {/* Tipo de Registro */}
-            <div className="mb-8">
-              <label className="font-playfair text-lg font-semibold text-[#5E548E] mb-3 block">
+            <div className="mb-6 sm:mb-8">
+              <label className="font-playfair text-base sm:text-lg font-semibold text-[#5E548E] mb-3 block">
                 Tipo de Registro *
               </label>
-              <div className="grid grid-cols-2 gap-4">
-                <label className={`flex items-center justify-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                <label className={`flex items-center justify-center gap-2 sm:gap-3 p-3 sm:p-4 border-2 rounded-xl cursor-pointer transition-all ${
                   formData.tipo === 'reclamo' 
                     ? 'border-[#9F86C0] bg-[#9F86C0]/10' 
                     : 'border-gray-300 hover:border-[#9F86C0]'
@@ -146,9 +146,9 @@ _Registro generado el ${new Date().toLocaleDateString('es-PE')} a las ${new Date
                     onChange={handleChange}
                     className="w-4 h-4 text-[#9F86C0]"
                   />
-                  <span className="font-lato font-semibold text-gray-700">Reclamo</span>
+                  <span className="font-lato font-semibold text-sm sm:text-base text-gray-700">Reclamo</span>
                 </label>
-                <label className={`flex items-center justify-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                <label className={`flex items-center justify-center gap-2 sm:gap-3 p-3 sm:p-4 border-2 rounded-xl cursor-pointer transition-all ${
                   formData.tipo === 'queja' 
                     ? 'border-[#9F86C0] bg-[#9F86C0]/10' 
                     : 'border-gray-300 hover:border-[#9F86C0]'
@@ -161,23 +161,23 @@ _Registro generado el ${new Date().toLocaleDateString('es-PE')} a las ${new Date
                     onChange={handleChange}
                     className="w-4 h-4 text-[#9F86C0]"
                   />
-                  <span className="font-lato font-semibold text-gray-700">Queja</span>
+                  <span className="font-lato font-semibold text-sm sm:text-base text-gray-700">Queja</span>
                 </label>
               </div>
-              <p className="font-lato text-xs text-gray-500 mt-2">
+              <p className="font-lato text-xs text-gray-500 mt-2 leading-relaxed">
                 <strong>Reclamo:</strong> Disconformidad sobre productos o servicios. 
                 <strong className="ml-2">Queja:</strong> Malestar por la atención.
               </p>
             </div>
 
             {/* Datos del Consumidor */}
-            <div className="mb-8">
-              <h3 className="font-playfair text-xl font-semibold text-[#5E548E] mb-4 pb-2 border-b">
+            <div className="mb-6 sm:mb-8">
+              <h3 className="font-playfair text-lg sm:text-xl font-semibold text-[#5E548E] mb-3 sm:mb-4 pb-2 border-b">
                 Datos del Consumidor
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
-                  <label className="font-lato text-sm font-semibold text-gray-700 mb-2 block">
+                  <label className="font-lato text-xs sm:text-sm font-semibold text-gray-700 mb-2 block">
                     Nombre Completo *
                   </label>
                   <input
@@ -186,20 +186,20 @@ _Registro generado el ${new Date().toLocaleDateString('es-PE')} a las ${new Date
                     value={formData.nombreCompleto}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-[#9F86C0] focus:ring-2 focus:ring-[#9F86C0]/20 outline-none transition-all"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:border-[#9F86C0] focus:ring-2 focus:ring-[#9F86C0]/20 outline-none transition-all"
                     placeholder="Ej: Juan Pérez García"
                   />
                 </div>
 
                 <div>
-                  <label className="font-lato text-sm font-semibold text-gray-700 mb-2 block">
+                  <label className="font-lato text-xs sm:text-sm font-semibold text-gray-700 mb-2 block">
                     Tipo de Documento *
                   </label>
                   <select
                     name="tipoDocumento"
                     value={formData.tipoDocumento}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-[#9F86C0] focus:ring-2 focus:ring-[#9F86C0]/20 outline-none transition-all"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:border-[#9F86C0] focus:ring-2 focus:ring-[#9F86C0]/20 outline-none transition-all"
                   >
                     <option value="DNI">DNI</option>
                     <option value="CE">Carnet de Extranjería</option>
@@ -208,7 +208,7 @@ _Registro generado el ${new Date().toLocaleDateString('es-PE')} a las ${new Date
                 </div>
 
                 <div>
-                  <label className="font-lato text-sm font-semibold text-gray-700 mb-2 block">
+                  <label className="font-lato text-xs sm:text-sm font-semibold text-gray-700 mb-2 block">
                     Número de Documento *
                   </label>
                   <input
@@ -217,13 +217,13 @@ _Registro generado el ${new Date().toLocaleDateString('es-PE')} a las ${new Date
                     value={formData.numeroDocumento}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-[#9F86C0] focus:ring-2 focus:ring-[#9F86C0]/20 outline-none transition-all"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:border-[#9F86C0] focus:ring-2 focus:ring-[#9F86C0]/20 outline-none transition-all"
                     placeholder="Ej: 12345678"
                   />
                 </div>
 
                 <div>
-                  <label className="font-lato text-sm font-semibold text-gray-700 mb-2 block">
+                  <label className="font-lato text-xs sm:text-sm font-semibold text-gray-700 mb-2 block">
                     Teléfono *
                   </label>
                   <input
@@ -232,13 +232,13 @@ _Registro generado el ${new Date().toLocaleDateString('es-PE')} a las ${new Date
                     value={formData.telefono}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-[#9F86C0] focus:ring-2 focus:ring-[#9F86C0]/20 outline-none transition-all"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:border-[#9F86C0] focus:ring-2 focus:ring-[#9F86C0]/20 outline-none transition-all"
                     placeholder="Ej: 927005798"
                   />
                 </div>
 
                 <div>
-                  <label className="font-lato text-sm font-semibold text-gray-700 mb-2 block">
+                  <label className="font-lato text-xs sm:text-sm font-semibold text-gray-700 mb-2 block">
                     Email *
                   </label>
                   <input
@@ -247,13 +247,13 @@ _Registro generado el ${new Date().toLocaleDateString('es-PE')} a las ${new Date
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-[#9F86C0] focus:ring-2 focus:ring-[#9F86C0]/20 outline-none transition-all"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:border-[#9F86C0] focus:ring-2 focus:ring-[#9F86C0]/20 outline-none transition-all"
                     placeholder="ejemplo@correo.com"
                   />
                 </div>
 
                 <div>
-                  <label className="font-lato text-sm font-semibold text-gray-700 mb-2 block">
+                  <label className="font-lato text-xs sm:text-sm font-semibold text-gray-700 mb-2 block">
                     Dirección *
                   </label>
                   <input
@@ -262,7 +262,7 @@ _Registro generado el ${new Date().toLocaleDateString('es-PE')} a las ${new Date
                     value={formData.direccion}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-[#9F86C0] focus:ring-2 focus:ring-[#9F86C0]/20 outline-none transition-all"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:border-[#9F86C0] focus:ring-2 focus:ring-[#9F86C0]/20 outline-none transition-all"
                     placeholder="Ej: Av. Principal 123, Pisco"
                   />
                 </div>
@@ -270,13 +270,13 @@ _Registro generado el ${new Date().toLocaleDateString('es-PE')} a las ${new Date
             </div>
 
             {/* Detalle del Reclamo */}
-            <div className="mb-8">
-              <h3 className="font-playfair text-xl font-semibold text-[#5E548E] mb-4 pb-2 border-b">
+            <div className="mb-6 sm:mb-8">
+              <h3 className="font-playfair text-lg sm:text-xl font-semibold text-[#5E548E] mb-3 sm:mb-4 pb-2 border-b">
                 Detalle del {formData.tipo === 'reclamo' ? 'Reclamo' : 'Queja'}
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
                 <div>
-                  <label className="font-lato text-sm font-semibold text-gray-700 mb-2 block">
+                  <label className="font-lato text-xs sm:text-sm font-semibold text-gray-700 mb-2 block">
                     Producto/Servicio *
                   </label>
                   <input
@@ -285,13 +285,13 @@ _Registro generado el ${new Date().toLocaleDateString('es-PE')} a las ${new Date
                     value={formData.producto}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-[#9F86C0] focus:ring-2 focus:ring-[#9F86C0]/20 outline-none transition-all"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:border-[#9F86C0] focus:ring-2 focus:ring-[#9F86C0]/20 outline-none transition-all"
                     placeholder="Ej: Ramo de rosas crochet"
                   />
                 </div>
 
                 <div>
-                  <label className="font-lato text-sm font-semibold text-gray-700 mb-2 block">
+                  <label className="font-lato text-xs sm:text-sm font-semibold text-gray-700 mb-2 block">
                     Monto (S/) *
                   </label>
                   <input
@@ -301,13 +301,13 @@ _Registro generado el ${new Date().toLocaleDateString('es-PE')} a las ${new Date
                     onChange={handleChange}
                     required
                     step="0.01"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-[#9F86C0] focus:ring-2 focus:ring-[#9F86C0]/20 outline-none transition-all"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:border-[#9F86C0] focus:ring-2 focus:ring-[#9F86C0]/20 outline-none transition-all"
                     placeholder="Ej: 89.90"
                   />
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="font-lato text-sm font-semibold text-gray-700 mb-2 block">
+                  <label className="font-lato text-xs sm:text-sm font-semibold text-gray-700 mb-2 block">
                     N° de Pedido (Opcional)
                   </label>
                   <input
@@ -315,14 +315,14 @@ _Registro generado el ${new Date().toLocaleDateString('es-PE')} a las ${new Date
                     name="pedido"
                     value={formData.pedido}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-[#9F86C0] focus:ring-2 focus:ring-[#9F86C0]/20 outline-none transition-all"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:border-[#9F86C0] focus:ring-2 focus:ring-[#9F86C0]/20 outline-none transition-all"
                     placeholder="Si tienes el número de pedido, ingrésalo aquí"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="font-lato text-sm font-semibold text-gray-700 mb-2 block">
+                <label className="font-lato text-xs sm:text-sm font-semibold text-gray-700 mb-2 block">
                   Detalle del {formData.tipo === 'reclamo' ? 'Reclamo' : 'Queja'} *
                 </label>
                 <textarea
@@ -331,7 +331,7 @@ _Registro generado el ${new Date().toLocaleDateString('es-PE')} a las ${new Date
                   onChange={handleChange}
                   required
                   rows={6}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-[#9F86C0] focus:ring-2 focus:ring-[#9F86C0]/20 outline-none transition-all resize-none"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:border-[#9F86C0] focus:ring-2 focus:ring-[#9F86C0]/20 outline-none transition-all resize-none"
                   placeholder="Describe detalladamente tu reclamo o queja..."
                 />
               </div>
@@ -341,12 +341,12 @@ _Registro generado el ${new Date().toLocaleDateString('es-PE')} a las ${new Date
             <div className="text-center">
               <button
                 type="submit"
-                className="inline-flex items-center gap-3 font-lato px-10 py-4 bg-[#9F86C0] text-white font-semibold text-lg rounded-full hover:bg-[#5E548E] transition-all shadow-lg hover:shadow-xl hover:-translate-y-1"
+                className="inline-flex items-center gap-2 sm:gap-3 font-lato px-8 sm:px-10 py-3 sm:py-4 bg-[#9F86C0] text-white font-semibold text-base sm:text-lg rounded-full hover:bg-[#5E548E] transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 w-full sm:w-auto"
               >
-                <Send size={20} />
+                <Send size={18} className="sm:w-5 sm:h-5" />
                 Enviar {formData.tipo === 'reclamo' ? 'Reclamo' : 'Queja'}
               </button>
-              <p className="font-lato text-xs text-gray-500 mt-4">
+              <p className="font-lato text-xs text-gray-500 mt-3 sm:mt-4 px-4">
                 Al enviar, se abrirá WhatsApp con los detalles de tu registro
               </p>
             </div>
@@ -355,12 +355,12 @@ _Registro generado el ${new Date().toLocaleDateString('es-PE')} a las ${new Date
       </section>
 
       {/* Información Adicional */}
-      <section className="bg-white py-12 border-t">
-        <div className="max-w-4xl mx-auto px-4">
-          <h3 className="font-playfair text-2xl font-semibold text-[#5E548E] text-center mb-8">
+      <section className="bg-white py-8 sm:py-12 border-t">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+          <h3 className="font-playfair text-xl sm:text-2xl font-semibold text-[#5E548E] text-center mb-6 sm:mb-8">
             Información Importante
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 font-lato text-sm text-gray-600">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 font-lato text-xs sm:text-sm text-gray-600">
             <div>
               <h4 className="font-semibold text-[#5E548E] mb-2">Plazo de Respuesta</h4>
               <p>Te contactaremos en un plazo máximo de 48 horas hábiles para atender tu solicitud.</p>
@@ -370,10 +370,10 @@ _Registro generado el ${new Date().toLocaleDateString('es-PE')} a las ${new Date
               <p>Entre Hilos - Pisco, Perú<br />WhatsApp: 927 005 798</p>
             </div>
           </div>
-          <div className="mt-8 text-center">
+          <div className="mt-6 sm:mt-8 text-center">
             <Link 
               href="/"
-              className="inline-block font-lato px-6 py-3 border-2 border-[#9F86C0] text-[#9F86C0] font-semibold rounded-full hover:bg-[#9F86C0] hover:text-white transition-all"
+              className="inline-block font-lato px-6 py-3 border-2 border-[#9F86C0] text-[#9F86C0] font-semibold text-sm sm:text-base rounded-full hover:bg-[#9F86C0] hover:text-white transition-all"
             >
               Volver al Inicio
             </Link>
