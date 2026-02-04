@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Lato } from "next/font/google";
 import "./globals.css";
-import AnnouncementBar from "@/components/layout/AnnouncementBar";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import WhatsAppButton from "@/components/WhatsAppButton";
 import { CartProvider } from "@/context/CartContext";
 
 // Tipografía para títulos (elegante, con serifas)
@@ -39,10 +39,10 @@ export default function RootLayout({
         className={`${playfair.variable} ${lato.variable} antialiased`}
       >
         <CartProvider>
-          <AnnouncementBar />
           <Navbar />
           {children}
           <Footer />
+          <WhatsAppButton />
         </CartProvider>
       </body>
     </html>
