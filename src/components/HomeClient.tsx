@@ -234,9 +234,9 @@ export default function HomeClient({ products }: HomeClientProps) {
       </section>
 
       {/* ==================== NAVEGACIÓN POR PESTAÑAS ==================== */}
-      <section id="catalogo" className="bg-[#FDF4F7] border-y border-gray-200 py-8 px-4 sticky top-[73px] z-40">
+      <section id="catalogo" className="bg-[#FDF4F7] border-y border-gray-200 py-8 px-4 sticky top-[88px] z-40 mt-8">
         <div className="max-w-6xl mx-auto">
-          <div className="flex flex-wrap justify-center gap-8">
+          <div className="flex flex-wrap justify-center gap-6">
             {(['Ramos', 'Amigurumis', 'Cajas', 'HotWheels', 'Ver Todo'] as TabType[]).map((tab) => {
               const isActive = activeTab === tab;
               const count = getProductsByTab(tab).length;
@@ -245,16 +245,15 @@ export default function HomeClient({ products }: HomeClientProps) {
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`font-lato text-base tracking-wide transition-all duration-300 pb-2 relative ${
+                  className={`font-lato text-sm tracking-wide transition-all duration-300 pb-2 relative ${
                     isActive
                       ? 'text-[#5E548E] font-medium'
                       : 'text-[#6B6B6B] hover:text-[#5E548E] font-light'
                   }`}
                 >
                   {tab}
-                  <span className="text-sm ml-1">({count})</span>
+                  <span className="text-xs ml-1">({count})</span>
                   
-                  {/* Subrayado elegante */}
                   {isActive && (
                     <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#9F86C0]" />
                   )}

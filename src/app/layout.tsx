@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Lato } from "next/font/google";
 import "./globals.css";
+import AnnouncementBar from "@/components/layout/AnnouncementBar";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { CartProvider } from "@/context/CartContext";
@@ -22,6 +23,9 @@ const lato = Lato({
 export const metadata: Metadata = {
   title: "Entre Hilos - Crochet hecho con amor",
   description: "Creaciones únicas de crochet. Ramos, amigurumis y diseños personalizados tejidos a mano.",
+  icons: {
+    icon: '/logo.jpg',
+  },
 };
 
 export default function RootLayout({
@@ -35,6 +39,7 @@ export default function RootLayout({
         className={`${playfair.variable} ${lato.variable} antialiased`}
       >
         <CartProvider>
+          <AnnouncementBar />
           <Navbar />
           {children}
           <Footer />
