@@ -51,7 +51,12 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
           break;
 
         case 'flores-amarillas':
-          products = allProducts.filter(p => p.sku.startsWith('Flores-'));
+          // Filtrar por categoría original de Ventify que contenga "flores amarillas"
+          products = allProducts.filter(p => 
+            p.categoriaOriginal?.toLowerCase().includes('flores amarillas') ||
+            p.nombre?.toLowerCase().includes('flores amarillas') ||
+            p.sku.startsWith('Flores-')
+          );
           break;
 
         case 'hotwheels':

@@ -27,8 +27,9 @@ function HeroCarousel({ products }: { products: any[] }) {
       titleHighlight: 'lata más fuerte ❤️',
       subtitle: 'Arreglos personalizados, globos y detalles únicos en Pisco.',
       description: 'Porque cada momento merece ser celebrado.',
-      image: products.find(p => p?.nombre?.toLowerCase().includes('snoopy') || p?.nombre?.toLowerCase().includes('snopy'))?.imagen || products.find(p => p?.nombre?.toLowerCase().includes('ramo'))?.imagen || '/logo.jpg',
+      image: products.find(p => p?.nombre?.toLowerCase().includes('snoopy'))?.imagen || products.find(p => p?.nombre?.toLowerCase().includes('ramo'))?.imagen || '/logo.jpg',
       bgColor: 'bg-gradient-to-br from-pink-50 via-white to-purple-50',
+      price: 80,
     },
     {
       badge: 'Personajes de Anime',
@@ -38,6 +39,7 @@ function HeroCarousel({ products }: { products: any[] }) {
       description: 'Tejidos a mano con amor y dedicación',
       image: products.find(p => p?.nombre?.toLowerCase().includes('messi'))?.imagen || products.find(p => p?.nombre?.toLowerCase().includes('goku') || p?.nombre?.toLowerCase().includes('naruto'))?.imagen || '/logo.jpg',
       bgColor: 'bg-gradient-to-br from-purple-50 via-white to-blue-50',
+      price: 115,
     },
     {
       badge: 'A Tu Medida',
@@ -47,6 +49,7 @@ function HeroCarousel({ products }: { products: any[] }) {
       description: 'Diseños exclusivos hechos especialmente para ti',
       image: products.find(p => p?.nombre?.toLowerCase().includes('cuadro') && p?.nombre?.toLowerCase().includes('hotwheel'))?.imagen || products.find(p => p?.nombre?.toLowerCase().includes('perrito') || p?.nombre?.toLowerCase().includes('pareja'))?.imagen || products[0]?.imagen || '/logo.jpg',
       bgColor: 'bg-gradient-to-br from-amber-50 via-white to-pink-50',
+      price: 50,
     },
   ];
 
@@ -129,8 +132,8 @@ function HeroCarousel({ products }: { products: any[] }) {
                   </div>
                   {/* Badge de Precio Flotante - FUERA DE LA IMAGEN */}
                   <div className="absolute -top-4 -right-4 w-24 h-24 bg-[#FCD34D] rounded-full shadow-2xl flex flex-col items-center justify-center z-10 border-4 border-white">
-                    <p className="font-lato text-xs font-light text-gray-700">Desde</p>
-                    <p className="font-playfair text-2xl font-bold text-gray-900 leading-none">S/ 45</p>
+                    <p className="font-lato text-xs font-light text-gray-700">A solo</p>
+                    <p className="font-playfair text-2xl font-bold text-gray-900 leading-none">S/ {slide.price}</p>
                   </div>
                 </div>
               </div>

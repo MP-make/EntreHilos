@@ -27,6 +27,7 @@ export interface Product {
   precio: number;
   imagen: string;
   categoria: 'Ramos' | 'Amigurumis' | 'Personalizado' | 'General';
+  categoriaOriginal?: string | null; // Categoría original de Ventify
   stock: number;
   descripcion?: string;
 }
@@ -93,6 +94,7 @@ function adaptVentifyProduct(ventifyProduct: VentifyProduct): Product {
     precio: ventifyProduct.price,
     imagen: ventifyProduct.imageUrl || 'https://via.placeholder.com/400x400/FFB6C1/FFFFFF?text=Sin+Imagen',
     categoria: mapCategory(ventifyProduct.category),
+    categoriaOriginal: ventifyProduct.category, // Preservar la categoría original
     stock: available,
     descripcion: ventifyProduct.description || 'Producto artesanal tejido a mano con amor 💝',
   };
