@@ -220,9 +220,18 @@ export default function HomeClient({ products }: HomeClientProps) {
 
   // Filtrar productos por categoría de pestaña
   const getProductsByTab = (tab: TabType) => {
+    let filtered: typeof enrichedProducts = [];
+    
     switch (tab) {
       case 'Ramos':
-        return enrichedProducts.filter(p => p.sku.startsWith('Ramos-') || p.sku.startsWith('Madre-'));
+        filtered = enrichedProducts.filter(p => p.sku.startsWith('Ramos-') || p.sku.startsWith('Madre-'));
+        // Priorizar productos con stock (primero los que tienen stock, luego los agotados)
+        filtered.sort((a, b) => {
+          if (a.stock > 0 && b.stock === 0) return -1;
+          if (a.stock === 0 && b.stock > 0) return 1;
+          return 0;
+        });
+        return filtered;
       case 'Amigurumis':
         return enrichedProducts.filter(p => p.sku.startsWith('Amigu-'));
       case 'Cajas':
@@ -234,7 +243,12 @@ export default function HomeClient({ products }: HomeClientProps) {
           ['Caja-004', 'Caja-005'].includes(p.sku)
         );
       case 'Ver Todo':
-        return enrichedProducts;
+        // En "Ver Todo", ocultar productos sin stock EXCEPTO Amigurumis y Cajas
+        return enrichedProducts.filter(p => {
+          const isAmigurumiOrCaja = p.sku.startsWith('Amigu-') || p.sku.startsWith('Caja-');
+          // Mostrar si tiene stock O si es Amigurumi/Caja (aunque no tenga stock)
+          return p.stock > 0 || isAmigurumiOrCaja;
+        });
       default:
         return enrichedProducts;
     }
@@ -252,23 +266,33 @@ export default function HomeClient({ products }: HomeClientProps) {
   const ProductCard = ({ producto }: { producto: typeof enrichedProducts[0] }) => {
     const { addToCart } = useCart();
     
+    // Determinar si el producto es de Amigurumis o Cajas
+    const isAmigurumiOrCaja = producto.sku.startsWith('Amigu-') || producto.sku.startsWith('Caja-');
+    
     // Lógica de stock
     const stockLabel = producto.stock === 0 
-      ? 'Agotado' 
+      ? (isAmigurumiOrCaja ? 'A pedido' : 'Agotado')
       : producto.stock <= 5 
         ? 'Últimas unidades' 
         : `${producto.stock} disponibles`;
     
     const stockColor = producto.stock === 0 
-      ? 'text-red-600' 
+      ? (isAmigurumiOrCaja ? 'text-[#9F86C0]' : 'text-red-600')
       : producto.stock <= 5 
         ? 'text-orange-600' 
         : 'text-gray-600';
 
     const handleAddToCart = () => {
-      if (producto.stock === 0) return;
+      if (producto.stock === 0 && !isAmigurumiOrCaja) return;
+      
+      if (producto.stock === 0 && isAmigurumiOrCaja) {
+        alert('Este producto se hace a pedido. Nos contactaremos contigo para coordinar los detalles. 💜');
+      }
+      
       addToCart(producto);
-      alert('¡Agregado al carrito! 💜');
+      if (producto.stock > 0) {
+        alert('¡Agregado al carrito! 💜');
+      }
     };
 
     return (
@@ -292,11 +316,17 @@ export default function HomeClient({ products }: HomeClientProps) {
               </div>
             )}
 
-            {producto.stock === 0 && (
+            {producto.stock === 0 && !isAmigurumiOrCaja && (
               <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center">
                 <span className="font-lato text-sm text-white tracking-wide bg-red-600 px-4 py-2 rounded-full">
                   AGOTADO
                 </span>
+              </div>
+            )}
+            
+            {producto.stock === 0 && isAmigurumiOrCaja && (
+              <div className="absolute top-3 right-3 px-2 py-1 bg-[#9F86C0] text-white text-xs font-lato font-bold rounded">
+                A pedido
               </div>
             )}
           </div>
@@ -323,14 +353,20 @@ export default function HomeClient({ products }: HomeClientProps) {
 
         <button 
           onClick={handleAddToCart}
-          disabled={producto.stock === 0}
+          disabled={producto.stock === 0 && !isAmigurumiOrCaja}
           className={`font-lato w-full py-3 text-sm font-medium tracking-wide transition-all duration-300 rounded ${
-            producto.stock === 0
+            producto.stock === 0 && !isAmigurumiOrCaja
               ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              : 'bg-[#9F86C0] text-white hover:bg-[#5E548E] shadow-sm hover:shadow-md'
+              : producto.stock === 0 && isAmigurumiOrCaja
+                ? 'bg-[#9F86C0] text-white hover:bg-[#5E548E] shadow-sm hover:shadow-md'
+                : 'bg-[#9F86C0] text-white hover:bg-[#5E548E] shadow-sm hover:shadow-md'
           }`}
         >
-          {producto.stock === 0 ? 'AGOTADO' : 'Agregar al carrito'}
+          {producto.stock === 0 && !isAmigurumiOrCaja 
+            ? 'AGOTADO' 
+            : producto.stock === 0 && isAmigurumiOrCaja
+              ? 'A PEDIDO (1-2 semanas)'
+              : 'Agregar al carrito'}
         </button>
       </div>
     );

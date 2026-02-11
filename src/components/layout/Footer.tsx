@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Instagram, Phone } from "lucide-react";
+import { Instagram, Phone, Facebook } from "lucide-react";
 
 export default function Footer() {
   return (
@@ -54,6 +54,17 @@ export default function Footer() {
                 >
                   <Instagram size={16} />
                   <span>@entrehiloscrochet.pe</span>
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="https://www.facebook.com/Entrehiloscrochet" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-[#6B6B6B] hover:text-[#1877F2] transition-colors duration-200"
+                >
+                  <Facebook size={16} />
+                  <span>Entrehiloscrochet</span>
                 </a>
               </li>
             </ul>

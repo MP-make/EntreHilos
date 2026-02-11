@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingBag, Search, User, Truck, Clock } from "lucide-react";
+import { ShoppingBag, Search, Truck, Clock } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useState, useEffect } from "react";
 import SearchModal from "@/components/SearchModal";
@@ -117,11 +117,6 @@ export default function Navbar() {
                   aria-label="Buscar productos"
                 >
                   <Search size={18} className="sm:w-5 sm:h-5 text-gray-600" />
-                </button>
-
-                {/* Icono de usuario */}
-                <button className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors">
-                  <User size={18} className="sm:w-5 sm:h-5 text-gray-600" />
                 </button>
 
                 {/* Carrito con badge */}
