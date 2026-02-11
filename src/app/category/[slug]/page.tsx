@@ -10,6 +10,7 @@ import { useCart } from "@/context/CartContext";
 const categoryTitles: Record<string, string> = {
   'san-valentin': 'San Valentín',
   'dia-de-la-madre': 'Día de la Madre',
+  'flores-amarillas': 'Flores Amarillas',
   'hotwheels': 'Colección HotWheels',
   'personalizados': 'Personalizados',
 };
@@ -17,6 +18,7 @@ const categoryTitles: Record<string, string> = {
 const categoryDescriptions: Record<string, string> = {
   'san-valentin': 'Regalos perfectos para expresar tu amor',
   'dia-de-la-madre': 'Detalles eternos para mamá',
+  'flores-amarillas': 'Flores amarillas eternas que nunca se marchitan',
   'hotwheels': 'Diversión tejida a mano',
   'personalizados': 'Diseños únicos hechos a tu medida',
 };
@@ -46,6 +48,10 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
 
         case 'dia-de-la-madre':
           products = allProducts.filter(p => p.sku.startsWith('Madre-'));
+          break;
+
+        case 'flores-amarillas':
+          products = allProducts.filter(p => p.sku.startsWith('Flores-'));
           break;
 
         case 'hotwheels':

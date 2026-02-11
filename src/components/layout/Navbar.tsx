@@ -95,6 +95,12 @@ export default function Navbar() {
                   Día de la Madre
                 </Link>
                 <Link 
+                  href="/category/flores-amarillas" 
+                  className="font-lato text-xs xl:text-sm uppercase tracking-wide text-gray-700 hover:text-[#9F86C0] transition-colors duration-200"
+                >
+                  Flores Amarillas
+                </Link>
+                <Link 
                   href="/category/hotwheels" 
                   className="font-lato text-xs xl:text-sm uppercase tracking-wide text-gray-700 hover:text-[#9F86C0] transition-colors duration-200"
                 >
