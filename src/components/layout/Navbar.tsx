@@ -67,7 +67,7 @@ export default function Navbar() {
               <span className="hidden sm:inline">|</span>
               <span className="hidden sm:flex items-center gap-2">
                 <Clock className="w-3 h-3 md:w-4 md:h-4 animate-pulse" />
-                Entrega el mismo día
+                Separa tu fecha
               </span>
             </p>
           </div>
