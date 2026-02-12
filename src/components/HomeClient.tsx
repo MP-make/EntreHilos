@@ -30,26 +30,29 @@ function HeroCarousel({ products }: { products: any[] }) {
       image: products.find(p => p?.nombre?.toLowerCase().includes('snoopy'))?.imagen || products.find(p => p?.nombre?.toLowerCase().includes('ramo'))?.imagen || '/logo.jpg',
       bgColor: 'bg-gradient-to-br from-pink-50 via-white to-purple-50',
       price: 80,
+      link: '/category/san-valentin',
     },
     {
       badge: 'Personajes de Anime',
-      title: 'Amigurumis',
-      titleHighlight: 'Únicos',
-      subtitle: 'Tus personajes favoritos en crochet',
-      description: 'Tejidos a mano con amor y dedicación',
+      title: 'Imagina tu personaje favorito',
+      titleHighlight: 'tejido a crochet ✨',
+      subtitle: 'Creamos el amigurumi de tus sueños',
+      description: 'Cada puntada lleva dedicación y amor',
       image: products.find(p => p?.nombre?.toLowerCase().includes('messi'))?.imagen || products.find(p => p?.nombre?.toLowerCase().includes('goku') || p?.nombre?.toLowerCase().includes('naruto'))?.imagen || '/logo.jpg',
       bgColor: 'bg-gradient-to-br from-purple-50 via-white to-blue-50',
       price: 115,
+      link: '/personalizados',
     },
     {
       badge: 'A Tu Medida',
-      title: 'Personaliza',
-      titleHighlight: 'tu Regalo',
-      subtitle: 'Creamos lo que imagines',
-      description: 'Diseños exclusivos hechos especialmente para ti',
+      title: 'Crea algo especial',
+      titleHighlight: 'para alguien especial 💝',
+      subtitle: 'Cuadros, cajas y diseños únicos hechos para ti',
+      description: 'Convierte tus ideas en realidad con nuestros diseños personalizados',
       image: products.find(p => p?.nombre?.toLowerCase().includes('cuadro') && p?.nombre?.toLowerCase().includes('hotwheel'))?.imagen || products.find(p => p?.nombre?.toLowerCase().includes('perrito') || p?.nombre?.toLowerCase().includes('pareja'))?.imagen || products[0]?.imagen || '/logo.jpg',
       bgColor: 'bg-gradient-to-br from-amber-50 via-white to-pink-50',
       price: 50,
+      link: '/category/hotwheels',
     },
   ];
 
@@ -101,14 +104,12 @@ function HeroCarousel({ products }: { products: any[] }) {
 
                   {/* Botones */}
                   <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                    <button 
-                      onClick={() => {
-                        document.querySelector('#catalogo')?.scrollIntoView({ behavior: 'smooth' });
-                      }}
-                      className="font-lato px-8 py-4 bg-[#9F86C0] text-white font-semibold text-sm tracking-wide transition-all duration-300 rounded-full hover:bg-[#5E548E] shadow-lg hover:shadow-xl hover:-translate-y-1"
+                    <Link
+                      href={slide.link}
+                      className="font-lato px-8 py-4 bg-[#9F86C0] text-white font-semibold text-sm tracking-wide transition-all duration-300 rounded-full hover:bg-[#5E548E] shadow-lg hover:shadow-xl hover:-translate-y-1 text-center"
                     >
                       Ver Colección
-                    </button>
+                    </Link>
                     <button 
                       onClick={() => window.open('https://wa.me/51927005798', '_blank')}
                       className="font-lato px-8 py-4 border-2 border-[#5E548E] text-[#5E548E] font-semibold text-sm tracking-wide transition-all duration-300 rounded-full hover:bg-[#5E548E] hover:text-white flex items-center justify-center gap-2"
@@ -121,7 +122,7 @@ function HeroCarousel({ products }: { products: any[] }) {
 
                 {/* Columna Derecha: Imagen con Badge de Precio FUERA */}
                 <div className="relative order-1 lg:order-2">
-                  <div className="relative h-[400px] md:h-[500px] rounded-3xl overflow-hidden shadow-2xl">
+                  <div className="relative h-[400px] md:h-[500px] rounded-3xl overflow-hidden shadow-2xl bg-gray-100">
                     <Image
                       src={slide.image}
                       alt={slide.title}
@@ -286,16 +287,28 @@ export default function HomeClient({ products }: HomeClientProps) {
         : 'text-gray-600';
 
     const handleAddToCart = () => {
+      // Si es producto a pedido (sin stock), redirigir a página de pedido personalizado
+      if (producto.stock === 0 && isAmigurumiOrCaja) {
+        // Codificar datos del producto para pasarlos por URL
+        const productoData = encodeURIComponent(JSON.stringify({
+          id: producto.id,
+          nombre: producto.nombre,
+          precio: producto.precio,
+          imagen: producto.imagen, // Pasar la URL completa de la imagen
+          sku: producto.sku
+        }));
+        // Usar router.push en lugar de window.location para mejor navegación
+        const url = `/pedido-personalizado?producto=${productoData}`;
+        window.location.href = url;
+        return;
+      }
+      
+      // No bloquear si es producto normal sin stock
       if (producto.stock === 0 && !isAmigurumiOrCaja) return;
       
-      if (producto.stock === 0 && isAmigurumiOrCaja) {
-        alert('Este producto se hace a pedido. Nos contactaremos contigo para coordinar los detalles. 💜');
-      }
-      
+      // Agregar al carrito productos con stock
       addToCart(producto);
-      if (producto.stock > 0) {
-        alert('¡Agregado al carrito! 💜');
-      }
+      alert('¡Agregado al carrito! 💜');
     };
 
     return (

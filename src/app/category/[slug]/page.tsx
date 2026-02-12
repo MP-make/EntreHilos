@@ -99,16 +99,26 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     const isAmigurumiOrCaja = producto.sku.startsWith('Amigu-') || producto.sku.startsWith('Caja-');
 
     const handleAddToCart = () => {
+      // Si es producto a pedido (sin stock), redirigir a página de pedido personalizado
+      if (producto.stock === 0 && isAmigurumiOrCaja) {
+        // Codificar datos del producto para pasarlos por URL
+        const productoData = encodeURIComponent(JSON.stringify({
+          id: producto.id,
+          nombre: producto.nombre,
+          precio: producto.precio,
+          imagen: producto.imagen,
+          sku: producto.sku
+        }));
+        window.location.href = `/pedido-personalizado?producto=${productoData}`;
+        return;
+      }
+      
+      // No bloquear si es producto normal sin stock
       if (producto.stock === 0 && !isAmigurumiOrCaja) return;
       
-      if (producto.stock === 0 && isAmigurumiOrCaja) {
-        alert('Este producto se hace a pedido. Nos contactaremos contigo para coordinar los detalles. 💜');
-      }
-      
+      // Agregar al carrito productos con stock
       addToCart(producto);
-      if (producto.stock > 0) {
-        alert('¡Agregado al carrito! 💜');
-      }
+      alert('¡Agregado al carrito! 💜');
     };
 
     return (

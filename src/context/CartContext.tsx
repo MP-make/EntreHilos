@@ -48,12 +48,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   // Agregar producto al carrito
   const addToCart = (product: Product) => {
+    // Determinar si el producto es de Amigurumis o Cajas (se hacen a pedido)
+    const isAmigurumiOrCaja = product.sku.startsWith('Amigu-') || product.sku.startsWith('Caja-');
+    
     setItems((prevItems) => {
       const existingItem = prevItems.find((item) => item.id === product.id);
 
       if (existingItem) {
-        // Si ya existe, incrementar cantidad (validando stock)
-        if (existingItem.quantity >= product.stock) {
+        // Si ya existe, incrementar cantidad
+        // Para productos a pedido, no hay límite de stock
+        if (!isAmigurumiOrCaja && existingItem.quantity >= product.stock) {
           alert(`Solo hay ${product.stock} unidades disponibles de ${product.nombre}`);
           return prevItems;
         }
@@ -64,7 +68,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         );
       } else {
         // Si no existe, agregarlo con cantidad 1
-        if (product.stock === 0) {
+        // Productos a pedido (Amigurumis/Cajas) se pueden agregar aunque stock sea 0
+        if (product.stock === 0 && !isAmigurumiOrCaja) {
           alert('Producto sin stock');
           return prevItems;
         }

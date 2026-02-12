@@ -77,7 +77,7 @@ export default async function PersonalizadosPage() {
 
               {/* CTA Principal WhatsApp */}
               <a 
-                href="https://wa.me/51927005738?text=Hola,%20quisiera%20cotizar%20un%20pedido%20personalizado"
+                href="https://wa.me/51927005798?text=Hola,%20quisiera%20cotizar%20un%20pedido%20personalizado"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 sm:gap-3 w-full font-lato px-6 sm:px-8 py-3 sm:py-4 bg-[#25D366] hover:bg-[#20BA5A] text-white font-semibold text-sm sm:text-base tracking-wide transition-all duration-300 rounded shadow-lg hover:shadow-xl"
@@ -153,7 +153,7 @@ export default async function PersonalizadosPage() {
                   Cuéntanos tu idea y te enviaremos una cotización personalizada
                 </p>
                 <a 
-                  href="https://wa.me/51927005738?text=Hola,%20quisiera%20cotizar%20un%20pedido%20personalizado"
+                  href="https://wa.me/51927005798?text=Hola,%20quisiera%20cotizar%20un%20pedido%20personalizado"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 font-lato px-6 py-3 border-2 border-[#9F86C0] text-[#5E548E] font-medium text-sm tracking-wide hover:bg-[#9F86C0] hover:text-white transition-all duration-300 rounded"
