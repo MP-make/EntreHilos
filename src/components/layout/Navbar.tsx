@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingBag, Search, Truck, Clock } from "lucide-react";
+import { ShoppingBag, Search, Truck, Clock, Menu, X } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useState, useEffect } from "react";
 import SearchModal from "@/components/SearchModal";
@@ -12,6 +12,7 @@ import { Product } from "@/lib/ventify";
 export default function Navbar() {
   const { totalItems } = useCart();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
 
   // Cargar productos para el buscador
@@ -22,6 +23,27 @@ export default function Navbar() {
     };
     loadProducts();
   }, []);
+
+  // Bloquear scroll cuando el menú móvil está abierto
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMobileMenuOpen]);
+
+  const menuItems = [
+    { href: "/", label: "Inicio", highlight: false },
+    { href: "/category/san-valentin", label: "San Valentín 💘", highlight: true },
+    { href: "/category/dia-de-la-madre", label: "Día de la Madre", highlight: false },
+    { href: "/category/flores-amarillas", label: "Flores Amarillas", highlight: false },
+    { href: "/category/hotwheels", label: "HotWheels", highlight: false },
+    { href: "/personalizados", label: "Personalizados", highlight: false },
+  ];
 
   return (
     <>
@@ -76,42 +98,19 @@ export default function Navbar() {
 
               {/* CENTRO: Menú de navegación - Solo Desktop */}
               <div className="hidden lg:flex items-center gap-4 xl:gap-8">
-                <Link 
-                  href="/" 
-                  className="font-lato text-xs xl:text-sm uppercase tracking-wide text-gray-700 hover:text-[#9F86C0] transition-colors duration-200"
-                >
-                  Inicio
-                </Link>
-                <Link 
-                  href="/category/san-valentin" 
-                  className="font-lato text-xs xl:text-sm uppercase tracking-wide text-[#5E548E] hover:text-[#9F86C0] font-bold transition-colors duration-200"
-                >
-                  San Valentín 💘
-                </Link>
-                <Link 
-                  href="/category/dia-de-la-madre" 
-                  className="font-lato text-xs xl:text-sm uppercase tracking-wide text-gray-700 hover:text-[#9F86C0] transition-colors duration-200"
-                >
-                  Día de la Madre
-                </Link>
-                <Link 
-                  href="/category/flores-amarillas" 
-                  className="font-lato text-xs xl:text-sm uppercase tracking-wide text-gray-700 hover:text-[#9F86C0] transition-colors duration-200"
-                >
-                  Flores Amarillas
-                </Link>
-                <Link 
-                  href="/category/hotwheels" 
-                  className="font-lato text-xs xl:text-sm uppercase tracking-wide text-gray-700 hover:text-[#9F86C0] transition-colors duration-200"
-                >
-                  HotWheels
-                </Link>
-                <Link 
-                  href="/personalizados" 
-                  className="font-lato text-xs xl:text-sm uppercase tracking-wide text-gray-700 hover:text-[#9F86C0] transition-colors duration-200"
-                >
-                  Personalizados
-                </Link>
+                {menuItems.map((item) => (
+                  <Link 
+                    key={item.href}
+                    href={item.href}
+                    className={`font-lato text-xs xl:text-sm uppercase tracking-wide transition-colors duration-200 ${
+                      item.highlight 
+                        ? 'text-[#5E548E] hover:text-[#9F86C0] font-bold' 
+                        : 'text-gray-700 hover:text-[#9F86C0]'
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
               </div>
 
               {/* DERECHA: Iconos */}
@@ -137,10 +136,95 @@ export default function Navbar() {
                     </span>
                   )}
                 </Link>
+
+                {/* Botón Hamburguesa - Solo Móvil */}
+                <button 
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                  className="lg:hidden p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  aria-label="Abrir menú"
+                >
+                  {isMobileMenuOpen ? (
+                    <X size={24} className="text-[#5E548E]" />
+                  ) : (
+                    <Menu size={24} className="text-[#5E548E]" />
+                  )}
+                </button>
               </div>
             </div>
           </div>
         </nav>
+      </div>
+
+      {/* MENÚ MÓVIL - Overlay con animación */}
+      <div 
+        className={`fixed inset-0 z-40 lg:hidden transition-opacity duration-300 ${
+          isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+      >
+        {/* Overlay oscuro */}
+        <div 
+          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+        
+        {/* Panel del menú */}
+        <div 
+          className={`absolute top-0 right-0 h-full w-[280px] sm:w-[320px] bg-white shadow-2xl transform transition-transform duration-300 ease-out ${
+            isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
+        >
+          {/* Header del menú */}
+          <div className="bg-gradient-to-r from-[#5E548E] to-[#9F86C0] p-6">
+            <div className="flex items-center justify-between">
+              <h2 className="font-playfair text-xl font-bold text-white">
+                Menú
+              </h2>
+              <button 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                aria-label="Cerrar menú"
+              >
+                <X size={24} className="text-white" />
+              </button>
+            </div>
+          </div>
+
+          {/* Lista de links */}
+          <nav className="py-6">
+            {menuItems.map((item, index) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`block px-6 py-4 font-lato text-base tracking-wide transition-all duration-200 border-l-4 ${
+                  item.highlight
+                    ? 'text-[#E91E63] font-bold border-[#E91E63] bg-pink-50 hover:bg-pink-100'
+                    : 'text-gray-700 border-transparent hover:border-[#9F86C0] hover:bg-[#FDF4F7] hover:text-[#5E548E]'
+                }`}
+                style={{ 
+                  animationDelay: `${index * 50}ms`,
+                  animation: isMobileMenuOpen ? 'slideInRight 0.3s ease-out forwards' : 'none'
+                }}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          {/* Footer del menú con info */}
+          <div className="absolute bottom-0 left-0 right-0 p-6 bg-[#FDF4F7] border-t border-gray-200">
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 text-sm text-gray-600">
+                <Truck className="w-5 h-5 text-[#9F86C0] flex-shrink-0" />
+                <span className="font-lato">Envíos gratis en Pisco</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm text-gray-600">
+                <Clock className="w-5 h-5 text-[#9F86C0] flex-shrink-0" />
+                <span className="font-lato">Entrega el mismo día</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Modal de Búsqueda */}
@@ -149,6 +233,20 @@ export default function Navbar() {
         onClose={() => setIsSearchOpen(false)} 
         products={products} 
       />
+
+      {/* Estilos para animaciones */}
+      <style jsx>{`
+        @keyframes slideInRight {
+          from {
+            opacity: 0;
+            transform: translateX(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+      `}</style>
     </>
   );
 }

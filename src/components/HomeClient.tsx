@@ -56,6 +56,11 @@ function HeroCarousel({ products }: { products: any[] }) {
     },
   ];
 
+  // Debug: mostrar slides en consola
+  useEffect(() => {
+    console.log('Slides configurados:', slides.map((slide, index) => ({ index, link: slide.link, badge: slide.badge })));
+  }, []);
+
   // Auto-avanzar cada 6 segundos
   useEffect(() => {
     const interval = setInterval(() => {
@@ -107,6 +112,7 @@ function HeroCarousel({ products }: { products: any[] }) {
                     <Link
                       href={slide.link}
                       className="font-lato px-8 py-4 bg-[#9F86C0] text-white font-semibold text-sm tracking-wide transition-all duration-300 rounded-full hover:bg-[#5E548E] shadow-lg hover:shadow-xl hover:-translate-y-1 text-center"
+                      onClick={() => console.log('Click en Ver Colección - Slide:', index, 'Link:', slide.link)}
                     >
                       Ver Colección
                     </Link>
