@@ -30,10 +30,10 @@ function HeroCarousel({ products }: { products: any[] }) {
       image: products.find(p => p?.nombre?.toLowerCase().includes('snoopy'))?.imagen || products.find(p => p?.nombre?.toLowerCase().includes('ramo'))?.imagen || '/logo.jpg',
       bgColor: 'bg-gradient-to-br from-pink-50 via-white to-purple-50',
       price: 80,
-      link: '/category/san-valentin',
+      link: '#catalogo',
     },
     {
-      badge: 'Personajes de Anime',
+      badge: 'Tus Personajes Favoritos',
       title: 'Imagina tu personaje favorito',
       titleHighlight: 'tejido a crochet ✨',
       subtitle: 'Creamos el amigurumi de tus sueños',
@@ -41,7 +41,7 @@ function HeroCarousel({ products }: { products: any[] }) {
       image: products.find(p => p?.nombre?.toLowerCase().includes('messi'))?.imagen || products.find(p => p?.nombre?.toLowerCase().includes('goku') || p?.nombre?.toLowerCase().includes('naruto'))?.imagen || '/logo.jpg',
       bgColor: 'bg-gradient-to-br from-purple-50 via-white to-blue-50',
       price: 115,
-      link: '/personalizados',
+      link: '#catalogo',
     },
     {
       badge: 'A Tu Medida',
@@ -52,7 +52,7 @@ function HeroCarousel({ products }: { products: any[] }) {
       image: products.find(p => p?.nombre?.toLowerCase().includes('cuadro') && p?.nombre?.toLowerCase().includes('hotwheel'))?.imagen || products.find(p => p?.nombre?.toLowerCase().includes('perrito') || p?.nombre?.toLowerCase().includes('pareja'))?.imagen || products[0]?.imagen || '/logo.jpg',
       bgColor: 'bg-gradient-to-br from-amber-50 via-white to-pink-50',
       price: 50,
-      link: '/category/hotwheels',
+      link: '#catalogo',
     },
   ];
 
@@ -84,8 +84,10 @@ function HeroCarousel({ products }: { products: any[] }) {
                 {/* Columna Izquierda: Contenido */}
                 <div className="text-center lg:text-left space-y-6 order-2 lg:order-1">
                   {/* Badge */}
-                  <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-600 px-4 py-2 rounded-full">
-                    <Sparkles size={16} />
+                  <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-600 px-4 py-2 rounded-full border border-orange-200">
+                    <span className="text-base">
+                      {index === 0 ? '💝' : index === 1 ? '🧸' : '🖼️'}
+                    </span>
                     <span className="font-lato text-sm font-semibold">{slide.badge}</span>
                   </div>
 

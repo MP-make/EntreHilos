@@ -47,14 +47,23 @@ export default function Navbar() {
 
   return (
     <>
-      {/* CONTENEDOR STICKY COMPLETO CON BLUR - SIN FONDO QUE SOBRESCRIBA */}
-      <div className="sticky top-0 z-50 backdrop-blur-md shadow-sm">
-        {/* FRANJA SUPERIOR - Información logística CON ANIMACIONES */}
-        <div className="bg-gradient-to-r from-[#5E548E] via-[#6B5B95] to-[#5E548E] text-white py-2 px-2 sm:px-4 animate-fade-in">
+      {/* FRANJA ROSA - San Valentín (SCROLLEA) */}
+      <div className="bg-[#ec4899] text-white py-2 sm:py-2.5 px-2 sm:px-4">
+        <div className="max-w-7xl mx-auto text-center">
+          <p className="font-lato text-xs sm:text-sm md:text-base font-semibold tracking-wide">
+            💜 ¡Modo San Valentín Activado! Regalos y Decoraciones 💜
+          </p>
+        </div>
+      </div>
+
+      {/* NAVBAR STICKY (NO SCROLLEA) */}
+      <nav className="sticky top-0 z-50">
+        {/* FRANJA SUPERIOR - Información logística */}
+        <div className="bg-gradient-to-r from-[#5E548E] via-[#6B5B95] to-[#5E548E] text-white py-2 px-2 sm:px-4">
           <div className="max-w-7xl mx-auto text-center">
             <p className="font-lato text-[10px] sm:text-xs md:text-sm font-light tracking-wide flex flex-wrap items-center justify-center gap-1 sm:gap-2">
               <Truck className="w-3 h-3 md:w-4 md:h-4 animate-bounce flex-shrink-0" />
-              <span className="text-center">Envíos GRATIS en Pisco por compras mayores a S/ 100</span>
+              <span className="text-center">Envíos GRATIS por compras mayores a S/150</span>
               <span className="hidden sm:inline">|</span>
               <span className="hidden sm:flex items-center gap-2">
                 <Clock className="w-3 h-3 md:w-4 md:h-4 animate-pulse" />
@@ -64,17 +73,8 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* FRANJA INFERIOR - Promoción San Valentín */}
-        <div className="bg-[#ec4899] text-white py-2 sm:py-2.5 px-2 sm:px-4">
-          <div className="max-w-7xl mx-auto text-center">
-            <p className="font-lato text-xs sm:text-sm md:text-base font-semibold tracking-wide">
-              💜 ¡Modo San Valentín Activado! Regalos y Decoraciones 💜
-            </p>
-          </div>
-        </div>
-
         {/* NAVBAR PRINCIPAL */}
-        <nav className="bg-white/95 backdrop-blur-sm">
+        <div className="bg-white/95 backdrop-blur-sm shadow-sm">
           <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-4">
             <div className="flex items-center justify-between gap-2">
               {/* IZQUIERDA: Logo + Texto */}
@@ -152,8 +152,8 @@ export default function Navbar() {
               </div>
             </div>
           </div>
-        </nav>
-      </div>
+        </div>
+      </nav>
 
       {/* MENÚ MÓVIL - Overlay con animación */}
       <div 
@@ -216,7 +216,7 @@ export default function Navbar() {
             <div className="space-y-3">
               <div className="flex items-center gap-3 text-sm text-gray-600">
                 <Truck className="w-5 h-5 text-[#9F86C0] flex-shrink-0" />
-                <span className="font-lato">Envíos gratis en Pisco</span>
+                <span className="font-lato">Envíos desde S/ 5 según distancia</span>
               </div>
               <div className="flex items-center gap-3 text-sm text-gray-600">
                 <Clock className="w-5 h-5 text-[#9F86C0] flex-shrink-0" />
