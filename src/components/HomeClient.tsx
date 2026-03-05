@@ -115,12 +115,22 @@ function HeroCarousel({ products }: { products: any[] }) {
           {/* ── BANNER FULL WIDTH (solo slide 8M) ── */}
           {slide.type === 'banner' && (
             <div className="relative w-full h-[500px] md:h-[580px]">
+              {/* Imagen móvil */}
+              <Image
+                src="/Dia-de-la-mujer-8M-versionmovil.png"
+                alt="Día Internacional de la Mujer · 8M"
+                fill
+                quality={100}
+                className="object-cover object-center md:hidden"
+                priority
+              />
+              {/* Imagen desktop */}
               <Image
                 src={slide.image}
                 alt="Día Internacional de la Mujer · 8M"
                 fill
                 quality={100}
-                className="object-cover object-center"
+                className="object-cover object-center hidden md:block"
                 priority
               />
               {/* Overlay sutil con botones en la parte inferior */}
