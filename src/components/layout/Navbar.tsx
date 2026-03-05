@@ -47,8 +47,8 @@ export default function Navbar() {
 
   return (
     <>
-      {/* FRANJA ROSA - Día de la Mujer */}
-      <div style={{ backgroundColor: '#f09bc0' }} className="text-white py-2 sm:py-2.5 px-2 sm:px-4">
+      {/* FRANJA ROSA - solo visible en desktop */}
+      <div style={{ backgroundColor: '#f09bc0' }} className="hidden sm:block text-white py-2 sm:py-2.5 px-2 sm:px-4">
         <div className="max-w-7xl mx-auto text-center">
           <p className="font-lato text-xs sm:text-sm md:text-base font-semibold tracking-wide">
             💜 ¡Celebra el Día de la Mujer! Detalles únicos tejidos con amor · 8M 💜
@@ -58,7 +58,7 @@ export default function Navbar() {
 
       {/* NAVBAR STICKY */}
       <nav className="sticky top-0 z-50">
-        {/* FRANJA SUPERIOR - logística */}
+        {/* FRANJA SUPERIOR - logística: visible siempre */}
         <div className="bg-gradient-to-r from-[#5E548E] via-[#6B5B95] to-[#5E548E] text-white py-2 px-2 sm:px-4">
           <div className="max-w-7xl mx-auto text-center">
             <p className="font-lato text-[10px] sm:text-xs md:text-sm font-light tracking-wide flex items-center justify-center gap-1 sm:gap-2">
@@ -73,8 +73,9 @@ export default function Navbar() {
 
         {/* NAVBAR PRINCIPAL */}
         <div className="bg-white/95 backdrop-blur-sm shadow-sm">
-          <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-4">
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 sm:py-4">
             <div className="flex items-center justify-between gap-2">
+
               {/* IZQUIERDA: Logo + Texto */}
               <Link href="/" className="flex items-center gap-2 sm:gap-3 group flex-shrink-0">
                 <Image
@@ -82,7 +83,7 @@ export default function Navbar() {
                   alt="Entre Hilos Logo"
                   width={50}
                   height={50}
-                  className="w-10 h-10 sm:w-[50px] sm:h-[50px] md:w-[55px] md:h-[55px] object-contain rounded-full group-hover:scale-105 transition-transform duration-300"
+                  className="w-9 h-9 sm:w-[50px] sm:h-[50px] md:w-[55px] md:h-[55px] object-contain rounded-full group-hover:scale-105 transition-transform duration-300"
                 />
                 <div className="hidden sm:block">
                   <h1 className="font-playfair font-bold text-lg sm:text-xl md:text-2xl text-[#5E548E] leading-tight whitespace-nowrap">
@@ -94,7 +95,15 @@ export default function Navbar() {
                 </div>
               </Link>
 
-              {/* CENTRO: Menú desktop — una sola línea, sin cortes */}
+              {/* CENTRO MÓVIL: texto "Día de la Mujer - 8M" sin fondo, solo visible en móvil */}
+              <Link
+                href="/category/dia-de-la-mujer"
+                className="sm:hidden font-lato text-xs font-bold text-[#5E548E] whitespace-nowrap tracking-wide"
+              >
+                💜 Día de la Mujer - 8M 💜
+              </Link>
+
+              {/* CENTRO DESKTOP: Menú completo */}
               <div className="hidden lg:flex items-center gap-3 xl:gap-6 flex-1 justify-center">
                 {menuItems.map((item) => (
                   <Link
@@ -145,6 +154,7 @@ export default function Navbar() {
                   )}
                 </button>
               </div>
+
             </div>
           </div>
         </div>

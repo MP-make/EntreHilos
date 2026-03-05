@@ -153,7 +153,7 @@ function HeroCarousel({ products }: { products: any[] }) {
                   <div className="order-1 lg:order-2 flex items-center justify-center flex-shrink-0">
                     <div className="relative inline-block">
                       {(slide as any).imageStyle === 'transparent' ? (
-                        <div className="relative w-[240px] h-[240px] md:w-[360px] md:h-[360px]">
+                        <div className="relative w-[270px] h-[270px] md:w-[360px] md:h-[360px]">
                           <Image
                             src={(slide as any).image}
                             alt={(slide as any).title}
@@ -163,7 +163,7 @@ function HeroCarousel({ products }: { products: any[] }) {
                           />
                         </div>
                       ) : (
-                        <div className="relative w-[260px] h-[240px] md:w-[420px] md:h-[400px] rounded-2xl overflow-hidden shadow-xl bg-gray-100">
+                        <div className="relative w-[290px] h-[270px] md:w-[420px] md:h-[400px] rounded-2xl overflow-hidden shadow-xl bg-gray-100">
                           <Image
                             src={(slide as any).image}
                             alt={(slide as any).title}
