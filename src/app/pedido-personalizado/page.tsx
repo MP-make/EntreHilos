@@ -122,7 +122,7 @@ Deseo confirmar este pedido personalizado. ¡Gracias! 😊
                   src={producto.imagen}
                   alt={producto.nombre || "Producto"}
                   fill
-                  className="object-cover"
+                  className="object-contain"
                   unoptimized
                 />
               )}

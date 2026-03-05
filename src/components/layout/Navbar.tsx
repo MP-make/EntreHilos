@@ -38,37 +38,35 @@ export default function Navbar() {
 
   const menuItems = [
     { href: "/", label: "Inicio", highlight: false },
-    { href: "/category/san-valentin", label: "San Valentín 💘", highlight: true },
+    { href: "/category/dia-de-la-mujer", label: "Día de la Mujer 💜", highlight: true },
+    { href: "/category/san-valentin", label: "San Valentín 💘", highlight: false },
     { href: "/category/dia-de-la-madre", label: "Día de la Madre", highlight: false },
     { href: "/category/flores-amarillas", label: "Flores Amarillas", highlight: false },
-    { href: "/category/hotwheels", label: "HotWheels", highlight: false },
     { href: "/personalizados", label: "Personalizados", highlight: false },
   ];
 
   return (
     <>
-      {/* FRANJA ROSA - San Valentín (SCROLLEA) */}
-      <div className="bg-[#ec4899] text-white py-2 sm:py-2.5 px-2 sm:px-4">
+      {/* FRANJA ROSA - Día de la Mujer */}
+      <div style={{ backgroundColor: '#f09bc0' }} className="text-white py-2 sm:py-2.5 px-2 sm:px-4">
         <div className="max-w-7xl mx-auto text-center">
           <p className="font-lato text-xs sm:text-sm md:text-base font-semibold tracking-wide">
-            💜 ¡Modo San Valentín Activado! Regalos y Decoraciones 💜
+            💜 ¡Celebra el Día de la Mujer! Detalles únicos tejidos con amor · 8M 💜
           </p>
         </div>
       </div>
 
-      {/* NAVBAR STICKY (NO SCROLLEA) */}
+      {/* NAVBAR STICKY */}
       <nav className="sticky top-0 z-50">
-        {/* FRANJA SUPERIOR - Información logística */}
+        {/* FRANJA SUPERIOR - logística */}
         <div className="bg-gradient-to-r from-[#5E548E] via-[#6B5B95] to-[#5E548E] text-white py-2 px-2 sm:px-4">
           <div className="max-w-7xl mx-auto text-center">
-            <p className="font-lato text-[10px] sm:text-xs md:text-sm font-light tracking-wide flex flex-wrap items-center justify-center gap-1 sm:gap-2">
+            <p className="font-lato text-[10px] sm:text-xs md:text-sm font-light tracking-wide flex items-center justify-center gap-1 sm:gap-2">
               <Truck className="w-3 h-3 md:w-4 md:h-4 animate-bounce flex-shrink-0" />
-              <span className="text-center">Envíos GRATIS por compras mayores a S/150</span>
-              <span className="hidden sm:inline">|</span>
-              <span className="hidden sm:flex items-center gap-2">
-                <Clock className="w-3 h-3 md:w-4 md:h-4 animate-pulse" />
-                Separa tu fecha
-              </span>
+              <span>Envíos GRATIS por compras mayores a S/150</span>
+              <span className="hidden sm:inline mx-1">|</span>
+              <Clock className="hidden sm:inline w-3 h-3 md:w-4 md:h-4 animate-pulse flex-shrink-0" />
+              <span className="hidden sm:inline">Separa tu fecha</span>
             </p>
           </div>
         </div>
@@ -78,34 +76,34 @@ export default function Navbar() {
           <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-4">
             <div className="flex items-center justify-between gap-2">
               {/* IZQUIERDA: Logo + Texto */}
-              <Link href="/" className="flex items-center gap-2 sm:gap-3 group">
-                <Image 
-                  src="/logo.jpg" 
-                  alt="Entre Hilos Logo" 
-                  width={50} 
+              <Link href="/" className="flex items-center gap-2 sm:gap-3 group flex-shrink-0">
+                <Image
+                  src="/logo.jpg"
+                  alt="Entre Hilos Logo"
+                  width={50}
                   height={50}
-                  className="w-10 h-10 sm:w-[50px] sm:h-[50px] md:w-[60px] md:h-[60px] object-contain rounded-full group-hover:scale-105 transition-transform duration-300"
+                  className="w-10 h-10 sm:w-[50px] sm:h-[50px] md:w-[55px] md:h-[55px] object-contain rounded-full group-hover:scale-105 transition-transform duration-300"
                 />
                 <div className="hidden sm:block">
-                  <h1 className="font-playfair font-bold text-lg sm:text-xl md:text-2xl text-[#5E548E] leading-tight">
+                  <h1 className="font-playfair font-bold text-lg sm:text-xl md:text-2xl text-[#5E548E] leading-tight whitespace-nowrap">
                     Entre Hilos
                   </h1>
-                  <p className="font-lato text-[10px] sm:text-xs text-gray-500 tracking-wide">
+                  <p className="font-lato text-[10px] sm:text-xs text-gray-500 tracking-wide whitespace-nowrap">
                     Decorando momentos
                   </p>
                 </div>
               </Link>
 
-              {/* CENTRO: Menú de navegación - Solo Desktop */}
-              <div className="hidden lg:flex items-center gap-4 xl:gap-8">
+              {/* CENTRO: Menú desktop — una sola línea, sin cortes */}
+              <div className="hidden lg:flex items-center gap-3 xl:gap-6 flex-1 justify-center">
                 {menuItems.map((item) => (
-                  <Link 
+                  <Link
                     key={item.href}
                     href={item.href}
-                    className={`font-lato text-xs xl:text-sm uppercase tracking-wide transition-colors duration-200 ${
-                      item.highlight 
-                        ? 'text-[#5E548E] hover:text-[#9F86C0] font-bold' 
-                        : 'text-gray-700 hover:text-[#9F86C0]'
+                    className={`font-lato text-xs xl:text-sm uppercase tracking-wide transition-colors duration-200 whitespace-nowrap ${
+                      item.highlight
+                        ? 'text-[#5E548E] hover:text-[#9F86C0] font-bold'
+                        : 'text-gray-700 hover:text-[#9F86C0] font-normal'
                     }`}
                   >
                     {item.label}
@@ -114,9 +112,8 @@ export default function Navbar() {
               </div>
 
               {/* DERECHA: Iconos */}
-              <div className="flex items-center gap-1 sm:gap-2 md:gap-4">
-                {/* Icono de búsqueda - FUNCIONAL */}
-                <button 
+              <div className="flex items-center gap-1 sm:gap-2 md:gap-3 flex-shrink-0">
+                <button
                   onClick={() => setIsSearchOpen(true)}
                   className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors"
                   aria-label="Buscar productos"
@@ -124,8 +121,7 @@ export default function Navbar() {
                   <Search size={18} className="sm:w-5 sm:h-5 text-gray-600" />
                 </button>
 
-                {/* Carrito con badge */}
-                <Link 
+                <Link
                   href="/cart"
                   className="relative p-1.5 sm:p-2 hover:bg-[#FDF4F7] rounded-full transition-all duration-300 group"
                 >
@@ -137,8 +133,7 @@ export default function Navbar() {
                   )}
                 </Link>
 
-                {/* Botón Hamburguesa - Solo Móvil */}
-                <button 
+                <button
                   onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                   className="lg:hidden p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors"
                   aria-label="Abrir menú"
@@ -155,9 +150,9 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* MENÚ MÓVIL - Overlay con animación */}
+      {/* MENÚ MÓVIL - z-[60] para estar encima del navbar sticky z-50 */}
       <div 
-        className={`fixed inset-0 z-40 lg:hidden transition-opacity duration-300 ${
+        className={`fixed inset-0 z-[60] lg:hidden transition-opacity duration-300 ${
           isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       >

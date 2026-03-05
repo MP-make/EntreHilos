@@ -19,49 +19,83 @@ type TabType = 'Ramos' | 'Amigurumis' | 'Cajas' | 'HotWheels' | 'Ver Todo';
 function HeroCarousel({ products }: { products: any[] }) {
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // Datos de los slides
+  // Social proof diferenciado por tipo de slide
+  const proofRamos = [
+    '⭐ +200 clientes felices en Pisco',
+    '🚚 Envío el mismo día',
+    '🎁 Empaque de regalo incluido',
+    '✂️ 100% hecho a mano',
+  ];
+  const proofPedido = [
+    '⭐ +200 clientes felices en Pisco',
+    '📅 Separa tu fecha de entrega',
+    '🎁 Empaque de regalo incluido',
+    '✂️ 100% hecho a mano',
+  ];
+
   const slides = [
+    // ── SLIDE 0: Día de la Mujer — SOLO IMAGEN BANNER FULL WIDTH ──
+    { type: 'banner', image: '/Dia-de-la-mujer-8M.webp' },
+
+    // ── SLIDE 1: San Valentín / Ramos ──
     {
-      badge: 'Especial San Valentín',
-      title: 'Haz que su corazón',
-      titleHighlight: 'lata más fuerte ❤️',
-      subtitle: 'Arreglos personalizados, globos y detalles únicos en Pisco.',
-      description: 'Porque cada momento merece ser celebrado.',
+      type: 'product',
+      badge: 'Especial Día de la Mujer',
+      badgeStyle: 'bg-[#5E548E]/10 text-[#5E548E] border-[#9F86C0]/40',
+      badgeEmoji: '💜',
+      title: 'El regalo perfecto',
+      titleHighlight: 'para ella este 8M 🌸',
+      subtitle: 'Ramos de crochet artesanales, globos y arreglos únicos en Pisco.',
+      description: 'Porque merece algo especial, hecho con amor.',
       image: products.find(p => p?.nombre?.toLowerCase().includes('snoopy'))?.imagen || products.find(p => p?.nombre?.toLowerCase().includes('ramo'))?.imagen || '/logo.jpg',
       bgColor: 'bg-gradient-to-br from-pink-50 via-white to-purple-50',
       price: 80,
       link: '#catalogo',
+      imageStyle: 'cover', // imagen con fondo → bordes redondeados
+      proof: proofRamos,
     },
+
+    // ── SLIDE 2: Amigurumis — imagen sin fondo, efecto flotante 2D ──
     {
+      type: 'product',
       badge: 'Tus Personajes Favoritos',
+      badgeStyle: 'bg-orange-100 text-orange-600 border-orange-200',
+      badgeEmoji: '🧸',
       title: 'Imagina tu personaje favorito',
       titleHighlight: 'tejido a crochet ✨',
-      subtitle: 'Creamos el amigurumi de tus sueños',
-      description: 'Cada puntada lleva dedicación y amor',
+      subtitle: 'Creamos el amigurumi de tus sueños a pedido.',
+      description: 'Cada puntada lleva dedicación y amor.',
       image: products.find(p => p?.nombre?.toLowerCase().includes('messi'))?.imagen || products.find(p => p?.nombre?.toLowerCase().includes('goku') || p?.nombre?.toLowerCase().includes('naruto'))?.imagen || '/logo.jpg',
       bgColor: 'bg-gradient-to-br from-purple-50 via-white to-blue-50',
       price: 115,
       link: '#catalogo',
+      imageStyle: 'transparent', // sin fondo, objeto flotante
+      proof: proofPedido,
     },
+
+    // ── SLIDE 3: Personalizados — cajita tulipán con estilo cover ──
     {
+      type: 'product',
       badge: 'A Tu Medida',
+      badgeStyle: 'bg-orange-100 text-orange-600 border-orange-200',
+      badgeEmoji: '🎁',
       title: 'Crea algo especial',
       titleHighlight: 'para alguien especial 💝',
-      subtitle: 'Cuadros, cajas y diseños únicos hechos para ti',
-      description: 'Convierte tus ideas en realidad con nuestros diseños personalizados',
-      image: products.find(p => p?.nombre?.toLowerCase().includes('cuadro') && p?.nombre?.toLowerCase().includes('hotwheel'))?.imagen || products.find(p => p?.nombre?.toLowerCase().includes('perrito') || p?.nombre?.toLowerCase().includes('pareja'))?.imagen || products[0]?.imagen || '/logo.jpg',
+      subtitle: 'Cajas regalo, cuadros y diseños únicos hechos para ti.',
+      description: 'Convierte tus ideas en realidad con nuestros diseños personalizados.',
+      image: products.find(p => p?.nombre?.toLowerCase().includes('tulip'))?.imagen
+        || products.find(p => p?.nombre?.toLowerCase().includes('caja') && p?.nombre?.toLowerCase().includes('ramo'))?.imagen
+        || products.find(p => p?.sku?.startsWith('Caja-'))?.imagen
+        || products[0]?.imagen
+        || '/logo.jpg',
       bgColor: 'bg-gradient-to-br from-amber-50 via-white to-pink-50',
       price: 50,
       link: '#catalogo',
+      imageStyle: 'cover',
+      proof: proofPedido,
     },
   ];
 
-  // Debug: mostrar slides en consola
-  useEffect(() => {
-    console.log('Slides configurados:', slides.map((slide, index) => ({ index, link: slide.link, badge: slide.badge })));
-  }, []);
-
-  // Auto-avanzar cada 6 segundos
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
@@ -78,89 +112,159 @@ function HeroCarousel({ products }: { products: any[] }) {
             currentSlide === index ? 'opacity-100' : 'opacity-0 absolute inset-0'
           }`}
         >
-          <div className={`${slide.bgColor} min-h-[500px] md:min-h-[600px]`}>
-            <div className="max-w-7xl mx-auto px-4 py-12 md:py-16">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                {/* Columna Izquierda: Contenido */}
-                <div className="text-center lg:text-left space-y-6 order-2 lg:order-1">
-                  {/* Badge */}
-                  <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-600 px-4 py-2 rounded-full border border-orange-200">
-                    <span className="text-base">
-                      {index === 0 ? '💝' : index === 1 ? '🧸' : '🖼️'}
-                    </span>
-                    <span className="font-lato text-sm font-semibold">{slide.badge}</span>
+          {/* ── BANNER FULL WIDTH (solo slide 8M) ── */}
+          {slide.type === 'banner' && (
+            <div className="relative w-full h-[500px] md:h-[580px]">
+              <Image
+                src={slide.image}
+                alt="Día Internacional de la Mujer · 8M"
+                fill
+                quality={100}
+                className="object-cover object-center"
+                priority
+              />
+              {/* Overlay sutil con botones en la parte inferior */}
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#3B1F6A]/70 to-transparent px-6 py-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Link
+                  href="#catalogo"
+                  className="font-lato px-8 py-3 bg-[#9F86C0] text-white font-semibold text-sm tracking-wide rounded-full hover:bg-[#5E548E] transition-all duration-300 shadow-lg"
+                >
+                  Ver Colección 💜
+                </Link>
+                <button
+                  onClick={() => window.open('https://wa.me/51927005798', '_blank')}
+                  className="font-lato px-8 py-3 bg-white/90 text-[#5E548E] font-semibold text-sm tracking-wide rounded-full hover:bg-white transition-all duration-300 shadow-lg flex items-center gap-2"
+                >
+                  <MessageCircle size={16} />
+                  Pedir por WhatsApp
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ── SLIDE DE PRODUCTO ── */}
+          {slide.type === 'product' && (
+            <div className={`${(slide as any).bgColor} h-[500px] md:h-[580px]`}>
+              <div className="max-w-7xl mx-auto px-4 h-full flex items-center">
+                <div className="w-full h-full flex flex-col lg:grid lg:grid-cols-2 lg:gap-10 items-center py-6">
+
+                  {/* MÓVIL: solo imagen + título encima. DESKTOP: layout completo */}
+                  {/* Columna imagen — siempre arriba en móvil */}
+                  <div className="order-1 lg:order-2 flex items-center justify-center flex-shrink-0">
+                    <div className="relative inline-block">
+                      {(slide as any).imageStyle === 'transparent' ? (
+                        <div className="relative w-[240px] h-[240px] md:w-[360px] md:h-[360px]">
+                          <Image
+                            src={(slide as any).image}
+                            alt={(slide as any).title}
+                            fill
+                            className="object-contain"
+                            unoptimized
+                          />
+                        </div>
+                      ) : (
+                        <div className="relative w-[260px] h-[240px] md:w-[420px] md:h-[400px] rounded-2xl overflow-hidden shadow-xl bg-gray-100">
+                          <Image
+                            src={(slide as any).image}
+                            alt={(slide as any).title}
+                            fill
+                            className="object-cover"
+                            unoptimized
+                          />
+                        </div>
+                      )}
+                      {/* Badge precio */}
+                      <div className="absolute -top-3 -right-3 md:-top-4 md:-right-4 w-16 h-16 md:w-20 md:h-20 bg-[#FCD34D] rounded-full shadow-xl flex flex-col items-center justify-center z-10 border-4 border-white">
+                        <p className="font-lato text-[9px] md:text-[10px] font-light text-gray-700">A solo</p>
+                        <p className="font-playfair text-base md:text-xl font-bold text-gray-900 leading-none">S/ {(slide as any).price}</p>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Título Principal */}
-                  <div>
-                    <h1 className="font-playfair text-4xl md:text-5xl lg:text-6xl font-normal text-gray-900 mb-2 leading-tight">
-                      {slide.title}
-                    </h1>
-                    <h2 className="font-playfair text-4xl md:text-5xl lg:text-6xl font-normal text-[#BE185D] leading-tight">
-                      {slide.titleHighlight}
-                    </h2>
+                  {/* Columna texto */}
+                  <div className="order-2 lg:order-1 text-center lg:text-left space-y-2 lg:space-y-4 mt-3 lg:mt-0">
+                    {/* Badge — oculto en móvil para ahorrar espacio */}
+                    <div className={`hidden lg:inline-flex items-center gap-2 px-4 py-2 rounded-full border ${(slide as any).badgeStyle}`}>
+                      <span className="text-base">{(slide as any).badgeEmoji}</span>
+                      <span className="font-lato text-sm font-semibold">{(slide as any).badge}</span>
+                    </div>
+
+                    {/* Título — siempre visible */}
+                    <div>
+                      <h1 className="font-playfair text-2xl md:text-5xl lg:text-6xl font-normal text-gray-900 mb-1 leading-tight">
+                        {(slide as any).title}
+                      </h1>
+                      <h2 className="font-playfair text-2xl md:text-5xl lg:text-6xl font-normal text-[#BE185D] leading-tight">
+                        {(slide as any).titleHighlight}
+                      </h2>
+                    </div>
+
+                    {/* Subtítulo — oculto en móvil */}
+                    <p className="hidden md:block font-lato text-sm md:text-base text-gray-700 leading-relaxed">
+                      {(slide as any).subtitle}
+                    </p>
+
+                    {/* Social proof pills — oculto en móvil */}
+                    <div className="hidden md:flex flex-wrap gap-2 justify-center lg:justify-start">
+                      {((slide as any).proof as string[]).map((proof: string, i: number) => (
+                        <span key={i} className="font-lato text-xs bg-white/80 backdrop-blur-sm border border-[#9F86C0]/20 text-gray-600 px-3 py-1 rounded-full">
+                          {proof}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Botones — oculto en móvil */}
+                    <div className="hidden md:flex flex-col sm:flex-row gap-3 pt-1">
+                      <Link
+                        href={(slide as any).link}
+                        className="font-lato px-7 py-3 bg-[#9F86C0] text-white font-semibold text-sm tracking-wide transition-all duration-300 rounded-full hover:bg-[#5E548E] shadow-lg hover:shadow-xl hover:-translate-y-1 text-center"
+                      >
+                        Ver Colección
+                      </Link>
+                      <button
+                        onClick={() => window.open('https://wa.me/51927005798', '_blank')}
+                        className="font-lato px-7 py-3 border-2 border-[#5E548E] text-[#5E548E] font-semibold text-sm tracking-wide transition-all duration-300 rounded-full hover:bg-[#5E548E] hover:text-white flex items-center justify-center gap-2"
+                      >
+                        <MessageCircle size={16} />
+                        Pedir por WhatsApp
+                      </button>
+                    </div>
+
+                    {/* Botón único en móvil */}
+                    <div className="flex md:hidden justify-center gap-3 pt-1">
+                      <Link
+                        href={(slide as any).link}
+                        className="font-lato px-6 py-2.5 bg-[#9F86C0] text-white font-semibold text-sm rounded-full hover:bg-[#5E548E] shadow-md"
+                      >
+                        Ver Colección 💜
+                      </Link>
+                      <button
+                        onClick={() => window.open('https://wa.me/51927005798', '_blank')}
+                        className="font-lato px-4 py-2.5 border-2 border-[#5E548E] text-[#5E548E] font-semibold text-sm rounded-full flex items-center gap-1"
+                      >
+                        <MessageCircle size={14} />
+                        WA
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Subtítulo */}
-                  <p className="font-lato text-base md:text-lg text-gray-700 leading-relaxed">
-                    {slide.subtitle}
-                  </p>
-                  <p className="font-lato text-sm text-gray-500 italic">
-                    {slide.description}
-                  </p>
-
-                  {/* Botones */}
-                  <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                    <Link
-                      href={slide.link}
-                      className="font-lato px-8 py-4 bg-[#9F86C0] text-white font-semibold text-sm tracking-wide transition-all duration-300 rounded-full hover:bg-[#5E548E] shadow-lg hover:shadow-xl hover:-translate-y-1 text-center"
-                      onClick={() => console.log('Click en Ver Colección - Slide:', index, 'Link:', slide.link)}
-                    >
-                      Ver Colección
-                    </Link>
-                    <button 
-                      onClick={() => window.open('https://wa.me/51927005798', '_blank')}
-                      className="font-lato px-8 py-4 border-2 border-[#5E548E] text-[#5E548E] font-semibold text-sm tracking-wide transition-all duration-300 rounded-full hover:bg-[#5E548E] hover:text-white flex items-center justify-center gap-2"
-                    >
-                      <MessageCircle size={18} />
-                      Contactar al WhatsApp
-                    </button>
-                  </div>
-                </div>
-
-                {/* Columna Derecha: Imagen con Badge de Precio FUERA */}
-                <div className="relative order-1 lg:order-2">
-                  <div className="relative h-[400px] md:h-[500px] rounded-3xl overflow-hidden shadow-2xl bg-gray-100">
-                    <Image
-                      src={slide.image}
-                      alt={slide.title}
-                      fill
-                      className="object-cover"
-                      priority={index === 0}
-                    />
-                  </div>
-                  {/* Badge de Precio Flotante - FUERA DE LA IMAGEN */}
-                  <div className="absolute -top-4 -right-4 w-24 h-24 bg-[#FCD34D] rounded-full shadow-2xl flex flex-col items-center justify-center z-10 border-4 border-white">
-                    <p className="font-lato text-xs font-light text-gray-700">A solo</p>
-                    <p className="font-playfair text-2xl font-bold text-gray-900 leading-none">S/ {slide.price}</p>
-                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       ))}
 
       {/* Puntos de navegación */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
         {slides.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
             className={`transition-all duration-300 rounded-full ${
-              currentSlide === index 
-                ? 'bg-[#BE185D] w-10 h-3' 
-                : 'bg-gray-300 w-3 h-3 hover:bg-gray-400'
+              currentSlide === index
+                ? 'bg-[#5E548E] w-10 h-3'
+                : 'bg-white/60 w-3 h-3 hover:bg-[#9F86C0]'
             }`}
             aria-label={`Ir al slide ${index + 1}`}
           />
@@ -402,31 +506,54 @@ export default function HomeClient({ products }: HomeClientProps) {
       <HeroCarousel products={enrichedProducts} />
 
       {/* ==================== NAVEGACIÓN POR PESTAÑAS ==================== */}
-      <section id="catalogo" className="bg-[#FDF4F7] py-8 px-4 sticky top-[88px] z-40 mt-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex flex-wrap justify-center gap-8">
+      <section id="catalogo" className="bg-[#FDF4F7] sticky top-[88px] z-30">
+        <div className="max-w-6xl mx-auto px-4">
+
+          {/* ── DESKTOP: línea morada debajo del activo ── */}
+          <div className="hidden md:flex items-center justify-center gap-8 py-3 border-b border-gray-200">
             {(['Ramos', 'Amigurumis', 'Cajas', 'HotWheels', 'Ver Todo'] as TabType[]).map((tab) => {
               const isActive = activeTab === tab;
-              
               return (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`font-lato text-base tracking-wide transition-all duration-300 pb-2 relative ${
+                  className={`font-lato text-sm tracking-wide transition-all duration-300 pb-2 relative whitespace-nowrap ${
                     isActive
                       ? 'text-[#5E548E] font-semibold'
                       : 'text-[#6B6B6B] hover:text-[#5E548E] font-normal'
                   }`}
                 >
                   {tab}
-                  
                   {isActive && (
-                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#9F86C0]" />
+                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#9F86C0] rounded-full" />
                   )}
                 </button>
               );
             })}
           </div>
+
+          {/* ── MÓVIL: píldoras con scroll horizontal, sin sombra ── */}
+          <div className="flex md:hidden overflow-x-auto scrollbar-hide border-b border-gray-200">
+            <div className="flex gap-2 py-2 px-1 min-w-max">
+              {(['Ramos', 'Amigurumis', 'Cajas', 'HotWheels', 'Ver Todo'] as TabType[]).map((tab) => {
+                const isActive = activeTab === tab;
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`font-lato text-sm tracking-wide transition-all duration-300 py-1.5 px-4 rounded-full whitespace-nowrap flex-shrink-0 ${
+                      isActive
+                        ? 'text-white bg-[#9F86C0] font-semibold'
+                        : 'text-[#6B6B6B] hover:text-[#5E548E] font-normal hover:bg-[#9F86C0]/10'
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
         </div>
       </section>
 
