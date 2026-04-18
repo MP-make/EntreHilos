@@ -39,7 +39,7 @@ export default function NosotrosPage() {
           </div>
           <div className="order-1 lg:order-2 relative h-64 sm:h-80 md:h-96 rounded-3xl overflow-hidden shadow-2xl">
             <Image 
-              src="/logo.jpg" 
+              src="/logo.png" 
               alt="Entre Hilos - Crochet Artesanal" 
               fill 
               className="object-cover"

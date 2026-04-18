@@ -4,14 +4,14 @@
   --background: #FDF4F7;
   --foreground: #4A4A4A;
   
-  /* Paleta Boutique - Gato Morado */
-  --brand-primary: #9F86C0;      /* Lila elegante (del logo) */
-  --brand-secondary: #FDF4F7;    /* Rosa muy pálido/Blanco cálido */
-  --brand-accent: #E6B8B8;       /* Rosa palo (complementario) */
-  --brand-dark: #5E548E;         /* Morado oscuro para títulos */
+  /* Paleta Kawaii - Gatito Blanco y Ovillos Pastel */
+  --brand-primary: #EE6B8D;      /* Rosa fuerte/fresa (texto logo) */
+  --brand-secondary: #FDE8EF;    /* Rosa pastel muy suave (fondo) */
+  --brand-accent: #FFB4A2;       /* Durazno/Melón (ovillo derecho) */
+  --brand-dark: #C04267;         /* Cereza oscuro para títulos */
   --text-primary: #4A4A4A;       /* Gris oscuro para lectura */
   --text-secondary: #6B6B6B;     /* Gris medio */
-  --text-title: #5E548E;         /* Morado oscuro para headings */
+  --text-title: #C04267;         /* Cereza oscuro para headings */
 }
 
 @media (prefers-color-scheme: dark) {

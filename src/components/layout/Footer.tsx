@@ -11,7 +11,7 @@ export default function Footer() {
           <div className="text-left">
             <div className="flex items-center gap-3 mb-4">
               <Image 
-                src="/logo.jpg" 
+                src="/logo.png" 
                 alt="Entre Hilos" 
                 width={50} 
                 height={50}

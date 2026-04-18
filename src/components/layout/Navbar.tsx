@@ -38,81 +38,74 @@ export default function Navbar() {
 
   const menuItems = [
     { href: "/", label: "Inicio", highlight: false },
-    { href: "/category/dia-de-la-mujer", label: "Día de la Mujer 💜", highlight: true },
+    { href: "/category/dia-de-la-madre", label: "Día de la Madre 🌸", highlight: true }, // ¡Movido al principio, con flor y resaltado!
+    { href: "/category/dia-de-la-mujer", label: "Día de la Mujer 💜", highlight: false },
     { href: "/category/san-valentin", label: "San Valentín 💘", highlight: false },
-    { href: "/category/dia-de-la-madre", label: "Día de la Madre", highlight: false },
     { href: "/category/flores-amarillas", label: "Flores Amarillas", highlight: false },
     { href: "/personalizados", label: "Personalizados", highlight: false },
   ];
 
   return (
     <>
-      {/* FRANJA ROSA - solo visible en desktop */}
-      <div style={{ backgroundColor: '#f09bc0' }} className="hidden sm:block text-white py-2 sm:py-2.5 px-2 sm:px-4">
+      {/* FRANJA ROSA - Día de la Madre (SCROLLEA) */}
+      <div className="bg-[#ec4899] text-white py-2 sm:py-2.5 px-2 sm:px-4">
         <div className="max-w-7xl mx-auto text-center">
           <p className="font-lato text-xs sm:text-sm md:text-base font-semibold tracking-wide">
-            💜 ¡Celebra el Día de la Mujer! Detalles únicos tejidos con amor · 8M 💜
+            🌸 ¡Campaña Día de la Madre! Reserva el regalo perfecto para mamá 🌸
           </p>
         </div>
       </div>
 
-      {/* NAVBAR STICKY */}
+      {/* NAVBAR STICKY (NO SCROLLEA) */}
       <nav className="sticky top-0 z-50">
-        {/* FRANJA SUPERIOR - logística: visible siempre */}
-        <div className="bg-gradient-to-r from-[#5E548E] via-[#6B5B95] to-[#5E548E] text-white py-2 px-2 sm:px-4">
+        {/* FRANJA SUPERIOR - Información logística (NUEVO GRADIENTE ROSA) */}
+        <div className="bg-gradient-to-r from-[#EE6B8D] via-[#F48FB0] to-[#EE6B8D] text-white py-2 px-2 sm:px-4">
           <div className="max-w-7xl mx-auto text-center">
-            <p className="font-lato text-[10px] sm:text-xs md:text-sm font-light tracking-wide flex items-center justify-center gap-1 sm:gap-2">
+            <p className="font-lato text-[10px] sm:text-xs md:text-sm font-light tracking-wide flex flex-wrap items-center justify-center gap-1 sm:gap-2">
               <Truck className="w-3 h-3 md:w-4 md:h-4 animate-bounce flex-shrink-0" />
-              <span>Envíos GRATIS por compras mayores a S/150</span>
-              <span className="hidden sm:inline mx-1">|</span>
-              <Clock className="hidden sm:inline w-3 h-3 md:w-4 md:h-4 animate-pulse flex-shrink-0" />
-              <span className="hidden sm:inline">Separa tu fecha</span>
+              <span className="text-center">Envíos GRATIS por compras mayores a S/150</span>
+              <span className="hidden sm:inline">|</span>
+              <span className="hidden sm:flex items-center gap-2">
+                <Clock className="w-3 h-3 md:w-4 md:h-4 animate-pulse" />
+                Separa tu fecha
+              </span>
             </p>
           </div>
         </div>
 
         {/* NAVBAR PRINCIPAL */}
         <div className="bg-white/95 backdrop-blur-sm shadow-sm">
-          <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 sm:py-4">
+          <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-4">
             <div className="flex items-center justify-between gap-2">
-
               {/* IZQUIERDA: Logo + Texto */}
-              <Link href="/" className="flex items-center gap-2 sm:gap-3 group flex-shrink-0">
-                <Image
-                  src="/logo.jpg"
-                  alt="Entre Hilos Logo"
-                  width={50}
+              <Link href="/" className="flex items-center gap-2 sm:gap-3 group">
+                <Image 
+                  src="/logo.png" 
+                  alt="Entre Hilos Logo" 
+                  width={50} 
                   height={50}
-                  className="w-9 h-9 sm:w-[50px] sm:h-[50px] md:w-[55px] md:h-[55px] object-contain rounded-full group-hover:scale-105 transition-transform duration-300"
+                  className="w-10 h-10 sm:w-[50px] sm:h-[50px] md:w-[60px] md:h-[60px] object-contain rounded-full group-hover:scale-105 transition-transform duration-300"
                 />
                 <div className="hidden sm:block">
-                  <h1 className="font-playfair font-bold text-lg sm:text-xl md:text-2xl text-[#5E548E] leading-tight whitespace-nowrap">
+                  <h1 className="font-playfair font-bold text-lg sm:text-xl md:text-2xl text-[#C04267] leading-tight">
                     Entre Hilos
                   </h1>
-                  <p className="font-lato text-[10px] sm:text-xs text-gray-500 tracking-wide whitespace-nowrap">
+                  <p className="font-lato text-[10px] sm:text-xs text-gray-500 tracking-wide">
                     Decorando momentos
                   </p>
                 </div>
               </Link>
 
-              {/* CENTRO MÓVIL: texto "Día de la Mujer - 8M" sin fondo, solo visible en móvil */}
-              <Link
-                href="/category/dia-de-la-mujer"
-                className="sm:hidden font-lato text-xs font-bold text-[#5E548E] whitespace-nowrap tracking-wide"
-              >
-                💜 Día de la Mujer - 8M 💜
-              </Link>
-
-              {/* CENTRO DESKTOP: Menú completo */}
-              <div className="hidden lg:flex items-center gap-3 xl:gap-6 flex-1 justify-center">
+              {/* CENTRO: Menú de navegación - Solo Desktop */}
+              <div className="hidden lg:flex items-center gap-4 xl:gap-8">
                 {menuItems.map((item) => (
-                  <Link
+                  <Link 
                     key={item.href}
                     href={item.href}
-                    className={`font-lato text-xs xl:text-sm uppercase tracking-wide transition-colors duration-200 whitespace-nowrap ${
-                      item.highlight
-                        ? 'text-[#5E548E] hover:text-[#9F86C0] font-bold'
-                        : 'text-gray-700 hover:text-[#9F86C0] font-normal'
+                    className={`font-lato text-xs xl:text-sm uppercase tracking-wide transition-colors duration-200 ${
+                      item.highlight 
+                        ? 'text-[#C04267] hover:text-[#EE6B8D] font-bold' 
+                        : 'text-gray-700 hover:text-[#EE6B8D]'
                     }`}
                   >
                     {item.label}
@@ -121,8 +114,9 @@ export default function Navbar() {
               </div>
 
               {/* DERECHA: Iconos */}
-              <div className="flex items-center gap-1 sm:gap-2 md:gap-3 flex-shrink-0">
-                <button
+              <div className="flex items-center gap-1 sm:gap-2 md:gap-4">
+                {/* Icono de búsqueda - FUNCIONAL */}
+                <button 
                   onClick={() => setIsSearchOpen(true)}
                   className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors"
                   aria-label="Buscar productos"
@@ -130,11 +124,12 @@ export default function Navbar() {
                   <Search size={18} className="sm:w-5 sm:h-5 text-gray-600" />
                 </button>
 
-                <Link
+                {/* Carrito con badge */}
+                <Link 
                   href="/cart"
                   className="relative p-1.5 sm:p-2 hover:bg-[#FDF4F7] rounded-full transition-all duration-300 group"
                 >
-                  <ShoppingBag size={20} className="sm:w-[22px] sm:h-[22px] text-[#5E548E] group-hover:text-[#9F86C0]" />
+                  <ShoppingBag size={20} className="sm:w-[22px] sm:h-[22px] text-[#C04267] group-hover:text-[#EE6B8D]" />
                   {totalItems > 0 && (
                     <span className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 bg-[#E91E63] text-white text-[10px] sm:text-xs font-lato font-bold w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center shadow-md">
                       {totalItems}
@@ -142,27 +137,27 @@ export default function Navbar() {
                   )}
                 </Link>
 
-                <button
+                {/* Botón Hamburguesa - Solo Móvil */}
+                <button 
                   onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                   className="lg:hidden p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors"
                   aria-label="Abrir menú"
                 >
                   {isMobileMenuOpen ? (
-                    <X size={24} className="text-[#5E548E]" />
+                    <X size={24} className="text-[#C04267]" />
                   ) : (
-                    <Menu size={24} className="text-[#5E548E]" />
+                    <Menu size={24} className="text-[#C04267]" />
                   )}
                 </button>
               </div>
-
             </div>
           </div>
         </div>
       </nav>
 
-      {/* MENÚ MÓVIL - z-[60] para estar encima del navbar sticky z-50 */}
+      {/* MENÚ MÓVIL - Overlay con animación */}
       <div 
-        className={`fixed inset-0 z-[60] lg:hidden transition-opacity duration-300 ${
+        className={`fixed inset-0 z-40 lg:hidden transition-opacity duration-300 ${
           isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       >
@@ -179,7 +174,7 @@ export default function Navbar() {
           }`}
         >
           {/* Header del menú */}
-          <div className="bg-gradient-to-r from-[#5E548E] to-[#9F86C0] p-6">
+          <div className="bg-gradient-to-r from-[#EE6B8D] to-[#F48FB0] p-6">
             <div className="flex items-center justify-between">
               <h2 className="font-playfair text-xl font-bold text-white">
                 Menú
@@ -204,7 +199,7 @@ export default function Navbar() {
                 className={`block px-6 py-4 font-lato text-base tracking-wide transition-all duration-200 border-l-4 ${
                   item.highlight
                     ? 'text-[#E91E63] font-bold border-[#E91E63] bg-pink-50 hover:bg-pink-100'
-                    : 'text-gray-700 border-transparent hover:border-[#9F86C0] hover:bg-[#FDF4F7] hover:text-[#5E548E]'
+                    : 'text-gray-700 border-transparent hover:border-[#EE6B8D] hover:bg-[#FDF4F7] hover:text-[#C04267]'
                 }`}
                 style={{ 
                   animationDelay: `${index * 50}ms`,
@@ -220,11 +215,11 @@ export default function Navbar() {
           <div className="absolute bottom-0 left-0 right-0 p-6 bg-[#FDF4F7] border-t border-gray-200">
             <div className="space-y-3">
               <div className="flex items-center gap-3 text-sm text-gray-600">
-                <Truck className="w-5 h-5 text-[#9F86C0] flex-shrink-0" />
+                <Truck className="w-5 h-5 text-[#EE6B8D] flex-shrink-0" />
                 <span className="font-lato">Envíos desde S/ 5 según distancia</span>
               </div>
               <div className="flex items-center gap-3 text-sm text-gray-600">
-                <Clock className="w-5 h-5 text-[#9F86C0] flex-shrink-0" />
+                <Clock className="w-5 h-5 text-[#EE6B8D] flex-shrink-0" />
                 <span className="font-lato">Entrega el mismo día</span>
               </div>
             </div>
