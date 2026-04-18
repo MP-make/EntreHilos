@@ -23,10 +23,9 @@ function HeroCarousel({ products }: { products: any[] }) {
   const slides = [
     {
       isFlyer: true, // Indica que es una imagen de ancho completo
-      // NUEVO: Rutas separadas para desktop y mobile
-      // IMPORTANTE: Sube tus imágenes con estos nombres exactos a la carpeta public
-      imageDesktop: '/flyer-madre-desktop.jpg', 
-      imageMobile: '/flyer-madre-mobile.jpg',
+      // ACTUALIZADO: Rutas exactas de tus imágenes png
+      imageDesktop: '/dia-de-la-madre-horizontal.png', 
+      imageMobile: '/dia-de-la-madre-vertical.png',
       link: '/category/dia-de-la-madre',
       bgColor: 'bg-[#FDE8EF]', // Color de fondo base mientras carga la imagen
     },
