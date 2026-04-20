@@ -40,7 +40,7 @@ export default function CartPage() {
       alert("Tu carrito está vacío");
       return;
     }
-    const whatsappUrl = `https://wa.me/51927005798?text=${getWhatsAppMessage()}`;
+    const whatsappUrl = `https://wa.me/51902578295?text=${getWhatsAppMessage()}`;
     window.open(whatsappUrl, "_blank");
   };
 

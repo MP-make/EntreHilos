@@ -36,7 +36,7 @@ export default function Footer() {
             <ul className="space-y-3 font-lato text-sm">
               <li>
                 <a 
-                  href="https://wa.me/51927005798" 
+                  href="https://wa.me/51902578295" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-[#6B6B6B] hover:text-[#25D366] transition-colors duration-200"

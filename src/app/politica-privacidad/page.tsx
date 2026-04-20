@@ -196,12 +196,12 @@ export default function PoliticaPrivacidadPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
             <a 
-              href="https://wa.me/51927005798"
+              href="https://wa.me/51902578295"
               target="_blank"
               rel="noopener noreferrer"
               className="font-lato px-6 sm:px-8 py-3 bg-white text-[#5E548E] font-semibold rounded-full hover:bg-gray-100 transition-colors text-sm sm:text-base inline-block"
             >
-              WhatsApp: 927 005 798
+              WhatsApp:902 578 295
             </a>
             <Link 
               href="/"

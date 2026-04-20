@@ -156,7 +156,7 @@ function HeroCarousel({ products }: { products: any[] }) {
                         Ver Colección
                       </Link>
                       <button 
-                        onClick={() => window.open('https://wa.me/51927005798', '_blank')}
+                        onClick={() => window.open('https://wa.me/51902578295', '_blank')}
                         className="font-lato px-8 py-4 border-2 border-[#C04267] text-[#C04267] font-semibold text-sm tracking-wide transition-all duration-300 rounded-full hover:bg-[#C04267] hover:text-white flex items-center justify-center gap-2"
                       >
                         <MessageCircle size={18} />
@@ -418,7 +418,7 @@ export default function HomeClient({ products }: HomeClientProps) {
     <div className="min-h-screen bg-[#FDF4F7]">
       <HeroCarousel products={enrichedProducts} />
 
-      <section id="catalogo" className="bg-[#FDF4F7] py-8 px-4 sticky top-[120px] sm:top-[130px] z-40 mt-8">
+      <section id="catalogo" className="bg-[#FDF4F7] py-4 sm:py-4 sm:py-8 px-4 sticky top-\[60px\] sm:top-\[130px\] flex overflow-x-auto sm:flex-wrap sm:justify-center gap-4 sm:gap-8 whitespace-nowrap sm:whitespace-normal z-40 mt-8">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-wrap justify-center gap-8">
             {(['Ramos', 'Amigurumis', 'Cajas', 'HotWheels', 'Ver Todo'] as TabType[]).map((tab) => {

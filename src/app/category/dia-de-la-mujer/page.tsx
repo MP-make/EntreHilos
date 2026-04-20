@@ -162,7 +162,7 @@ export default function DiaDelaMujerPage() {
             Detalles únicos tejidos con amor para celebrarla
           </p>
           <button
-            onClick={() => window.open('https://wa.me/51927005798', '_blank')}
+            onClick={() => window.open('https://wa.me/51902578295', '_blank')}
             className="font-lato px-6 py-2.5 bg-white text-[#5E548E] font-semibold text-sm rounded-full flex items-center gap-2 hover:bg-[#9F86C0] hover:text-white transition-all shadow-lg"
           >
             <MessageCircle size={16} />
@@ -224,7 +224,7 @@ export default function DiaDelaMujerPage() {
                   <h3 className="font-playfair text-lg text-[#5E548E] font-semibold mb-2">{item.nombre}</h3>
                   <p className="font-lato text-sm text-[#6B6B6B] font-light mb-4">{item.descripcion}</p>
                   <button
-                    onClick={() => window.open('https://wa.me/51927005798?text=' + encodeURIComponent(`Hola, me interesa el producto: ${item.nombre}`), '_blank')}
+                    onClick={() => window.open('https://wa.me/51902578295?text=' + encodeURIComponent(`Hola, me interesa el producto: ${item.nombre}`), '_blank')}
                     className="font-lato w-full py-2.5 bg-[#9F86C0] text-white text-sm font-medium rounded-lg hover:bg-[#5E548E] transition-all flex items-center justify-center gap-2"
                   >
                     <MessageCircle size={15} />

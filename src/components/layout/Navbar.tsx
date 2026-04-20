@@ -38,7 +38,7 @@ export default function Navbar() {
 
   const menuItems = [
     { href: "/", label: "Inicio", highlight: false },
-    { href: "/category/dia-de-la-madre", label: "Día de la Madre 🌸", highlight: true }, // ¡Movido al principio, con flor y resaltado!
+    { href: "/category/dia-de-la-madre", label: "Día de la Madre 🌸", highlight: true }, 
     { href: "/category/dia-de-la-mujer", label: "Día de la Mujer 💜", highlight: false },
     { href: "/category/san-valentin", label: "San Valentín 💘", highlight: false },
     { href: "/category/flores-amarillas", label: "Flores Amarillas", highlight: false },
@@ -58,7 +58,7 @@ export default function Navbar() {
 
       {/* NAVBAR STICKY (NO SCROLLEA) */}
       <nav className="sticky top-0 z-50">
-        {/* FRANJA SUPERIOR - Información logística (NUEVO GRADIENTE ROSA) */}
+        {/* FRANJA SUPERIOR - Información logística */}
         <div className="bg-gradient-to-r from-[#EE6B8D] via-[#F48FB0] to-[#EE6B8D] text-white py-2 px-2 sm:px-4">
           <div className="max-w-7xl mx-auto text-center">
             <p className="font-lato text-[10px] sm:text-xs md:text-sm font-light tracking-wide flex flex-wrap items-center justify-center gap-1 sm:gap-2">
@@ -156,8 +156,9 @@ export default function Navbar() {
       </nav>
 
       {/* MENÚ MÓVIL - Overlay con animación */}
+      {/* ¡AQUÍ ESTÁ LA SOLUCIÓN! Cambié z-40 por z-[60] */}
       <div 
-        className={`fixed inset-0 z-40 lg:hidden transition-opacity duration-300 ${
+        className={`fixed inset-0 z-[60] lg:hidden transition-opacity duration-300 ${
           isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       >

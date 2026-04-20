@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Lato } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/layout/Navbar";
+import Navbar from "@/components/layout/Navbar"; // Verifica que esta ruta sea correcta
 import Footer from "@/components/layout/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { CartProvider } from "@/context/CartContext";
@@ -38,6 +38,7 @@ export default function RootLayout({
       <body
         className={`${playfair.variable} ${lato.variable} antialiased`}
       >
+        {/* ⚠️ TODO DEBE ESTAR DENTRO DEL CARTPROVIDER ⚠️ */}
         <CartProvider>
           <Navbar />
           {children}

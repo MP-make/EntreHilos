@@ -72,7 +72,7 @@ ${formData.extras ? `➕ Extras: ${formData.extras}` : ""}
 Deseo confirmar este pedido personalizado. ¡Gracias! 😊
     `.trim();
 
-    const whatsappUrl = `https://wa.me/51927005798?text=${encodeURIComponent(mensaje)}`;
+    const whatsappUrl = `https://wa.me/51902578295?text=${encodeURIComponent(mensaje)}`;
     window.open(whatsappUrl, "_blank");
   };
 

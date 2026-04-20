@@ -45,7 +45,7 @@ export default function LibroReclamacionesPage() {
 _Registro generado el ${new Date().toLocaleDateString('es-PE')} a las ${new Date().toLocaleTimeString('es-PE')}_
     `.trim();
 
-    const whatsappUrl = `https://wa.me/51927005798?text=${encodeURIComponent(mensaje)}`;
+    const whatsappUrl = `https://wa.me/51902578295?text=${encodeURIComponent(mensaje)}`;
     window.open(whatsappUrl, '_blank');
     
     setSubmitted(true);
@@ -367,7 +367,7 @@ _Registro generado el ${new Date().toLocaleDateString('es-PE')} a las ${new Date
             </div>
             <div>
               <h4 className="font-semibold text-[#5E548E] mb-2">Datos del Proveedor</h4>
-              <p>Entre Hilos - Pisco, Perú<br />WhatsApp: 927 005 798</p>
+              <p>Entre Hilos - Pisco, Perú<br />WhatsApp:902 578 295</p>
             </div>
           </div>
           <div className="mt-6 sm:mt-8 text-center">

@@ -161,7 +161,7 @@ export default function NosotrosPage() {
               Ver Colección
             </Link>
             <a 
-              href="https://wa.me/51927005798"
+              href="https://wa.me/51902578295"
               target="_blank"
               rel="noopener noreferrer"
               className="font-lato px-6 sm:px-8 py-3 sm:py-4 border-2 border-white text-white font-semibold rounded-full hover:bg-white hover:text-[#5E548E] transition-all text-sm sm:text-base"
