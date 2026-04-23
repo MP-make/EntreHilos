@@ -155,13 +155,22 @@ function HeroCarousel({ products }: { products: any[] }) {
                       >
                         Ver Colección
                       </Link>
+                      
+                      {/* === AQUÍ ESTÁ LA MEJORA DEL BOTÓN CON TU IMAGEN PNG Y EFECTO ELEGANTE === */}
                       <button 
                         onClick={() => window.open('https://wa.me/51902578295', '_blank')}
-                        className="font-lato px-8 py-4 border-2 border-[#C04267] text-[#C04267] font-semibold text-sm tracking-wide transition-all duration-300 rounded-full hover:bg-[#C04267] hover:text-white flex items-center justify-center gap-2"
+                        className="group font-lato px-8 py-4 border-2 border-[#C04267] text-[#C04267] font-semibold text-sm tracking-wide transition-all duration-300 rounded-full hover:bg-[#C04267] hover:text-white flex items-center justify-center gap-2 hover:-translate-y-1 hover:shadow-[0_4px_15px_rgba(192,66,103,0.3)]"
                       >
-                        <MessageCircle size={18} />
+                        <Image 
+                          src="/Wspicono.png" 
+                          alt="WhatsApp" 
+                          width={20} 
+                          height={20} 
+                          className="transition-transform duration-300 group-hover:scale-125 group-hover:-rotate-12"
+                        />
                         Contactar al WhatsApp
                       </button>
+
                     </div>
                   </div>
 

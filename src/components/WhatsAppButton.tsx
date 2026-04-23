@@ -1,18 +1,15 @@
 'use client';
 
-import { MessageCircle } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
 
 export default function WhatsAppButton() {
   const [showTooltip, setShowTooltip] = useState(false);
   const whatsappNumber = "51902578295";
-  // Corazón actualizado a la nueva paleta
   const message = "¡Hola Entre Hilos! 💖 Quiero más información sobre sus productos";
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
 
   return (
-    // 1. z-40: Lo bajamos un nivel para que el menú móvil (z-50) lo pueda tapar al abrirse.
-    // 2. bottom-4 right-4: Más pegado a la esquina en móviles para no estorbar el centro.
     <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40">
       
       {/* Tooltip: hidden md:block -> Lo ocultamos en celulares porque el "hover" no existe en pantallas táctiles y solo hace bulto */}
@@ -23,18 +20,24 @@ export default function WhatsAppButton() {
         </div>
       )}
 
-      {/* Botón: w-12 h-12 en celular (48px) y w-16 h-16 en PC (64px) */}
+      {/* Botón flotante: Le agregué "group" y "hover:-translate-y-2" para que se eleve elegantemente */}
       <a
         href={whatsappUrl}
         target="_blank"
         rel="noopener noreferrer"
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
-        className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 bg-[#25D366] text-white rounded-full shadow-lg hover:shadow-2xl hover:scale-110 transition-all duration-300"
+        className="group flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-[#25D366] rounded-full shadow-lg hover:shadow-[0_8px_25px_rgba(37,211,102,0.4)] hover:-translate-y-1.5 transition-all duration-300"
         aria-label="Contactar por WhatsApp"
       >
-        {/* Icono más pequeño en móvil para mantener la proporción */}
-        <MessageCircle className="w-6 h-6 sm:w-7 sm:h-7" />
+        {/* Aquí está tu imagen PNG con el efecto de rotación y zoom */}
+        <Image 
+          src="/Wspicono.png" 
+          alt="WhatsApp" 
+          width={36} 
+          height={36} 
+          className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 object-contain transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-12"
+        />
       </a>
     </div>
   );
