@@ -491,7 +491,7 @@ export default function HomeClient({ products }: HomeClientProps) {
             Por qué elegir Entre Hilos
           </h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center">
               <div className="w-16 h-16 mx-auto mb-4 bg-[#EE6B8D]/10 rounded-full flex items-center justify-center">
                 <Sparkles size={32} className="text-[#EE6B8D]" />
