@@ -96,6 +96,16 @@ export default function Navbar() {
                 </div>
               </Link>
 
+              {/* === NUEVO: TEXTO MÓVIL CENTRAL (MÁS GRANDE, AL TAMAÑO DEL LOGO) === */}
+              <div className="flex lg:hidden flex-1 justify-center px-1">
+                <Link 
+                  href="/category/dia-de-la-madre"
+                  className="font-playfair text-base sm:text-lg font-medium text-[#C04267] border-b border-[#C04267]/30 pb-0.5 hover:text-[#EE6B8D] transition-colors whitespace-nowrap"
+                >
+                  Día de la Madre 🌸
+                </Link>
+              </div>
+
               {/* CENTRO: Menú de navegación - Solo Desktop */}
               <div className="hidden lg:flex items-center gap-4 xl:gap-8">
                 {menuItems.map((item) => (
