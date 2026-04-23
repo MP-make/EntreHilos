@@ -42,7 +42,7 @@ export default function Footer() {
                   className="flex items-center gap-2 text-[#6B6B6B] hover:text-[#25D366] transition-colors duration-200"
                 >
                   <Phone size={16} />
-                  <span>927 005 798</span>
+                  <span>902 578 295</span>
                 </a>
               </li>
               <li>
