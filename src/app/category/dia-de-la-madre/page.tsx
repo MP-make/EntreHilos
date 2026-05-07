@@ -135,7 +135,7 @@ export default function DiaDeLaMadrePage() {
       <section className="relative w-full h-[220px] sm:h-[300px] md:h-[380px] overflow-hidden">
         {/* 🖥️ Imagen DESKTOP: hidden en móvil, block en lg+ */}
         <Image
-          src="/dia-de-la-madre-horizontal.png"
+          src="/dia de las madres tarjeta.png"
           alt="Día de la Madre - Entre Hilos"
           fill
           quality={100}
@@ -144,7 +144,7 @@ export default function DiaDeLaMadrePage() {
         />
         {/* 📱 Imagen MOBILE: block por defecto, hidden en lg+ */}
         <Image
-          src="/dia-de-la-madre-vertical.png"
+          src="/dia de las madres tarjeta.png"
           alt="Día de la Madre - Entre Hilos Móvil"
           fill
           quality={100}
@@ -153,10 +153,9 @@ export default function DiaDeLaMadrePage() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#C04267]/60 to-transparent flex flex-col items-center justify-end pb-8 px-4">
           <h1 className="font-playfair text-3xl md:text-5xl font-bold text-white text-center mb-3 drop-shadow-lg">
-            Día de la Madre 🌸
           </h1>
           <p className="font-lato text-sm md:text-base text-white/90 text-center mb-5">
-            Detalles eternos tejidos con amor para mamá
+           
           </p>
           <button
             onClick={() => window.open('https://wa.me/51902578295', '_blank')}

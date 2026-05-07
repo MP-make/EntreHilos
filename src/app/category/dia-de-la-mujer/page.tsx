@@ -156,10 +156,8 @@ export default function DiaDelaMujerPage() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#3B1F6A]/60 to-transparent flex flex-col items-center justify-end pb-8 px-4">
           <h1 className="font-playfair text-3xl md:text-5xl font-bold text-white text-center mb-3 drop-shadow-lg">
-            Día de la Mujer 💜
           </h1>
           <p className="font-lato text-sm md:text-base text-white/90 text-center mb-5">
-            Detalles únicos tejidos con amor para celebrarla
           </p>
           <button
             onClick={() => window.open('https://wa.me/51902578295', '_blank')}
