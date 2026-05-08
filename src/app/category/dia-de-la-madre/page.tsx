@@ -15,9 +15,13 @@ export default function DiaDeLaMadrePage() {
     const fetchProducts = async () => {
       const all = await getVentifyProducts();
 
-      // Productos de Día de la Madre: SKU Madre- y Ramos-, ordenados por stock disponible primero
+      // Productos de Día de la Madre: filtrar por categoría "Día de la Madre" o SKU Madre-/Ramos-
       const productosMadre = all
-        .filter(p => p.sku.startsWith('Madre-') || p.sku.startsWith('Ramos-'))
+        .filter(p => 
+          p.categoriaOriginal?.toLowerCase().includes('día de la madre') ||
+          p.sku.startsWith('Madre-') || 
+          p.sku.startsWith('Ramos-')
+        )
         .sort((a, b) => {
           if (a.stock > 0 && b.stock === 0) return -1;
           if (a.stock === 0 && b.stock > 0) return 1;
