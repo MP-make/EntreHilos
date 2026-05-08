@@ -16,7 +16,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #FDF4F7;
+    /* Forzamos la paleta clara para no perder la identidad "Kawaii" en dark mode */
+    --background: #FDF4F7; 
     --foreground: #4A4A4A;
   }
 }
@@ -26,20 +27,23 @@
 }
 
 body {
-  font-family: var(--font-lato), system-ui, -apple-system, sans-serif;
+  /* Aplicamos Recline para el cuerpo del texto (eslogan/subtítulos) */
+  font-family: var(--font-recline), system-ui, -apple-system, sans-serif;
   background-color: var(--background);
   color: var(--text-primary);
 }
 
-/* Tipografía para títulos (Playfair Display) */
+/* Tipografía para títulos (Gratelos Display) */
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-playfair), serif;
+  font-family: var(--font-gratelos), sans-serif;
   font-weight: 600;
   color: var(--text-title);
+  letter-spacing: -0.02em; /* Junta ligeramente las letras para hacerlas más adorables */
 }
 
-/* Estilos para precios (elegantes) */
+/* Estilos para precios (Sutiles y atractivos) */
 .price {
-  font-family: var(--font-playfair), serif;
+  font-family: var(--font-gratelos), sans-serif;
   font-weight: 500;
+  color: var(--brand-dark);
 }

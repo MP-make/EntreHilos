@@ -117,24 +117,26 @@ function HeroCarousel({ products }: { products: any[] }) {
               </Link>
             ) : (
               // ... El resto del código de slides normales NO CAMBIA ...
-              <div className="max-w-7xl mx-auto px-4 py-12 md:py-16 relative z-10">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                  {/* Columna Izquierda: Contenido */}
-                  <div className="text-center lg:text-left space-y-6 order-2 lg:order-1">
+              <div className="max-w-7xl mx-auto px-4 py-8 md:py-16 relative z-10"> {/* 1. Reducido el padding vertical en móvil (py-8) */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-12 items-center">
+                  
+                  {/* Columna Izquierda: Contenido (En móvil va debajo de la imagen, en PC a la izquierda) */}
+                  <div className="text-center lg:text-left space-y-3 md:space-y-6 order-2 lg:order-1 mt-4 md:mt-0"> 
+                    
                     {/* Badge */}
-                    <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-600 px-4 py-2 rounded-full border border-orange-200">
-                      <span className="text-base">
+                    <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-600 px-3 py-1.5 md:px-4 md:py-2 rounded-full border border-orange-200 shadow-sm">
+                      <span className="text-sm md:text-base">
                         {index === 1 ? '💝' : index === 2 ? '🧸' : '🖼️'}
                       </span>
-                      <span className="font-lato text-sm font-semibold">{slide.badge}</span>
+                      <span className="font-lato text-xs md:text-sm font-semibold">{slide.badge}</span>
                     </div>
 
-                    {/* Título Principal */}
+                    {/* Título Principal (Más pequeño en móvil) */}
                     <div>
-                      <h1 className="font-playfair text-4xl md:text-5xl lg:text-6xl font-normal text-gray-900 mb-2 leading-tight">
+                      <h1 className="font-playfair text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-normal text-gray-900 mb-1 md:mb-2 leading-tight">
                         {slide.title}
                       </h1>
-                      <h2 className="font-playfair text-4xl md:text-5xl lg:text-6xl font-normal text-[#C04267] leading-tight">
+                      <h2 className="font-playfair text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-normal text-[#C04267] leading-tight">
                         {slide.titleHighlight}
                       </h2>
                     </div>
@@ -348,9 +350,9 @@ export default function HomeClient({ products }: HomeClientProps) {
     };
 
     return (
-      <div className="group">
+      <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow p-4">
         <Link href={`/product/${slugify(producto.nombre)}`} className="block">
-          <div className="relative aspect-square bg-white mb-4 overflow-hidden rounded-lg shadow-sm border border-gray-100 hover:border-[#EE6B8D] transition-all duration-300">
+          <div className="relative aspect-[4/5] bg-white mb-4 overflow-hidden rounded-xl">
             <Image
               src={producto.imagen}
               alt={producto.nombre}
@@ -364,10 +366,15 @@ export default function HomeClient({ products }: HomeClientProps) {
             </div>
 
             {producto.stock <= 5 && producto.stock > 0 && (
-              <div className="absolute top-3 right-3 px-2 py-1 bg-orange-500 text-white text-xs font-lato font-bold rounded">
-                Últimas unidades
-              </div>
-            )}
+  <div className="absolute bottom-3 left-3 z-10 group flex items-center bg-[#FFF9C4] text-[#827717] rounded-full p-1 shadow-sm border border-[#FFF176]/50 cursor-pointer transition-all duration-300">
+    <span className="w-6 h-6 flex items-center justify-center bg-[#FFF176] rounded-full text-xs font-extrabold shadow-inner animate-pulse">
+      !
+    </span>
+    <span className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 group-hover:max-w-[130px] group-hover:opacity-100 group-hover:ml-2 group-hover:pr-2 transition-all duration-500 ease-in-out text-xs font-bold font-quicksand tracking-wide">
+      Últimas unidades
+    </span>
+  </div>
+)}
 
             {producto.stock === 0 && !isAmigurumiOrCaja && (
               <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center">
@@ -378,7 +385,7 @@ export default function HomeClient({ products }: HomeClientProps) {
             )}
             
             {producto.stock === 0 && isAmigurumiOrCaja && (
-              <div className="absolute top-3 right-3 px-2 py-1 bg-[#EE6B8D] text-white text-xs font-lato font-bold rounded">
+              <div className="absolute bottom-3 right-3 px-2 py-1 bg-[#FFB4A2] text-gray-800 text-xs font-lato font-bold rounded">
                 A pedido
               </div>
             )}
@@ -407,10 +414,10 @@ export default function HomeClient({ products }: HomeClientProps) {
         <button 
           onClick={handleAddToCart}
           disabled={producto.stock === 0 && !isAmigurumiOrCaja}
-          className={`font-lato w-full py-3 text-sm font-medium tracking-wide transition-all duration-300 rounded ${
+          className={`font-lato w-full py-2 mt-4 rounded-full font-medium transition-colors ${
             producto.stock === 0 && !isAmigurumiOrCaja
               ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              : 'bg-[#EE6B8D] text-white hover:bg-[#C04267] shadow-sm hover:shadow-md'
+              : 'bg-[#FDE8EF] text-[#C04267] hover:bg-[#EE6B8D] hover:text-white'
           }`}
         >
           {producto.stock === 0 && !isAmigurumiOrCaja 

@@ -1,23 +1,21 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Lato } from "next/font/google";
+import { Fredoka, Quicksand } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/layout/Navbar"; // Verifica que esta ruta sea correcta
-import Footer from "@/components/layout/Footer";
-import WhatsAppButton from "@/components/WhatsAppButton";
 import { CartProvider } from "@/context/CartContext";
+import NavigationWrapper from "@/components/layout/NavigationWrapper"; // Importamos nuestro nuevo controlador
 
-// Tipografía para títulos (elegante, con serifas)
-const playfair = Playfair_Display({
-  variable: "--font-playfair",
+// Tipografía para títulos (Redondeada, amigable, kawaii pero profesional)
+const fredoka = Fredoka({
+  variable: "--font-fredoka",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700"],
 });
 
-// Tipografía para cuerpo de texto (limpia, legible)
-const lato = Lato({
-  variable: "--font-lato",
+// Tipografía para cuerpo de texto (Limpia, moderna, suave y súper legible)
+const quicksand = Quicksand({
+  variable: "--font-quicksand",
   subsets: ["latin"],
-  weight: ["300", "400", "700"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -36,14 +34,13 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body
-        className={`${playfair.variable} ${lato.variable} antialiased`}
+        className={`${fredoka.variable} ${quicksand.variable} antialiased`}
       >
-        {/* ⚠️ TODO DEBE ESTAR DENTRO DEL CARTPROVIDER ⚠️ */}
         <CartProvider>
-          <Navbar />
-          {children}
-          <Footer />
-          <WhatsAppButton />
+          {/* Este NavigationWrapper decidirá inteligentemente cuándo mostrar el Header y Footer */}
+          <NavigationWrapper>
+            {children}
+          </NavigationWrapper>
         </CartProvider>
       </body>
     </html>

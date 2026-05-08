@@ -71,9 +71,9 @@ export default function DiaDeLaMadrePage() {
         : 'text-gray-600';
 
     return (
-      <div className="group">
+      <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow p-4">
         <Link href={`/product/${slugify(producto.nombre)}`} className="block">
-          <div className="relative aspect-square bg-white mb-4 overflow-hidden rounded-xl shadow-sm border border-gray-100 hover:border-[#EE6B8D] transition-all duration-300">
+          <div className="relative aspect-[4/5] bg-white mb-4 overflow-hidden rounded-xl">
             <Image
               src={producto.imagen}
               alt={producto.nombre}
@@ -82,12 +82,12 @@ export default function DiaDeLaMadrePage() {
               unoptimized
             />
             {producto.stock <= 5 && producto.stock > 0 && (
-              <div className="absolute top-3 right-3 px-2 py-1 bg-orange-500 text-white text-xs font-lato font-bold rounded">
+              <div className="absolute top-3 right-3 px-2 py-1 bg-[#FFB4A2] text-gray-800 text-xs font-lato font-bold rounded">
                 Últimas unidades
               </div>
             )}
             {producto.stock === 0 && isAmigurumiOrCaja && (
-              <div className="absolute top-3 right-3 px-2 py-1 bg-[#EE6B8D] text-white text-xs font-lato font-bold rounded">
+              <div className="absolute top-3 right-3 px-2 py-1 bg-[#FFB4A2] text-gray-800 text-xs font-lato font-bold rounded">
                 A pedido
               </div>
             )}
@@ -109,10 +109,10 @@ export default function DiaDeLaMadrePage() {
         <button
           onClick={handleAddToCart}
           disabled={producto.stock === 0 && !isAmigurumiOrCaja}
-          className={`font-lato w-full py-3 text-sm font-medium tracking-wide transition-all duration-300 rounded-lg ${
+          className={`font-lato w-full py-2 mt-4 rounded-full font-medium transition-colors ${
             producto.stock === 0 && !isAmigurumiOrCaja
               ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              : 'bg-[#EE6B8D] text-white hover:bg-[#C04267] shadow-sm hover:shadow-md'
+              : 'bg-[#FDE8EF] text-[#C04267] hover:bg-[#EE6B8D] hover:text-white'
           }`}
         >
           {producto.stock === 0 && !isAmigurumiOrCaja

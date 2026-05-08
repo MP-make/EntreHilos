@@ -5,7 +5,7 @@ import { Instagram, Phone, Facebook } from "lucide-react";
 export default function Footer() {
   return (
     <footer className="bg-[#F9F9F9] border-t border-gray-200 py-12">
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="max-w-6xl mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* Columna 1: Logo + Marca */}
           <div className="text-left">

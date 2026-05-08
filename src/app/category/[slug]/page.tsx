@@ -143,9 +143,9 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     };
 
     return (
-      <div className="group">
+      <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow p-4">
         <Link href={`/product/${slugify(producto.nombre)}`} className="block">
-          <div className="relative aspect-square bg-white mb-4 overflow-hidden rounded-xl shadow-sm border border-gray-100 hover:border-[#EE6B8D] transition-all duration-300">
+          <div className="relative aspect-[4/5] bg-white mb-4 overflow-hidden rounded-xl">
             <Image
               src={producto.imagen}
               alt={producto.nombre}
@@ -154,7 +154,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
             />
             
             {producto.stock <= 5 && producto.stock > 0 && (
-              <div className="absolute top-3 right-3 px-3 py-1 bg-gradient-to-r from-orange-400 to-orange-500 text-white text-xs font-lato font-bold rounded-full shadow-md">
+              <div className="absolute top-3 right-3 px-2 py-1 bg-[#FFB4A2] text-gray-800 text-xs font-lato font-bold rounded">
                 Últimas unidades
               </div>
             )}
@@ -168,13 +168,13 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
             )}
             
             {producto.stock === 0 && isAmigurumiOrCaja && (
-              <div className="absolute top-3 right-3 px-3 py-1 bg-gradient-to-r from-[#EE6B8D] to-[#C04267] text-white text-xs font-lato font-bold rounded-full shadow-md">
+              <div className="absolute top-3 right-3 px-2 py-1 bg-[#FFB4A2] text-gray-800 text-xs font-lato font-bold rounded">
                 A pedido
               </div>
             )}
           </div>
 
-          <div className="text-center px-2">
+          <div className="text-center">
             <h3 className="font-playfair text-lg md:text-xl text-[#4A4A4A] mb-2 group-hover:text-[#C04267] transition-colors duration-300 line-clamp-2 min-h-[3.5rem]">
               {producto.nombre}
             </h3>
@@ -203,10 +203,10 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
         <button 
           onClick={handleAddToCart}
           disabled={producto.stock === 0 && !isAmigurumiOrCaja}
-          className={`font-lato w-full py-3.5 text-sm font-bold tracking-wider uppercase transition-all duration-300 rounded-lg ${
+          className={`font-lato w-full py-2 mt-4 rounded-full font-medium transition-colors ${
             producto.stock === 0 && !isAmigurumiOrCaja
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
-              : 'bg-[#EE6B8D] text-white hover:bg-[#C04267] shadow-md hover:shadow-lg transform hover:-translate-y-0.5'
+              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              : 'bg-[#FDE8EF] text-[#C04267] hover:bg-[#EE6B8D] hover:text-white'
           }`}
         >
           {producto.stock === 0 && !isAmigurumiOrCaja 
