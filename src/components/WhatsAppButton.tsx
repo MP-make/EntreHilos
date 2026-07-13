@@ -6,7 +6,7 @@ import { useState } from "react";
 export default function WhatsAppButton() {
   const [showTooltip, setShowTooltip] = useState(false);
   const whatsappNumber = "51902578295";
-  const message = "¡Hola Entre Hilos! 💖 Quiero más información sobre sus productos";
+  const message = "¡Hola Entre Hilos!  Quiero más información sobre sus productos";
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
 
   return (

@@ -3,8 +3,8 @@
 :root {
   --background: #FDF4F7;
   --foreground: #4A4A4A;
-  
-  /* Paleta Kawaii - Gatito Blanco y Ovillos Pastel */
+
+  /* Paleta Kawaii - Gatito Blanco y Ovillos Pastel (sin cambios) */
   --brand-primary: #EE6B8D;      /* Rosa fuerte/fresa (texto logo) */
   --brand-secondary: #FDE8EF;    /* Rosa pastel muy suave (fondo) */
   --brand-accent: #FFB4A2;       /* Durazno/Melón (ovillo derecho) */
@@ -17,7 +17,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     /* Forzamos la paleta clara para no perder la identidad "Kawaii" en dark mode */
-    --background: #FDF4F7; 
+    --background: #FDF4F7;
     --foreground: #4A4A4A;
   }
 }
@@ -27,73 +27,87 @@
 }
 
 body {
-  /* Aplicamos Recline para el cuerpo del texto con suavizado premium de fuentes */
+  /* --font-recline ahora carga Nunito: sans de terminales redondeadas,
+     misma familia visual "tierna" que Fredoco pero pensada para leerse
+     cómoda en párrafos y precios, no solo en titulares grandes. */
   font-family: var(--font-recline), system-ui, -apple-system, sans-serif;
   background-color: var(--background);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  font-feature-settings: "ss01" on; /* activa el set alternativo redondeado de Nunito donde esté disponible */
 }
 
-/* ========== Tipografía para Títulos (Gratelos Display) ========== */
+/* ========== Tipografía para Títulos ========== */
 h1, h2, h3, h4, h5, h6 {
+  /* --font-gratelos ahora carga Fredoka: es la fuente redondeada/bubbly
+     que hoy define visualmente lo "kawaii" — literal ovillo de hilo en las letras.
+     Como Fredoka ya nace suave y curva, subimos el peso (antes 500) para que
+     los títulos no se vean débiles, y soltamos el tracking negativo (antes -0.02em)
+     porque esta fuente ya es compacta por diseño y el ajuste previo la apretaba de más. */
   font-family: var(--font-gratelos), sans-serif;
-  font-weight: 500; /* Reducido de 600 para que la tipografía luzca más suave y curva */
+  font-weight: 600;
   color: var(--text-title);
-  letter-spacing: -0.02em; /* Junta ligeramente las letras para hacerlas más adorables */
-  line-height: 1.2;        /* Evita que las líneas de títulos largos se abran demasiado en móvil */
+  letter-spacing: -0.01em;
+  line-height: 1.2; /* evita que las líneas de títulos largos se abran demasiado en móvil */
 }
 
 /* Estilos para precios (Sutiles y atractivos) */
 .price {
   font-family: var(--font-gratelos), sans-serif;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--brand-dark);
+  font-variant-numeric: tabular-nums; /* números de precio alineados, sin saltos de ancho */
+}
+
+/* ========== Acento manuscrito — usar SOLO en detalles puntuales ==========
+   (una etiqueta "hecho con amor", una nota al pie de una card, nunca en
+   títulos ni cuerpo de texto porque a tamaño chico pierde legibilidad) */
+.tag-manuscrita {
+  font-family: var(--font-caveat), cursive;
+  font-weight: 600;
+  color: var(--brand-dark);
+  letter-spacing: 0.01em;
 }
 
 /* ========== Mejoras de Diseño Responsivo y Estructura ========== */
-
-/* Contenedor seguro para que el catálogo no se asfixie en el centro en desktop */
 .catalog-container-safe {
   width: 100%;
-  max-width: 1280px; /* Ancho ideal (max-w-7xl) para que respire en desktop */
+  max-width: 1280px;
   margin-left: auto;
   margin-right: auto;
   padding-left: 1rem;
   padding-right: 1rem;
 }
 
-/* Grilla Responsiva Optimizada para tus Tarjetas de Ramos */
 .grid-kawaii {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr)); /* 2 columnas obligatorias en móvil */
-  gap: 1rem; /* Espacio base en móvil */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
 }
 
 @media (min-width: 768px) {
   .grid-kawaii {
-    grid-template-columns: repeat(3, minmax(0, 1fr)); /* 3 columnas en tablets */
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.5rem;
   }
 }
 
 @media (min-width: 1024px) {
   .grid-kawaii {
-    grid-template-columns: repeat(4, minmax(0, 1fr)); /* 4 columnas elegantes en desktop */
-    gap: 2rem; /* Separación amplia para evitar que los botones se toquen */
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 2rem;
   }
 }
 
-/* Solución al Producto Impar Solo: Hace que el último elemento huérfano ocupe un lugar armónico */
 @media (max-width: 767px) {
   .grid-kawaii > *:last-child:nth-child(odd) {
-    grid-column: span 2; /* Se expande a las 2 columnas para no dejar el hueco blanco asimétrico */
+    grid-column: span 2;
     max-width: 100%;
   }
 }
 
-/* Tarjeta de Producto Individual */
 .card-kawaii {
   background-color: #ffffff;
   border-radius: 1rem;
@@ -102,7 +116,7 @@ h1, h2, h3, h4, h5, h6 {
   flex-direction: column;
   justify-content: space-between;
   height: 100%;
-  box-shadow: 0 4px 12px rgba(192, 66, 103, 0.04); /* Sombra sutil con el tono cereza de la marca */
+  box-shadow: 0 4px 12px rgba(192, 66, 103, 0.04);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 

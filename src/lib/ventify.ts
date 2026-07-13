@@ -96,7 +96,7 @@ function adaptVentifyProduct(ventifyProduct: VentifyProduct): Product {
     categoria: mapCategory(ventifyProduct.category),
     categoriaOriginal: ventifyProduct.category, // Preservar la categoría original
     stock: available,
-    descripcion: ventifyProduct.description || 'Producto artesanal tejido a mano con amor 💝',
+    descripcion: ventifyProduct.description || 'Producto artesanal tejido a mano con amor ',
   };
 }
 
@@ -110,7 +110,7 @@ export async function getVentifyProducts(): Promise<Product[]> {
   try {
     // Validar variables de entorno
     if (!config.apiUrl || !config.accountId || !config.apiKey) {
-      console.error('❌ Variables de entorno faltantes');
+      console.error(' Variables de entorno faltantes');
       return [];
     }
 
@@ -124,7 +124,7 @@ export async function getVentifyProducts(): Promise<Product[]> {
     });
 
     if (!response.ok) {
-      console.error('❌ Error HTTP:', response.status);
+      console.error(' Error HTTP:', response.status);
       return [];
     }
 
@@ -141,25 +141,25 @@ export async function getVentifyProducts(): Promise<Product[]> {
     } else if (data && typeof data === 'object' && Array.isArray(data.products)) {
       ventifyProducts = data.products;
     } else {
-      console.error('❌ Estructura de respuesta no reconocida');
+      console.error(' Estructura de respuesta no reconocida');
       return [];
     }
 
     // Validar que tengamos un array válido antes de mapear
     if (!Array.isArray(ventifyProducts) || ventifyProducts.length === 0) {
-      console.warn('⚠️ No se encontraron productos');
+      console.warn(' No se encontraron productos');
       return [];
     }
 
     // Adaptar todos los productos al formato del frontend
     const products = ventifyProducts.map(adaptVentifyProduct);
     
-    console.log('✅ Productos cargados:', products.length);
+    console.log(' Productos cargados:', products.length);
     
     return products;
     
   } catch (error) {
-    console.error('❌ Error al obtener productos:', error);
+    console.error(' Error al obtener productos:', error);
     return [];
   }
 }
@@ -173,15 +173,15 @@ export async function getVentifyProductById(productId: string): Promise<Product 
     const product = allProducts.find(p => p.id === productId);
     
     if (!product) {
-      console.warn('⚠️ Producto no encontrado:', productId);
+      console.warn(' Producto no encontrado:', productId);
       return null;
     }
     
-    console.log('✅ Producto encontrado:', product.nombre);
+    console.log(' Producto encontrado:', product.nombre);
     return product;
     
   } catch (error) {
-    console.error('❌ Error al obtener producto:', error);
+    console.error(' Error al obtener producto:', error);
     return null;
   }
 }
@@ -197,7 +197,7 @@ export async function createVentifyOrder(orderData: any) {
 
     const url = `${config.apiUrl}/api/public/stores/${config.accountId}/orders`;
     
-    console.log('🔄 Creando orden en Ventify:', url);
+    console.log(' Creando orden en Ventify:', url);
 
     const response = await fetch(url, {
       method: 'POST',
@@ -215,7 +215,7 @@ export async function createVentifyOrder(orderData: any) {
 
     const data = await response.json();
     
-    console.log('✅ Orden creada en Ventify');
+    console.log(' Orden creada en Ventify');
 
     return {
       success: true,
@@ -223,7 +223,7 @@ export async function createVentifyOrder(orderData: any) {
       timestamp: new Date().toISOString(),
     };
   } catch (error) {
-    console.error('❌ Error al crear orden en Ventify:', error);
+    console.error(' Error al crear orden en Ventify:', error);
     
     return {
       success: false,

@@ -76,7 +76,7 @@ export default function SearchModal({ isOpen, onClose, products }: SearchModalPr
         <div className="max-h-[60vh] overflow-y-auto p-2">
           {searchTerm && results.length === 0 && (
             <div className="p-8 text-center text-gray-400 font-lato">
-              No encontramos productos que coincidan con "{searchTerm}" 🧶
+              No encontramos productos que coincidan con "{searchTerm}" 
             </div>
           )}
 
@@ -105,7 +105,7 @@ export default function SearchModal({ isOpen, onClose, products }: SearchModalPr
           
           {!searchTerm && (
             <div className="p-8 text-center">
-              <div className="text-6xl mb-4">🔍</div>
+              <div className="text-6xl mb-4"></div>
               <p className="text-sm text-gray-400 font-lato">
                 Escribe el nombre de tu personaje favorito o regalo...
               </p>

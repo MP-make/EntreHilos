@@ -4,10 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/lib/ventify";
 import { slugify } from "@/lib/utils";
-import { Sparkles, Heart, Package, Truck, Plus } from "lucide-react";
+import { Sparkles, Heart, Package, Truck } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { useCart } from "@/context/CartContext";
+import { loadExtras } from "@/lib/extras-cache";
 import QuickViewDrawer from "@/components/QuickViewDrawer";
+import ProductCard from "@/components/ProductCard";
 
 interface HomeClientProps {
   products: Product[];
@@ -45,7 +47,7 @@ function HeroCarousel({ products }: { products: any[] }) {
       isFlyer: false,
       badge: 'Especial',
       title: 'Haz que su corazón',
-      titleHighlight: 'lata más fuerte ❤️',
+      titleHighlight: 'lata más fuerte ',
       subtitle: 'Arreglos personalizados, globos y detalles únicos en Pisco.',
       description: 'Porque cada momento merece ser celebrado.',
       image: products.find(p => p?.nombre?.toLowerCase().includes('snoopy'))?.imagen || products.find(p => p?.nombre?.toLowerCase().includes('ramo'))?.imagen || '/logo.png',
@@ -56,7 +58,7 @@ function HeroCarousel({ products }: { products: any[] }) {
       isFlyer: false,
       badge: 'Tus Personajes Favoritos',
       title: 'Imagina tu personaje favorito',
-      titleHighlight: 'tejido a crochet ✨',
+      titleHighlight: 'tejido a crochet ',
       subtitle: 'Creamos el amigurumi de tus sueños',
       description: 'Cada puntada lleva dedicación y amor',
       image: products.find(p => p?.nombre?.toLowerCase().includes('messi'))?.imagen || products.find(p => p?.nombre?.toLowerCase().includes('goku') || p?.nombre?.toLowerCase().includes('naruto'))?.imagen || '/logo.png',
@@ -67,7 +69,7 @@ function HeroCarousel({ products }: { products: any[] }) {
       isFlyer: false,
       badge: 'A Tu Medida',
       title: 'Crea algo especial',
-      titleHighlight: 'para alguien especial 💝',
+      titleHighlight: 'para alguien especial ',
       subtitle: 'Cajas decoradas, tulipanes y diseños únicos hechos para ti',
       description: 'Convierte tus ideas en realidad con nuestros diseños',
       image: products.find(p => p?.nombre?.toLowerCase().includes('cajita') && p?.nombre?.toLowerCase().includes('tulipan'))?.imagen || products.find(p => p?.nombre?.toLowerCase().includes('caja'))?.imagen || '/logo.png',
@@ -151,7 +153,7 @@ function HeroCarousel({ products }: { products: any[] }) {
                       style={{ backgroundColor: BRAND.roseSoft, color: BRAND.roseDark, borderColor: BRAND.rose }}
                     >
                       <span className="text-sm md:text-base">
-                        {index === 1 ? '💝' : index === 2 ? '🧸' : '🖼️'}
+                        {index === 1 ? '' : index === 2 ? '' : ''}
                       </span>
                       <span className="font-lato text-xs md:text-sm font-semibold tracking-wide">{slide.badge}</span>
                     </div>
@@ -259,122 +261,16 @@ function getAutoDescription(category: string, description?: string): string {
   return autoDescriptions[category] || autoDescriptions['Otros'];
 }
 
-// ==================== PRODUCT CARD ====================
-// El botón "Agregar" ahora está SIEMPRE visible (no depende de :hover),
-// porque en mobile/tablet no hay hover y el botón simplemente no aparecía.
-
-function ProductCard({ producto, onQuickView }: { producto: any; onQuickView: (p: any) => void }) {
-  const { addToCart } = useCart();
-
-  const isAmigurumiOrCaja = producto.sku.startsWith('Amigu-') || producto.sku.startsWith('Caja-');
-  const soldOut = producto.stock === 0;
-  const lowStock = producto.stock > 0 && producto.stock <= 5;
-  const category = getCategoryBySku(producto.sku);
-
-  const stockLabel = soldOut
-    ? (isAmigurumiOrCaja ? 'A pedido' : 'Agotado')
-    : lowStock
-      ? `Últimas ${producto.stock} unidades`
-      : null;
-
-  const disabled = soldOut && !isAmigurumiOrCaja;
-
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.stopPropagation();
-
-    if (soldOut && isAmigurumiOrCaja) {
-      const productoData = encodeURIComponent(JSON.stringify({
-        id: producto.id,
-        nombre: producto.nombre,
-        precio: producto.precio,
-        imagen: producto.imagen,
-        sku: producto.sku
-      }));
-      window.location.href = `/pedido-personalizado?producto=${productoData}`;
-      return;
-    }
-    if (soldOut) return;
-
-    addToCart(producto);
-  };
-
-  return (
-    <div className="group cursor-pointer" onClick={() => onQuickView(producto)}>
-      <div className={`relative aspect-[4/5] rounded-xl overflow-hidden bg-[#F3EFE9] ${disabled ? 'opacity-50' : ''}`}>
-        <Image
-          src={producto.imagen}
-          alt={producto.nombre}
-          fill
-          className="object-cover group-hover:scale-[1.04] transition-transform duration-500 ease-out"
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-        />
-
-        {/* Hover overlay + "ver más" — solo desktop */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
-          <span
-            className="font-lato text-sm font-semibold text-white opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0 bg-white/20 backdrop-blur-sm px-5 py-2 rounded-full pointer-events-none"
-          >
-            ver más
-          </span>
-        </div>
-
-        {stockLabel && (
-          <span
-            className="absolute bottom-3 left-3 px-2.5 py-1 rounded-full text-[11px] font-lato font-medium bg-white/90 backdrop-blur-sm"
-            style={{ color: soldOut ? BRAND.inkSoft : BRAND.gold }}
-          >
-            {stockLabel}
-          </span>
-        )}
-      </div>
-
-      <div className="pt-3">
-        <p className="font-lato text-[11px] uppercase tracking-[0.12em] mb-1" style={{ color: BRAND.inkSoft }}>
-          {category}
-        </p>
-
-        <h3
-          className="font-playfair text-[16px] sm:text-[17px] leading-snug font-medium mb-2 line-clamp-1"
-          style={{ color: disabled ? BRAND.inkSoft : BRAND.ink }}
-        >
-          {producto.nombre}
-        </h3>
-
-        <div className="flex items-center justify-between gap-2">
-          <span
-            className="font-lato text-base font-semibold whitespace-nowrap"
-            style={{ color: disabled ? BRAND.inkSoft : BRAND.roseDark }}
-          >
-            S/ {producto.precio.toFixed(2)}
-          </span>
-
-          <button
-            onClick={handleAddToCart}
-            disabled={disabled}
-            className="flex items-center gap-1 font-lato text-xs font-semibold pl-2.5 pr-3 py-1.5 rounded-full transition-colors shrink-0"
-            style={{
-              backgroundColor: disabled ? '#F1EAE2' : '#EE6B8D',
-              color: disabled ? '#B8AC9F' : 'white',
-              cursor: disabled ? 'not-allowed' : 'pointer',
-            }}
-            onMouseEnter={(e) => { if (!disabled) e.currentTarget.style.backgroundColor = '#C04267'; }}
-            onMouseLeave={(e) => { if (!disabled) e.currentTarget.style.backgroundColor = '#EE6B8D'; }}
-          >
-            {!disabled && <Plus size={13} strokeWidth={2.5} />}
-            {disabled ? 'Agotado' : soldOut ? 'Pedir' : 'Agregar'}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ==================== COMPONENTE PRINCIPAL ====================
 
 export default function HomeClient({ products }: HomeClientProps) {
   const [activeTab, setActiveTab] = useState<TabType>('Ramos');
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
   const { addToCart } = useCart();
+
+  useEffect(() => {
+    loadExtras(() => {});
+  }, []);
 
   const enrichedProducts = products.map(product => ({
     ...product,

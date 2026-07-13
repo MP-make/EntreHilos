@@ -3,8 +3,10 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { Calendar, Clock, MessageCircle, CheckCircle } from "lucide-react";
+import { useToast } from "@/components/Toast";
 
 function PedidoPersonalizadoContent() {
+  const { showToast } = useToast();
   const searchParams = useSearchParams();
   const [producto, setProducto] = useState<any>(null);
   const [formData, setFormData] = useState({
@@ -33,43 +35,42 @@ function PedidoPersonalizadoContent() {
     e.preventDefault();
 
     if (!formData.fechaEntrega) {
-      alert("Por favor indica la fecha de entrega deseada");
+      showToast("Por favor indica la fecha de entrega deseada", "warning");
       return;
     }
 
-    // Validar que la fecha sea al menos 2 semanas adelante
     const fechaSeleccionada = new Date(formData.fechaEntrega);
     const fechaMinima = new Date();
-    fechaMinima.setDate(fechaMinima.getDate() + 14); // 14 días = 2 semanas
+    fechaMinima.setDate(fechaMinima.getDate() + 14);
 
     if (fechaSeleccionada < fechaMinima) {
-      alert("⚠️ El tiempo mínimo de producción es de 1-2 semanas. Por favor selecciona una fecha posterior.");
+      showToast("El tiempo mínimo de producción es de 1-2 semanas. Selecciona una fecha posterior.", "warning");
       return;
     }
 
     // Construir mensaje de WhatsApp
     const mensaje = `
-🎨 *PEDIDO PERSONALIZADO - Entre Hilos* 💜
+ *PEDIDO PERSONALIZADO - Entre Hilos* 
 
-📦 *Producto:* ${producto?.nombre || "Producto personalizado"}
-💰 *Precio:* S/ ${producto?.precio?.toFixed(2) || "0.00"}
+ *Producto:* ${producto?.nombre || "Producto personalizado"}
+ *Precio:* S/ ${producto?.precio?.toFixed(2) || "0.00"}
 
-✨ *DETALLES DEL PEDIDO:*
-${formData.detalles ? `📝 Especificaciones: ${formData.detalles}` : ""}
-${formData.colores ? `🎨 Colores: ${formData.colores}` : ""}
-${formData.tamano ? `📏 Tamaño: ${formData.tamano}` : ""}
-${formData.extras ? `➕ Extras: ${formData.extras}` : ""}
+ *DETALLES DEL PEDIDO:*
+${formData.detalles ? ` Especificaciones: ${formData.detalles}` : ""}
+${formData.colores ? ` Colores: ${formData.colores}` : ""}
+${formData.tamano ? ` Tamaño: ${formData.tamano}` : ""}
+${formData.extras ? ` Extras: ${formData.extras}` : ""}
 
-📅 *Fecha de entrega deseada:* ${new Date(formData.fechaEntrega).toLocaleDateString("es-PE", {
+ *Fecha de entrega deseada:* ${new Date(formData.fechaEntrega).toLocaleDateString("es-PE", {
       day: "numeric",
       month: "long",
       year: "numeric",
     })}
 
-⏱️ *Tiempo de producción:* 1-2 semanas mínimo
+⏱ *Tiempo de producción:* 1-2 semanas mínimo
 
 ---
-Deseo confirmar este pedido personalizado. ¡Gracias! 😊
+Deseo confirmar este pedido personalizado. ¡Gracias! 
     `.trim();
 
     const whatsappUrl = `https://wa.me/51902578295?text=${encodeURIComponent(mensaje)}`;

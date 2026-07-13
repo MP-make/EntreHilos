@@ -6,12 +6,14 @@ import { ShoppingBag, Search, Truck, Clock, Menu, X } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useState, useEffect } from "react";
 import SearchModal from "@/components/SearchModal";
+import CartDrawer from "@/components/CartDrawer";
 import { getVentifyProducts } from "@/lib/ventify";
 import { Product } from "@/lib/ventify";
 
 export default function Navbar() {
   const { totalItems } = useCart();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
 
@@ -38,9 +40,10 @@ export default function Navbar() {
 
   const menuItems = [
     { href: "/", label: "Inicio", highlight: false },
-    { href: "/category/dia-de-la-madre", label: "Día de la Madre 🌸", highlight: true }, 
-    { href: "/category/dia-de-la-mujer", label: "Día de la Mujer 💜", highlight: false },
-    { href: "/category/san-valentin", label: "San Valentín 💘", highlight: false },
+    { href: "/category/dia-de-la-novia", label: "Día de la Novia", highlight: true },
+    { href: "/category/dia-de-la-madre", label: "Día de la Madre", highlight: false }, 
+    { href: "/category/dia-de-la-mujer", label: "Día de la Mujer", highlight: false },
+    { href: "/category/san-valentin", label: "San Valentín", highlight: false },
     { href: "/category/flores-amarillas", label: "Flores Amarillas", highlight: false },
     { href: "/personalizados", label: "Personalizados", highlight: false },
   ];
@@ -51,7 +54,7 @@ export default function Navbar() {
       <div className="bg-[#ec4899] text-white py-2 sm:py-2.5 px-2 sm:px-4">
         <div className="max-w-7xl mx-auto text-center">
           <p className="font-lato text-xs sm:text-sm md:text-base font-semibold tracking-wide">
-            🌸 ¡Campaña Día de la Madre! Reserva el regalo perfecto para mamá 🌸
+             ¡Campaña Día de la Madre! Reserva el regalo perfecto para mamá 
           </p>
         </div>
       </div>
@@ -91,10 +94,10 @@ export default function Navbar() {
               {/* TEXTO MÓVIL CENTRAL */}
               <div className="flex lg:hidden flex-1 justify-center px-1">
                 <Link 
-                  href="/category/dia-de-la-madre"
+                  href="/category/dia-de-la-novia"
                   className="font-playfair text-base sm:text-lg font-medium text-[#C04267] border-b border-[#C04267]/30 pb-0.5 hover:text-[#EE6B8D] transition-colors whitespace-nowrap"
                 >
-                  Día de la Madre 🌸
+                  Día de la Novia
                 </Link>
               </div>
 
@@ -126,9 +129,9 @@ export default function Navbar() {
                   <Search size={20} className="sm:w-5 sm:h-5 text-[#5C4040]" />
                 </button>
 
-                {/* Carrito con badge */}
-                <Link 
-                  href="/cart"
+                {/* Carrito con badge — abre drawer */}
+                <button
+                  onClick={() => setIsCartOpen(true)}
                   className="relative p-1.5 sm:p-2 hover:bg-[#FDF4F7] rounded-full transition-all duration-300 group"
                 >
                   <ShoppingBag size={22} className="sm:w-[22px] sm:h-[22px] text-[#C04267] group-hover:text-[#EE6B8D]" />
@@ -137,7 +140,7 @@ export default function Navbar() {
                       {totalItems}
                     </span>
                   )}
-                </Link>
+                </button>
 
                 {/* Botón Hamburguesa - Solo Móvil */}
                 <button 
@@ -235,6 +238,12 @@ export default function Navbar() {
         isOpen={isSearchOpen} 
         onClose={() => setIsSearchOpen(false)} 
         products={products} 
+      />
+
+      {/* Cart Drawer */}
+      <CartDrawer 
+        isOpen={isCartOpen} 
+        onClose={() => setIsCartOpen(false)} 
       />
 
       {/* Estilos para animaciones */}

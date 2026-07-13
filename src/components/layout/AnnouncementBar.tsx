@@ -24,7 +24,7 @@ export default function AnnouncementBar() {
       <div className="bg-[#ec4899] text-white py-2.5 px-4">
         <div className="max-w-7xl mx-auto text-center">
           <p className="font-lato text-sm md:text-base font-semibold tracking-wide">
-            💜 ¡Modo San Valentín Activado! Regalos y Decoraciones 💜
+             ¡Modo San Valentín Activado! Regalos y Decoraciones 
           </p>
         </div>
       </div>

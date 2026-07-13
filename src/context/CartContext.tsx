@@ -1,6 +1,7 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Product } from '@/lib/ventify';
+import { useToast } from '@/components/Toast';
 
 // 1. Nueva Interfaz para los Extras (CORREGIDA PARA ACEPTAR NULL)
 export interface CartExtra {
@@ -36,6 +37,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isClient, setIsClient] = useState(false);
+  const { showToast } = useToast();
 
   useEffect(() => {
     setIsClient(true);
@@ -68,7 +70,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
       if (existingItem) {
         if (!isAmigurumiOrCaja && existingItem.quantity >= product.stock) {
-          alert(`Solo hay ${product.stock} unidades disponibles de ${product.nombre}`);
+          showToast(`Solo hay ${product.stock} unidades disponibles de ${product.nombre}`, "warning");
           return prevItems;
         }
         return prevItems.map((item) =>
@@ -76,7 +78,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         );
       } else {
         if (product.stock === 0 && !isAmigurumiOrCaja) {
-          alert('Producto sin stock');
+          showToast("Producto sin stock", "error");
           return prevItems;
         }
         return [...prevItems, { ...product, quantity: 1, extras: [] }];
@@ -98,7 +100,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           const newQuantity = isAmigurumiOrCaja ? quantity : Math.min(quantity, item.stock);
           
           if (!isAmigurumiOrCaja && newQuantity < quantity) {
-            alert(`Solo hay ${item.stock} unidades disponibles de ${item.nombre}`);
+            showToast(`Solo hay ${item.stock} unidades disponibles de ${item.nombre}`, "warning");
           }
           return { ...item, quantity: newQuantity };
         }
@@ -114,7 +116,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         
         if (existingExtra) {
           if (existingExtra.cantidad >= extraProduct.stock) {
-            alert(`Stock límite alcanzado: Solo nos quedan ${extraProduct.stock} de ${extraProduct.nombre}`);
+            showToast(`Stock límite: solo quedan ${extraProduct.stock} de ${extraProduct.nombre}`, "warning");
             return item;
           }
           return {
@@ -123,7 +125,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           };
         } else {
           if (extraProduct.stock === 0) {
-            alert(`¡Lo sentimos! ${extraProduct.nombre} está agotado por el momento.`);
+            showToast(`${extraProduct.nombre} está agotado por el momento`, "error");
             return item;
           }
           return {
@@ -165,7 +167,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
             if (e.id === extraId) {
               const newQuantity = Math.min(quantity, e.stock);
               if (newQuantity < quantity) {
-                alert(`Solo nos quedan ${e.stock} de ${e.nombre}`);
+                showToast(`Solo quedan ${e.stock} de ${e.nombre}`, "warning");
               }
               return { ...e, cantidad: newQuantity };
             }
@@ -193,7 +195,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, 0);
 
   const getWhatsAppMessage = () => {
-    let message = "🛍️ *NUEVO PEDIDO - ENTRE HILOS* 🛍️\n\n";
+    let message = " *NUEVO PEDIDO - ENTRE HILOS* \n\n";
     
     items.forEach((item, index) => {
       message += `*${index + 1}. ${item.nombre}*\n`;
@@ -201,7 +203,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       message += `   - Precio: S/ ${(item.precio * item.quantity).toFixed(2)}\n`;
       
       if (item.extras && item.extras.length > 0) {
-        message += `   ✨ *Extras agregados a este producto:*\n`;
+        message += `    *Extras agregados a este producto:*\n`;
         item.extras.forEach(extra => {
           message += `      + ${extra.cantidad}x ${extra.nombre} (S/ ${(extra.precio * extra.cantidad).toFixed(2)})\n`;
         });
@@ -210,9 +212,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
     
     message += `━━━━━━━━━━━━━━━━━━\n`;
-    message += `💰 *TOTAL A PAGAR: S/ ${totalPrice.toFixed(2)}*\n`;
+    message += ` *TOTAL A PAGAR: S/ ${totalPrice.toFixed(2)}*\n`;
     message += `━━━━━━━━━━━━━━━━━━\n\n`;
-    message += `¡Hola! Me gustaría confirmar este pedido por favor. 💖`;
+    message += `¡Hola! Me gustaría confirmar este pedido por favor. `;
     
     return encodeURIComponent(message);
   };

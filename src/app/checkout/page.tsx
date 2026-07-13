@@ -3,10 +3,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { ArrowLeft, Trash2, Plus, Minus, ShoppingBag, CheckCircle, Sparkles, ChevronRight, X, Gift } from "lucide-react";
+import { loadExtras } from "@/lib/extras-cache";
 import { useState, useEffect } from "react";
-import { getVentifyProducts, Product } from "@/lib/ventify";
+import { Product } from "@/lib/ventify";
+import { useToast } from "@/components/Toast";
 
 export default function CartPage() {
+  const { showToast } = useToast();
   const { 
     items, 
     removeFromCart, 
@@ -22,22 +25,14 @@ export default function CartPage() {
   const [availableExtras, setAvailableExtras] = useState<Product[]>([]);
   const [activeItemForExtras, setActiveItemForExtras] = useState<string | null>(null);
 
-  // Cargar productos de Ventify y filtrar solo los que son extras
+  // Cargar extras (cacheados)
   useEffect(() => {
-    const fetchExtras = async () => {
-      const allProducts = await getVentifyProducts();
-      const extras = allProducts.filter(p => 
-        p.categoriaOriginal?.toLowerCase().includes('extras') ||
-        p.sku.startsWith('Extra-')
-      );
-      setAvailableExtras(extras);
-    };
-    fetchExtras();
+    loadExtras(setAvailableExtras);
   }, []);
 
   const handleCheckout = () => {
     if (items.length === 0) {
-      alert("Tu carrito está vacío");
+      showToast("Tu carrito está vacío", "warning");
       return;
     }
     const whatsappUrl = `https://wa.me/51902578295?text=${getWhatsAppMessage()}`;
@@ -53,7 +48,7 @@ export default function CartPage() {
             Tu carrito está vacío
           </h2>
           <p className="font-quicksand text-sm sm:text-base text-gray-600 mb-6 sm:mb-8 max-w-md mx-auto">
-            ¡Agrega productos y empieza a crear tu detalle perfecto! 💖
+            ¡Agrega productos y empieza a crear tu detalle perfecto! 
           </p>
           <Link
             href="/"
@@ -95,7 +90,7 @@ export default function CartPage() {
           <div className="overflow-y-auto p-4 sm:p-6 bg-gray-50/50 space-y-6 sm:space-y-8">
             {extrasLucesGlobos.length > 0 && (
               <div>
-                <h4 className="font-quicksand font-bold text-gray-700 uppercase tracking-wider text-xs mb-3 sm:mb-4">🌟 Luces & Globos</h4>
+                <h4 className="font-quicksand font-bold text-gray-700 uppercase tracking-wider text-xs mb-3 sm:mb-4"> Luces & Globos</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   {extrasLucesGlobos.map(extra => (
                     <ExtraOptionCard key={extra.id} extra={extra} currentItem={currentItem} />
@@ -105,7 +100,7 @@ export default function CartPage() {
             )}
             {extrasDulces.length > 0 && (
               <div>
-                <h4 className="font-quicksand font-bold text-gray-700 uppercase tracking-wider text-xs mb-3 sm:mb-4">🍫 Chocolates & Dulces</h4>
+                <h4 className="font-quicksand font-bold text-gray-700 uppercase tracking-wider text-xs mb-3 sm:mb-4"> Chocolates & Dulces</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   {extrasDulces.map(extra => (
                     <ExtraOptionCard key={extra.id} extra={extra} currentItem={currentItem} />
@@ -115,7 +110,7 @@ export default function CartPage() {
             )}
             {extrasFlores.length > 0 && (
               <div>
-                <h4 className="font-quicksand font-bold text-gray-700 uppercase tracking-wider text-xs mb-3 sm:mb-4">💐 Flores Adicionales</h4>
+                <h4 className="font-quicksand font-bold text-gray-700 uppercase tracking-wider text-xs mb-3 sm:mb-4"> Flores Adicionales</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   {extrasFlores.map(extra => (
                     <ExtraOptionCard key={extra.id} extra={extra} currentItem={currentItem} />

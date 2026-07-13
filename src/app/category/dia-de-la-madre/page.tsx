@@ -3,13 +3,31 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { getVentifyProducts } from "@/lib/ventify";
-import { slugify } from "@/lib/utils";
-import { useCart } from "@/context/CartContext";
 import { MessageCircle } from "lucide-react";
+import { useCart } from "@/context/CartContext";
+import { loadExtras } from "@/lib/extras-cache";
+import ProductCard from "@/components/ProductCard";
+import QuickViewDrawer from "@/components/QuickViewDrawer";
 
 export default function DiaDeLaMadrePage() {
+  const { addToCart } = useCart();
   const [productos, setProductos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+
+  useEffect(() => {
+    loadExtras(() => {});
+  }, []);
+
+  const handleQuickView = (producto: any) => {
+    setSelectedProduct(producto);
+  };
+
+  const handleDrawerAddToCart = (producto: any, quantity: number) => {
+    for (let i = 0; i < quantity; i++) {
+      addToCart(producto);
+    }
+  };
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -34,97 +52,6 @@ export default function DiaDeLaMadrePage() {
     fetchProducts();
   }, []);
 
-  const { addToCart } = useCart();
-
-  const ProductCard = ({ producto }: { producto: any }) => {
-    const isAmigurumiOrCaja = producto.sku.startsWith('Amigu-') || producto.sku.startsWith('Caja-');
-
-    const handleAddToCart = () => {
-      if (producto.stock === 0 && isAmigurumiOrCaja) {
-        const productoData = encodeURIComponent(JSON.stringify({
-          id: producto.id,
-          nombre: producto.nombre,
-          precio: producto.precio,
-          imagen: producto.imagen,
-          sku: producto.sku,
-        }));
-        window.location.href = `/pedido-personalizado?producto=${productoData}`;
-        return;
-      }
-      if (producto.stock === 0) return;
-      addToCart(producto);
-      alert('¡Agregado al carrito! 🌸');
-    };
-
-    const stockLabel =
-      producto.stock === 0
-        ? isAmigurumiOrCaja ? 'A pedido' : 'Agotado'
-        : producto.stock <= 5
-        ? 'Últimas unidades'
-        : `${producto.stock} disponibles`;
-
-    const stockColor =
-      producto.stock === 0
-        ? isAmigurumiOrCaja ? 'text-[#EE6B8D]' : 'text-gray-400'
-        : producto.stock <= 5
-        ? 'text-orange-600'
-        : 'text-gray-600';
-
-    return (
-      <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow p-4">
-        <Link href={`/product/${slugify(producto.nombre)}`} className="block">
-          <div className={`relative aspect-[4/5] bg-white mb-4 overflow-hidden rounded-xl ${producto.stock === 0 && !isAmigurumiOrCaja ? 'opacity-40' : ''}`}>
-            <Image
-              src={producto.imagen}
-              alt={producto.nombre}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-              unoptimized
-            />
-            {producto.stock <= 5 && producto.stock > 0 && (
-              <div className="absolute top-3 right-3 px-2 py-1 bg-[#FFB4A2] text-gray-800 text-xs font-lato font-bold rounded">
-                Últimas unidades
-              </div>
-            )}
-            {producto.stock === 0 && isAmigurumiOrCaja && (
-              <div className="absolute top-3 right-3 px-2 py-1 bg-[#FFB4A2] text-gray-800 text-xs font-lato font-bold rounded">
-                A pedido
-              </div>
-            )}
-          </div>
-          <div className="text-center">
-            <h3 className={`font-playfair text-lg sm:text-xl font-semibold mb-2 transition-colors line-clamp-2 min-h-[3.5rem] ${producto.stock === 0 && !isAmigurumiOrCaja ? 'text-gray-500' : 'text-[#C04267]'}`}>
-              {producto.nombre}
-            </h3>
-            <div className="mb-6">
-              <span className={`font-playfair text-2xl font-medium ${producto.stock === 0 && !isAmigurumiOrCaja ? 'text-gray-400' : 'text-[#EE6B8D]'}`}>
-                S/ {producto.precio.toFixed(2)}
-              </span>
-              <p className={`font-lato text-xs mt-1 font-light ${stockColor}`}>
-                {stockLabel}
-              </p>
-            </div>
-          </div>
-        </Link>
-        <button
-          onClick={handleAddToCart}
-          disabled={producto.stock === 0 && !isAmigurumiOrCaja}
-          className={`font-lato w-full py-2 mt-3 rounded-full font-medium transition-colors ${
-            producto.stock === 0 && !isAmigurumiOrCaja
-              ? 'bg-[#F5E6EA] text-gray-400 cursor-not-allowed'
-              : 'bg-[#EE6B8D] text-white hover:bg-[#C04267]'
-          }`}
-        >
-          {producto.stock === 0 && !isAmigurumiOrCaja
-            ? 'Agotado'
-            : producto.stock === 0 && isAmigurumiOrCaja
-            ? 'A PEDIDO (1-2 semanas)'
-            : 'Agregar al carrito'}
-        </button>
-      </div>
-    );
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-[#FDF4F7] flex items-center justify-center">
@@ -137,7 +64,7 @@ export default function DiaDeLaMadrePage() {
     <div className="min-h-screen bg-[#FDF4F7]">
       {/* HERO BANNER */}
       <section className="relative w-full h-[220px] sm:h-[300px] md:h-[380px] overflow-hidden">
-        {/* 🖥️ Imagen DESKTOP: hidden en móvil, block en lg+ */}
+        {/*  Imagen DESKTOP: hidden en móvil, block en lg+ */}
         <Image
           src="/dia de las madres tarjeta.png"
           alt="Día de la Madre - Entre Hilos"
@@ -146,7 +73,7 @@ export default function DiaDeLaMadrePage() {
           className="object-cover object-center hidden lg:block"
           priority
         />
-        {/* 📱 Imagen MOBILE: block por defecto, hidden en lg+ */}
+        {/*  Imagen MOBILE: block por defecto, hidden en lg+ */}
         <Image
           src="/dia de las madres tarjeta.png"
           alt="Día de la Madre - Entre Hilos Móvil"
@@ -176,7 +103,7 @@ export default function DiaDeLaMadrePage() {
         <section>
           <div className="text-center mb-10">
             <span className="inline-block bg-[#EE6B8D]/10 text-[#C04267] text-xs font-lato font-semibold px-4 py-1.5 rounded-full border border-[#EE6B8D]/30 mb-3">
-              🌸 Colección Especial
+               Colección Especial
             </span>
             <h2 className="font-playfair text-3xl md:text-4xl font-semibold text-[#C04267]">
               Detalles para Mamá
@@ -188,11 +115,11 @@ export default function DiaDeLaMadrePage() {
 
           {productos.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10 lg:gap-x-10 lg:gap-y-14">
-              {productos.map(p => <ProductCard key={p.id} producto={p} />)}
+              {productos.map(p => <ProductCard key={p.id} producto={p} onQuickView={handleQuickView} />)}
             </div>
           ) : (
             <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-[#FDE8EF] max-w-2xl mx-auto">
-              <span className="text-6xl block mb-4">🌸</span>
+              <span className="text-6xl block mb-4"></span>
               <p className="font-playfair text-3xl text-[#C04267] mb-3 font-semibold">
                 ¡Estamos preparando sorpresas!
               </p>
@@ -209,6 +136,14 @@ export default function DiaDeLaMadrePage() {
           )}
         </section>
       </div>
+
+      {selectedProduct && (
+        <QuickViewDrawer
+          product={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+          onAddToCart={handleDrawerAddToCart}
+        />
+      )}
     </div>
   );
 }

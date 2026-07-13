@@ -1,13 +1,15 @@
 "use client";
-import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { getVentifyProducts } from "@/lib/ventify";
-import { slugify } from "@/lib/utils";
 import { notFound } from "next/navigation";
 import { useCart } from "@/context/CartContext";
+import { loadExtras } from "@/lib/extras-cache";
+import ProductCard from "@/components/ProductCard";
+import QuickViewDrawer from "@/components/QuickViewDrawer";
 
 const categoryTitles: Record<string, string> = {
+  'dia-de-la-novia': 'Día de la Novia',
   'dia-de-la-mujer': 'Día de la Mujer',
   'san-valentin': 'San Valentín',
   'dia-de-la-madre': 'Día de la Madre',
@@ -17,7 +19,8 @@ const categoryTitles: Record<string, string> = {
 };
 
 const categoryDescriptions: Record<string, string> = {
-  'dia-de-la-mujer': 'Detalles únicos tejidos con amor para conmemorar su día 💜',
+  'dia-de-la-novia': 'Detalles únicos y románticos para celebrar tu amor',
+  'dia-de-la-mujer': 'Detalles únicos tejidos con amor para conmemorar su día ',
   'san-valentin': 'Regalos perfectos para expresar tu amor',
   'dia-de-la-madre': 'Detalles eternos para mamá',
   'flores-amarillas': 'Flores amarillas eternas que nunca se marchitan',
@@ -28,22 +31,39 @@ const categoryDescriptions: Record<string, string> = {
 // Función para obtener un icono según la categoría
 const getCategoryIcon = (slug: string) => {
   switch(slug) {
-    case 'dia-de-la-madre': return '🌸';
-    case 'san-valentin': return '💝';
-    case 'dia-de-la-mujer': return '💜';
-    case 'flores-amarillas': return '🌻';
-    case 'hotwheels': return '🏎️';
-    case 'personalizados': return '✨';
-    default: return '🎀';
+    case 'dia-de-la-novia': return '';
+    case 'dia-de-la-madre': return '';
+    case 'san-valentin': return '';
+    case 'dia-de-la-mujer': return '';
+    case 'flores-amarillas': return '';
+    case 'hotwheels': return '';
+    case 'personalizados': return '';
+    default: return '';
   }
 };
 
 export default function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { addToCart } = useCart();
   const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
   const [categoryTitle, setCategoryTitle] = useState('');
   const [categoryDescription, setCategoryDescription] = useState('');
   const [currentSlug, setCurrentSlug] = useState('');
   const [loading, setLoading] = useState(true);
+  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+
+  useEffect(() => {
+    loadExtras(() => {});
+  }, []);
+
+  const handleQuickView = (producto: any) => {
+    setSelectedProduct(producto);
+  };
+
+  const handleDrawerAddToCart = (producto: any, quantity: number) => {
+    for (let i = 0; i < quantity; i++) {
+      addToCart(producto);
+    }
+  };
 
   useEffect(() => {
     const fetchCategory = async () => {
@@ -66,6 +86,14 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
             (p.sku.startsWith('Ramos-') ||
             ['Caja-001', 'Caja-002', 'Caja-003'].includes(p.sku)) &&
             p.stock > 0
+          );
+          products.sort((a, b) => b.stock - a.stock);
+          break;
+
+        case 'dia-de-la-novia':
+          products = allProducts.filter(p =>
+            p.sku.startsWith('Ramos-') ||
+            ['Caja-001', 'Caja-002', 'Caja-003'].includes(p.sku)
           );
           products.sort((a, b) => b.stock - a.stock);
           break;
@@ -110,106 +138,12 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     return (
       <div className="min-h-screen bg-[#FDF4F7] flex items-center justify-center">
         <div className="text-[#EE6B8D] text-lg font-lato animate-pulse flex flex-col items-center gap-3">
-          <span className="text-3xl animate-bounce">🧶</span>
+          <span className="text-3xl animate-bounce"></span>
           Cargando detalles especiales...
         </div>
       </div>
     );
   }
-
-  // Componente de tarjeta de producto
-  const ProductCard = ({ producto }: { producto: any }) => {
-    const { addToCart } = useCart();
-    
-    const isAmigurumiOrCaja = producto.sku.startsWith('Amigu-') || producto.sku.startsWith('Caja-');
-
-    const handleAddToCart = () => {
-      if (producto.stock === 0 && isAmigurumiOrCaja) {
-        const productoData = encodeURIComponent(JSON.stringify({
-          id: producto.id,
-          nombre: producto.nombre,
-          precio: producto.precio,
-          imagen: producto.imagen,
-          sku: producto.sku
-        }));
-        window.location.href = `/pedido-personalizado?producto=${productoData}`;
-        return;
-      }
-      
-      if (producto.stock === 0 && !isAmigurumiOrCaja) return;
-      
-      addToCart(producto);
-      alert('¡Agregado al carrito! 💖');
-    };
-
-    return (
-      <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow p-4">
-        <Link href={`/product/${slugify(producto.nombre)}`} className="block">
-          <div className={`relative aspect-[4/5] bg-white mb-4 overflow-hidden rounded-xl ${producto.stock === 0 && !isAmigurumiOrCaja ? 'opacity-40' : ''}`}>
-            <Image
-              src={producto.imagen}
-              alt={producto.nombre}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-            />
-            
-            {producto.stock <= 5 && producto.stock > 0 && (
-              <div className="absolute top-3 right-3 px-2 py-1 bg-[#FFB4A2] text-gray-800 text-xs font-lato font-bold rounded">
-                Últimas unidades
-              </div>
-            )}
-            
-            {producto.stock === 0 && isAmigurumiOrCaja && (
-              <div className="absolute top-3 right-3 px-2 py-1 bg-[#FFB4A2] text-gray-800 text-xs font-lato font-bold rounded">
-                A pedido
-              </div>
-            )}
-          </div>
-
-          <div className="text-center">
-            <h3 className={`font-playfair text-lg sm:text-xl font-semibold mb-2 transition-colors duration-300 line-clamp-2 min-h-[3.5rem] ${producto.stock === 0 && !isAmigurumiOrCaja ? 'text-gray-500' : 'text-[#C04267]'}`}>
-              {producto.nombre}
-            </h3>
-
-            <p className="font-lato text-sm text-[#6B6B6B] font-light mb-4 line-clamp-2 min-h-[2.5rem]">
-              {producto.descripcion}
-            </p>
-
-            <div className="mb-6">
-              <span className={`font-playfair text-2xl font-semibold ${producto.stock === 0 && !isAmigurumiOrCaja ? 'text-gray-400' : 'text-[#EE6B8D]'}`}>
-                S/ {producto.precio.toFixed(2)}
-              </span>
-              <p className={`font-lato text-xs mt-1.5 font-medium tracking-wide ${
-                producto.stock === 0 ? (isAmigurumiOrCaja ? 'text-[#EE6B8D]' : 'text-gray-400') : 
-                producto.stock <= 5 ? 'text-orange-500' : 
-                'text-[#6B6B6B]'
-              }`}>
-                {producto.stock === 0 ? (isAmigurumiOrCaja ? 'Disponible a pedido' : 'Sin stock por el momento') : 
-                 producto.stock <= 5 ? '¡Casi agotado!' : 
-                 `${producto.stock} disponibles`}
-              </p>
-            </div>
-          </div>
-        </Link>
-
-        <button 
-          onClick={handleAddToCart}
-          disabled={producto.stock === 0 && !isAmigurumiOrCaja}
-          className={`font-lato w-full py-2 mt-3 rounded-full font-medium transition-colors ${
-            producto.stock === 0 && !isAmigurumiOrCaja
-              ? 'bg-[#F5E6EA] text-gray-400 cursor-not-allowed'
-              : 'bg-[#EE6B8D] text-white hover:bg-[#C04267]'
-          }`}
-        >
-          {producto.stock === 0 && !isAmigurumiOrCaja 
-            ? 'Agotado' 
-            : producto.stock === 0 && isAmigurumiOrCaja
-              ? 'SOLICITAR A PEDIDO'
-              : 'Agregar al carrito'}
-        </button>
-      </div>
-    );
-  };
 
   return (
     <div className="min-h-screen bg-[#FDF4F7]">
@@ -236,7 +170,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
       <section className="max-w-7xl mx-auto px-4 py-12 md:py-16">
         {filteredProducts.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-[#FDE8EF] max-w-2xl mx-auto">
-            <span className="text-6xl block mb-4">🧶</span>
+            <span className="text-6xl block mb-4"></span>
             <p className="font-playfair text-3xl text-[#C04267] mb-3 font-semibold">
               ¡Estamos tejiendo cosas nuevas!
             </p>
@@ -265,14 +199,22 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10 lg:gap-x-10 lg:gap-y-14">
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10 lg:gap-x-10 lg:gap-y-14">
               {filteredProducts.map((producto) => (
-                <ProductCard key={producto.id} producto={producto} />
+                <ProductCard key={producto.id} producto={producto} onQuickView={handleQuickView} />
               ))}
             </div>
           </>
         )}
       </section>
+
+      {selectedProduct && (
+        <QuickViewDrawer
+          product={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+          onAddToCart={handleDrawerAddToCart}
+        />
+      )}
     </div>
   );
 }

@@ -1,16 +1,18 @@
-"use client"; // 👈 Esto permite la interactividad
+"use client"; //  Esto permite la interactividad
 import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { Product } from "@/lib/ventify";
+import { useToast } from "@/components/Toast";
 
 export default function AddToCartBtn({ product }: { product: Product }) {
   const { addToCart } = useCart();
+  const { showToast } = useToast();
   const hasStock = product.stock > 0;
 
   const handleAddToCart = () => {
     if (!hasStock) return;
     addToCart(product);
-    alert('¡Agregado al carrito! 💜');
+    showToast("¡Agregado al carrito!", "success");
   };
 
   return (
@@ -24,7 +26,7 @@ export default function AddToCartBtn({ product }: { product: Product }) {
       }`}
     >
       <ShoppingCart className="w-5 h-5" />
-      {hasStock ? "Añadir al Carrito ❤️" : "Agotado Temporalmente"}
+      {hasStock ? "Añadir al Carrito " : "Agotado Temporalmente"}
     </button>
   );
 }

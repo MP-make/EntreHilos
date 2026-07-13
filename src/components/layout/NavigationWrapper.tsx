@@ -7,8 +7,8 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 export default function NavigationWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   
-  // Verificamos si estamos en la página del carrito
-  const isCartPage = pathname === "/cart";
+  // Verificamos si estamos en la página del checkout
+  const isCartPage = pathname === "/checkout";
 
   return (
     <>

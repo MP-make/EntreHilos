@@ -1,21 +1,29 @@
 import type { Metadata } from "next";
-import { Fredoka, Quicksand } from "next/font/google";
+import { Fredoka, Quicksand, Caveat } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
-import NavigationWrapper from "@/components/layout/NavigationWrapper"; // Importamos nuestro nuevo controlador
+import NavigationWrapper from "@/components/layout/NavigationWrapper";
+import { ToastProvider } from "@/components/Toast";
 
-// Tipografía para títulos (Redondeada, amigable, kawaii pero profesional)
+// Tipografía para títulos (redondeada, amigable, kawaii pero profesional)
 const fredoka = Fredoka({
   variable: "--font-fredoka",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
 });
 
-// Tipografía para cuerpo de texto (Limpia, moderna, suave y súper legible)
+// Tipografía para cuerpo de texto (limpia, moderna, suave y muy legible)
 const quicksand = Quicksand({
   variable: "--font-quicksand",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
+});
+
+// Acento manuscrito — SOLO para detalles puntuales (ver .tag-manuscrita en globals.css)
+const caveat = Caveat({
+  variable: "--font-caveat",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -34,14 +42,15 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body
-        className={`${fredoka.variable} ${quicksand.variable} antialiased`}
+        className={`${fredoka.variable} ${quicksand.variable} ${caveat.variable} antialiased`}
       >
-        <CartProvider>
-          {/* Este NavigationWrapper decidirá inteligentemente cuándo mostrar el Header y Footer */}
-          <NavigationWrapper>
-            {children}
-          </NavigationWrapper>
-        </CartProvider>
+        <ToastProvider>
+          <CartProvider>
+            <NavigationWrapper>
+              {children}
+            </NavigationWrapper>
+          </CartProvider>
+        </ToastProvider>
       </body>
     </html>
   );
