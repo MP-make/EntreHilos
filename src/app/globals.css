@@ -27,18 +27,22 @@
 }
 
 body {
-  /* Aplicamos Recline para el cuerpo del texto (eslogan/subtítulos) */
+  /* Aplicamos Recline para el cuerpo del texto con suavizado premium de fuentes */
   font-family: var(--font-recline), system-ui, -apple-system, sans-serif;
   background-color: var(--background);
   color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
-/* Tipografía para títulos (Gratelos Display) */
+/* ========== Tipografía para Títulos (Gratelos Display) ========== */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-gratelos), sans-serif;
-  font-weight: 600;
+  font-weight: 500; /* Reducido de 600 para que la tipografía luzca más suave y curva */
   color: var(--text-title);
   letter-spacing: -0.02em; /* Junta ligeramente las letras para hacerlas más adorables */
+  line-height: 1.2;        /* Evita que las líneas de títulos largos se abran demasiado en móvil */
 }
 
 /* Estilos para precios (Sutiles y atractivos) */
@@ -46,4 +50,63 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-gratelos), sans-serif;
   font-weight: 500;
   color: var(--brand-dark);
+}
+
+/* ========== Mejoras de Diseño Responsivo y Estructura ========== */
+
+/* Contenedor seguro para que el catálogo no se asfixie en el centro en desktop */
+.catalog-container-safe {
+  width: 100%;
+  max-width: 1280px; /* Ancho ideal (max-w-7xl) para que respire en desktop */
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+/* Grilla Responsiva Optimizada para tus Tarjetas de Ramos */
+.grid-kawaii {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)); /* 2 columnas obligatorias en móvil */
+  gap: 1rem; /* Espacio base en móvil */
+}
+
+@media (min-width: 768px) {
+  .grid-kawaii {
+    grid-template-columns: repeat(3, minmax(0, 1fr)); /* 3 columnas en tablets */
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-kawaii {
+    grid-template-columns: repeat(4, minmax(0, 1fr)); /* 4 columnas elegantes en desktop */
+    gap: 2rem; /* Separación amplia para evitar que los botones se toquen */
+  }
+}
+
+/* Solución al Producto Impar Solo: Hace que el último elemento huérfano ocupe un lugar armónico */
+@media (max-width: 767px) {
+  .grid-kawaii > *:last-child:nth-child(odd) {
+    grid-column: span 2; /* Se expande a las 2 columnas para no dejar el hueco blanco asimétrico */
+    max-width: 100%;
+  }
+}
+
+/* Tarjeta de Producto Individual */
+.card-kawaii {
+  background-color: #ffffff;
+  border-radius: 1rem;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  box-shadow: 0 4px 12px rgba(192, 66, 103, 0.04); /* Sombra sutil con el tono cereza de la marca */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-kawaii:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(192, 66, 103, 0.08);
 }

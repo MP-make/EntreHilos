@@ -75,28 +75,20 @@ export default function Navbar() {
 
         {/* NAVBAR PRINCIPAL */}
         <div className="bg-white/95 backdrop-blur-sm shadow-sm">
-          <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-4">
-            <div className="flex items-center justify-between gap-2">
-              {/* IZQUIERDA: Logo + Texto */}
-              <Link href="/" className="flex items-center gap-2 sm:gap-3 group">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-5">
+            <div className="flex items-center justify-between w-full">
+              {/* BLOQUE IZQUIERDO: Solo Logo (sin texto duplicado) */}
+              <Link href="/" className="flex-shrink-0 group">
                 <Image 
                   src="/logo.png" 
                   alt="Entre Hilos Logo" 
-                  width={50} 
-                  height={50}
-                  className="w-10 h-10 sm:w-[50px] sm:h-[50px] md:w-[60px] md:h-[60px] object-contain rounded-full group-hover:scale-105 transition-transform duration-300"
+                  width={56} 
+                  height={56}
+                  className="w-12 h-12 sm:w-[56px] sm:h-[56px] md:w-[70px] md:h-[70px] object-contain rounded-full group-hover:scale-105 transition-transform duration-300"
                 />
-                <div className="hidden sm:block">
-                  <h1 className="font-playfair font-bold text-lg sm:text-xl md:text-2xl text-[#C04267] leading-tight">
-                    Entre Hilos
-                  </h1>
-                  <p className="font-lato text-[10px] sm:text-xs text-gray-500 tracking-wide">
-                    Decorando momentos
-                  </p>
-                </div>
               </Link>
 
-              {/* === NUEVO: TEXTO MÓVIL CENTRAL (MÁS GRANDE, AL TAMAÑO DEL LOGO) === */}
+              {/* TEXTO MÓVIL CENTRAL */}
               <div className="flex lg:hidden flex-1 justify-center px-1">
                 <Link 
                   href="/category/dia-de-la-madre"
@@ -106,16 +98,16 @@ export default function Navbar() {
                 </Link>
               </div>
 
-              {/* CENTRO: Menú de navegación - Solo Desktop */}
-              <div className="hidden lg:flex items-center gap-4 xl:gap-8">
+              {/* BLOQUE CENTRAL: Navegación - Solo Desktop */}
+              <div className="hidden lg:flex items-center gap-6 xl:gap-8">
                 {menuItems.map((item) => (
                   <Link 
                     key={item.href}
                     href={item.href}
-                    className={`font-lato text-xs xl:text-sm uppercase tracking-wide transition-colors duration-200 ${
+                    className={`font-lato text-sm xl:text-base font-medium tracking-wide transition-colors duration-200 ${
                       item.highlight 
-                        ? 'text-[#C04267] hover:text-[#EE6B8D] font-bold' 
-                        : 'text-gray-700 hover:text-[#EE6B8D]'
+                        ? 'text-[#C04267] hover:text-[#EE6B8D]' 
+                        : 'text-[#5C4040] hover:text-[#EE6B8D]'
                     }`}
                   >
                     {item.label}
@@ -123,15 +115,15 @@ export default function Navbar() {
                 ))}
               </div>
 
-              {/* DERECHA: Iconos */}
-              <div className="flex items-center gap-1 sm:gap-2 md:gap-4">
-                {/* Icono de búsqueda - FUNCIONAL */}
+              {/* BLOQUE DERECHO: Utilidades */}
+              <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
+                {/* Icono de búsqueda */}
                 <button 
                   onClick={() => setIsSearchOpen(true)}
                   className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors"
                   aria-label="Buscar productos"
                 >
-                  <Search size={18} className="sm:w-5 sm:h-5 text-gray-600" />
+                  <Search size={20} className="sm:w-5 sm:h-5 text-[#5C4040]" />
                 </button>
 
                 {/* Carrito con badge */}
@@ -139,7 +131,7 @@ export default function Navbar() {
                   href="/cart"
                   className="relative p-1.5 sm:p-2 hover:bg-[#FDF4F7] rounded-full transition-all duration-300 group"
                 >
-                  <ShoppingBag size={20} className="sm:w-[22px] sm:h-[22px] text-[#C04267] group-hover:text-[#EE6B8D]" />
+                  <ShoppingBag size={22} className="sm:w-[22px] sm:h-[22px] text-[#C04267] group-hover:text-[#EE6B8D]" />
                   {totalItems > 0 && (
                     <span className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 bg-[#E91E63] text-white text-[10px] sm:text-xs font-lato font-bold w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center shadow-md">
                       {totalItems}

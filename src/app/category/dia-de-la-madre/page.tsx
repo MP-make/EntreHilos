@@ -65,7 +65,7 @@ export default function DiaDeLaMadrePage() {
 
     const stockColor =
       producto.stock === 0
-        ? isAmigurumiOrCaja ? 'text-[#EE6B8D]' : 'text-red-600'
+        ? isAmigurumiOrCaja ? 'text-[#EE6B8D]' : 'text-gray-400'
         : producto.stock <= 5
         ? 'text-orange-600'
         : 'text-gray-600';
@@ -73,7 +73,7 @@ export default function DiaDeLaMadrePage() {
     return (
       <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow p-4">
         <Link href={`/product/${slugify(producto.nombre)}`} className="block">
-          <div className="relative aspect-[4/5] bg-white mb-4 overflow-hidden rounded-xl">
+          <div className={`relative aspect-[4/5] bg-white mb-4 overflow-hidden rounded-xl ${producto.stock === 0 && !isAmigurumiOrCaja ? 'opacity-40' : ''}`}>
             <Image
               src={producto.imagen}
               alt={producto.nombre}
@@ -93,11 +93,11 @@ export default function DiaDeLaMadrePage() {
             )}
           </div>
           <div className="text-center">
-            <h3 className="font-playfair text-lg text-[#4A4A4A] mb-1 group-hover:text-[#C04267] transition-colors line-clamp-2 min-h-[3.5rem]">
+            <h3 className={`font-playfair text-lg sm:text-xl font-semibold mb-2 transition-colors line-clamp-2 min-h-[3.5rem] ${producto.stock === 0 && !isAmigurumiOrCaja ? 'text-gray-500' : 'text-[#C04267]'}`}>
               {producto.nombre}
             </h3>
-            <div className="mb-3">
-              <span className="font-playfair text-2xl font-medium text-[#EE6B8D]">
+            <div className="mb-6">
+              <span className={`font-playfair text-2xl font-medium ${producto.stock === 0 && !isAmigurumiOrCaja ? 'text-gray-400' : 'text-[#EE6B8D]'}`}>
                 S/ {producto.precio.toFixed(2)}
               </span>
               <p className={`font-lato text-xs mt-1 font-light ${stockColor}`}>
@@ -109,14 +109,14 @@ export default function DiaDeLaMadrePage() {
         <button
           onClick={handleAddToCart}
           disabled={producto.stock === 0 && !isAmigurumiOrCaja}
-          className={`font-lato w-full py-2 mt-4 rounded-full font-medium transition-colors ${
+          className={`font-lato w-full py-2 mt-3 rounded-full font-medium transition-colors ${
             producto.stock === 0 && !isAmigurumiOrCaja
-              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              : 'bg-[#FDE8EF] text-[#C04267] hover:bg-[#EE6B8D] hover:text-white'
+              ? 'bg-[#F5E6EA] text-gray-400 cursor-not-allowed'
+              : 'bg-[#EE6B8D] text-white hover:bg-[#C04267]'
           }`}
         >
           {producto.stock === 0 && !isAmigurumiOrCaja
-            ? 'AGOTADO'
+            ? 'Agotado'
             : producto.stock === 0 && isAmigurumiOrCaja
             ? 'A PEDIDO (1-2 semanas)'
             : 'Agregar al carrito'}
@@ -171,7 +171,7 @@ export default function DiaDeLaMadrePage() {
         </div>
       </section>
 
-      <div className="max-w-6xl mx-auto px-4 py-12">
+      <div className="max-w-7xl mx-auto px-4 py-12">
         {/* SECCIÓN: PRODUCTOS */}
         <section>
           <div className="text-center mb-10">
@@ -187,7 +187,7 @@ export default function DiaDeLaMadrePage() {
           </div>
 
           {productos.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-8">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10 lg:gap-x-10 lg:gap-y-14">
               {productos.map(p => <ProductCard key={p.id} producto={p} />)}
             </div>
           ) : (

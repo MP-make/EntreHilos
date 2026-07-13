@@ -145,7 +145,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     return (
       <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow p-4">
         <Link href={`/product/${slugify(producto.nombre)}`} className="block">
-          <div className="relative aspect-[4/5] bg-white mb-4 overflow-hidden rounded-xl">
+          <div className={`relative aspect-[4/5] bg-white mb-4 overflow-hidden rounded-xl ${producto.stock === 0 && !isAmigurumiOrCaja ? 'opacity-40' : ''}`}>
             <Image
               src={producto.imagen}
               alt={producto.nombre}
@@ -158,14 +158,6 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                 Últimas unidades
               </div>
             )}
-
-            {producto.stock === 0 && !isAmigurumiOrCaja && (
-              <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px] flex items-center justify-center transition-all duration-300">
-                <span className="font-lato text-xs font-bold text-white tracking-widest bg-gray-900/80 px-6 py-2 rounded-full uppercase shadow-xl">
-                  AGOTADO
-                </span>
-              </div>
-            )}
             
             {producto.stock === 0 && isAmigurumiOrCaja && (
               <div className="absolute top-3 right-3 px-2 py-1 bg-[#FFB4A2] text-gray-800 text-xs font-lato font-bold rounded">
@@ -175,7 +167,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
           </div>
 
           <div className="text-center">
-            <h3 className="font-playfair text-lg md:text-xl text-[#4A4A4A] mb-2 group-hover:text-[#C04267] transition-colors duration-300 line-clamp-2 min-h-[3.5rem]">
+            <h3 className={`font-playfair text-lg sm:text-xl font-semibold mb-2 transition-colors duration-300 line-clamp-2 min-h-[3.5rem] ${producto.stock === 0 && !isAmigurumiOrCaja ? 'text-gray-500' : 'text-[#C04267]'}`}>
               {producto.nombre}
             </h3>
 
@@ -183,8 +175,8 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
               {producto.descripcion}
             </p>
 
-            <div className="mb-5">
-              <span className="font-playfair text-2xl font-semibold text-[#EE6B8D]">
+            <div className="mb-6">
+              <span className={`font-playfair text-2xl font-semibold ${producto.stock === 0 && !isAmigurumiOrCaja ? 'text-gray-400' : 'text-[#EE6B8D]'}`}>
                 S/ {producto.precio.toFixed(2)}
               </span>
               <p className={`font-lato text-xs mt-1.5 font-medium tracking-wide ${
@@ -203,14 +195,14 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
         <button 
           onClick={handleAddToCart}
           disabled={producto.stock === 0 && !isAmigurumiOrCaja}
-          className={`font-lato w-full py-2 mt-4 rounded-full font-medium transition-colors ${
+          className={`font-lato w-full py-2 mt-3 rounded-full font-medium transition-colors ${
             producto.stock === 0 && !isAmigurumiOrCaja
-              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              : 'bg-[#FDE8EF] text-[#C04267] hover:bg-[#EE6B8D] hover:text-white'
+              ? 'bg-[#F5E6EA] text-gray-400 cursor-not-allowed'
+              : 'bg-[#EE6B8D] text-white hover:bg-[#C04267]'
           }`}
         >
           {producto.stock === 0 && !isAmigurumiOrCaja 
-            ? 'AGOTADO' 
+            ? 'Agotado' 
             : producto.stock === 0 && isAmigurumiOrCaja
               ? 'SOLICITAR A PEDIDO'
               : 'Agregar al carrito'}
@@ -241,7 +233,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
       </section>
 
       {/* ==================== GRILLA DE PRODUCTOS ==================== */}
-      <section className="max-w-6xl mx-auto px-4 py-12 md:py-16">
+      <section className="max-w-7xl mx-auto px-4 py-12 md:py-16">
         {filteredProducts.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-[#FDE8EF] max-w-2xl mx-auto">
             <span className="text-6xl block mb-4">🧶</span>
@@ -273,7 +265,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10 lg:gap-x-10 lg:gap-y-14">
               {filteredProducts.map((producto) => (
                 <ProductCard key={producto.id} producto={producto} />
               ))}
