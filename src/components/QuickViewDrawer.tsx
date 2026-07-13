@@ -10,8 +10,8 @@ import { loadExtras } from "@/lib/extras-cache";
 const BRAND = {
   ink: '#2E2422',
   inkSoft: '#6B5D54',
-  rose: '#B23A5C',
-  roseDark: '#8F2C48',
+  rose: '#EE6B8D',
+  roseDark: '#C04267',
   roseSoft: '#F3E1E6',
   clay: '#C97B4A',
   moss: '#6B7A5E',
