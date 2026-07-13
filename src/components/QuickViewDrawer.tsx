@@ -182,7 +182,7 @@ export default function QuickViewDrawer({ product, onClose, onAddToCart }: Quick
 
       <div
         ref={drawerRef}
-        className="fixed top-0 left-0 z-[70] h-full w-full sm:w-[720px] md:w-[860px] lg:w-[960px] bg-white shadow-2xl flex flex-col sm:flex-row animate-slide-in"
+        className="fixed top-0 left-0 z-[70] h-full w-full sm:w-[720px] md:w-[860px] lg:w-[960px] bg-white shadow-2xl flex flex-col sm:flex-row overflow-hidden animate-slide-in"
       >
         {/* ===== LEFT: Photo (desktop only) ===== */}
         <div className="hidden sm:block sm:w-1/2 relative bg-[#F3EFE9]">
@@ -209,7 +209,7 @@ export default function QuickViewDrawer({ product, onClose, onAddToCart }: Quick
         </div>
 
         {/* ===== RIGHT: Content ===== */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           <button
             onClick={handleClose}
             className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm shadow-md flex items-center justify-center hover:bg-gray-100 transition-colors"
@@ -217,32 +217,32 @@ export default function QuickViewDrawer({ product, onClose, onAddToCart }: Quick
             <X size={20} className="text-[#2E2422]" />
           </button>
 
-          {/* Mobile photo (sm only) */}
-          <div className="sm:hidden relative aspect-square bg-[#F3EFE9]">
-            <Image
-              src={product.imagen}
-              alt={product.nombre}
-              fill
-              className="object-cover"
-              sizes="100vw"
-              priority
-            />
-
-            {product.stock <= 5 && product.stock > 0 && (
-              <span className="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-lato font-medium bg-white/90 backdrop-blur-sm shadow-sm" style={{ color: BRAND.gold }}>
-                Últimas {product.stock} unidades
-              </span>
-            )}
-
-            {product.stock === 0 && isAmigurumiOrCaja && (
-              <span className="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-lato font-medium bg-white/90 backdrop-blur-sm shadow-sm" style={{ color: BRAND.clay }}>
-                A pedido
-              </span>
-            )}
-          </div>
-
           {/* Scrollable content */}
           <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            {/* Mobile photo (sm only) — inside scrollable area */}
+            <div className="sm:hidden relative aspect-square bg-[#F3EFE9]">
+              <Image
+                src={product.imagen}
+                alt={product.nombre}
+                fill
+                className="object-cover"
+                sizes="100vw"
+                priority
+              />
+
+              {product.stock <= 5 && product.stock > 0 && (
+                <span className="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-lato font-medium bg-white/90 backdrop-blur-sm shadow-sm" style={{ color: BRAND.gold }}>
+                  Últimas {product.stock} unidades
+                </span>
+              )}
+
+              {product.stock === 0 && isAmigurumiOrCaja && (
+                <span className="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-lato font-medium bg-white/90 backdrop-blur-sm shadow-sm" style={{ color: BRAND.clay }}>
+                  A pedido
+                </span>
+              )}
+            </div>
+
             <div className="px-6 pt-6 pb-4">
               <p className="font-lato text-xs uppercase tracking-[0.12em] mb-2" style={{ color: BRAND.inkSoft }}>
                 {product.sku.startsWith('Ramos-') || ['Caja-001', 'Caja-002', 'Caja-003'].includes(product.sku) ? 'San Valentín'

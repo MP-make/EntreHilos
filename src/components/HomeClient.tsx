@@ -97,7 +97,7 @@ function HeroCarousel({ products }: { products: any[] }) {
             currentSlide === index ? 'opacity-100 relative z-10' : 'opacity-0 absolute inset-0 z-0 pointer-events-none'
           }`}
         >
-          <div className="min-h-[560px] sm:min-h-[520px] md:min-h-[600px] relative" style={{ backgroundColor: BRAND.canvas }}>
+          <div className="h-[560px] sm:h-[520px] md:h-[600px] relative" style={{ backgroundColor: BRAND.canvas }}>
             {slide.isFlyer ? (
               <Link href={slide.link} className="absolute inset-0 w-full h-full block group overflow-hidden">
                 <Image
@@ -125,7 +125,7 @@ function HeroCarousel({ products }: { products: any[] }) {
                   {/* Columna Imagen — en mobile va primero, con margen propio para no pegarse al nav */}
                   <div className="relative order-1 lg:order-2">
                     <div className="relative p-2 rounded-[2rem] border-2 border-dashed" style={{ borderColor: BRAND.rose + '55' }}>
-                      <div className="relative h-[260px] sm:h-[340px] md:h-[480px] rounded-[1.5rem] overflow-hidden shadow-xl bg-gray-100">
+                      <div className="relative h-[320px] sm:h-[340px] md:h-[480px] rounded-[1.5rem] overflow-hidden shadow-xl bg-gray-100">
                         <Image
                           src={slide.image || '/logo.png'}
                           alt={slide.title || "Producto"}
@@ -149,7 +149,7 @@ function HeroCarousel({ products }: { products: any[] }) {
                   <div className="text-center lg:text-left space-y-3 md:space-y-6 order-2 lg:order-1">
 
                     <div
-                      className="inline-flex items-center gap-2 px-4 py-1.5 md:px-5 md:py-2 rounded-full border border-dashed"
+                      className="hidden lg:inline-flex items-center gap-2 px-4 py-1.5 md:px-5 md:py-2 rounded-full border border-dashed"
                       style={{ backgroundColor: BRAND.roseSoft, color: BRAND.roseDark, borderColor: BRAND.rose }}
                     >
                       <span className="text-sm md:text-base">
@@ -158,7 +158,7 @@ function HeroCarousel({ products }: { products: any[] }) {
                       <span className="font-lato text-xs md:text-sm font-semibold tracking-wide">{slide.badge}</span>
                     </div>
 
-                    <div>
+                    <div className="hidden lg:block">
                       <h1
                         className="font-playfair text-[28px] leading-[1.15] sm:text-4xl md:text-5xl lg:text-6xl font-normal sm:leading-[1.05] tracking-tight mb-1 md:mb-2"
                         style={{ color: BRAND.ink }}
@@ -173,10 +173,10 @@ function HeroCarousel({ products }: { products: any[] }) {
                       </h2>
                     </div>
 
-                    <p className="font-lato text-[15px] md:text-lg leading-relaxed" style={{ color: BRAND.inkSoft }}>
+                    <p className="hidden lg:block font-lato text-[15px] md:text-lg leading-relaxed" style={{ color: BRAND.inkSoft }}>
                       {slide.subtitle}
                     </p>
-                    <p className="font-lato text-sm italic" style={{ color: BRAND.inkSoft, opacity: 0.75 }}>
+                    <p className="hidden lg:block font-lato text-sm italic" style={{ color: BRAND.inkSoft, opacity: 0.75 }}>
                       {slide.description}
                     </p>
 

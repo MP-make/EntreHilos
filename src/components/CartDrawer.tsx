@@ -76,7 +76,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     if (!currentItem) return null;
 
     return (
-      <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/40 backdrop-blur-md p-4" onClick={() => setActiveItemForExtras(null)}>
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-md p-4" onClick={() => setActiveItemForExtras(null)}>
         <div className="bg-white rounded-2xl w-full max-w-lg max-h-[80vh] overflow-hidden flex flex-col shadow-2xl" onClick={e => e.stopPropagation()}>
           <div className="p-4 border-b border-gray-100 flex justify-between items-center">
             <h3 className="font-lato text-lg font-semibold" style={{ color: BRAND.roseDark }}>
@@ -173,7 +173,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
       <div
         ref={drawerRef}
-        className={`fixed top-0 right-0 z-[90] h-full w-full sm:w-[420px] bg-white shadow-2xl transition-transform duration-300 ease-out flex flex-col ${
+        className={`fixed top-0 right-0 z-[90] h-screen w-full sm:w-[420px] bg-white shadow-2xl transition-transform duration-300 ease-out flex flex-col overflow-hidden ${
           animate ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
