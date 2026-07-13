@@ -17,7 +17,7 @@ export default function Footer() {
                 height={50}
                 className="object-contain rounded-full"
               />
-              <h3 className="font-playfair text-xl text-[#5E548E] font-semibold">
+              <h3 className="font-playfair text-xl font-semibold" style={{ color: '#C04267' }}>
                 Entre Hilos
               </h3>
             </div>
@@ -30,7 +30,7 @@ export default function Footer() {
 
           {/* Columna 2: Atención al Cliente */}
           <div className="text-left">
-            <h4 className="font-playfair text-base text-[#5E548E] font-semibold mb-4">
+            <h4 className="font-playfair text-base font-semibold mb-4" style={{ color: '#C04267' }}>
               Atención al Cliente
             </h4>
             <ul className="space-y-3 font-lato text-sm">
@@ -72,14 +72,14 @@ export default function Footer() {
 
           {/* Columna 3: Enlaces Rápidos */}
           <div className="text-left">
-            <h4 className="font-playfair text-base text-[#5E548E] font-semibold mb-4">
+            <h4 className="font-playfair text-base font-semibold mb-4" style={{ color: '#C04267' }}>
               Enlaces Rápidos
             </h4>
             <ul className="space-y-3 font-lato text-sm">
               <li>
                 <Link 
                   href="/" 
-                  className="text-[#6B6B6B] hover:text-[#9F86C0] transition-colors duration-200 block"
+                  className="text-[#6B6B6B] hover:text-[#EE6B8D] transition-colors duration-200 block"
                 >
                   Inicio
                 </Link>
@@ -87,7 +87,7 @@ export default function Footer() {
               <li>
                 <Link 
                   href="/nosotros" 
-                  className="text-[#6B6B6B] hover:text-[#9F86C0] transition-colors duration-200 block"
+                  className="text-[#6B6B6B] hover:text-[#EE6B8D] transition-colors duration-200 block"
                 >
                   Nosotros
                 </Link>
@@ -95,7 +95,7 @@ export default function Footer() {
               <li>
                 <Link 
                   href="/politica-privacidad" 
-                  className="text-[#6B6B6B] hover:text-[#9F86C0] transition-colors duration-200 block"
+                  className="text-[#6B6B6B] hover:text-[#EE6B8D] transition-colors duration-200 block"
                 >
                   Política de Privacidad
                 </Link>
@@ -103,7 +103,7 @@ export default function Footer() {
               <li>
                 <Link 
                   href="/libro-reclamaciones" 
-                  className="text-[#6B6B6B] hover:text-[#9F86C0] transition-colors duration-200 block"
+                  className="text-[#6B6B6B] hover:text-[#EE6B8D] transition-colors duration-200 block"
                 >
                   Libro de Reclamaciones
                 </Link>
@@ -113,7 +113,7 @@ export default function Footer() {
 
           {/* Columna 4: Métodos de Pago */}
           <div className="text-left">
-            <h4 className="font-playfair text-base text-[#5E548E] font-semibold mb-4">
+            <h4 className="font-playfair text-base font-semibold mb-4" style={{ color: '#C04267' }}>
               Métodos de Pago
             </h4>
             <ul className="space-y-2 font-lato text-sm text-[#6B6B6B]">
