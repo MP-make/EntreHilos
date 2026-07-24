@@ -4,7 +4,6 @@ import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { Calendar, Clock, MessageCircle, CheckCircle } from "lucide-react";
 import { useToast } from "@/components/Toast";
-import { insertPedidoPersonalizado } from "@/lib/db/pedidos-personalizados";
 
 function PedidoPersonalizadoContent() {
   const { showToast } = useToast();
@@ -61,18 +60,25 @@ function PedidoPersonalizadoContent() {
     setSaving(true);
 
     try {
-      await insertPedidoPersonalizado({
-        nombre_cliente: formData.nombreCliente.trim(),
-        telefono: formData.telefono.trim(),
-        email: formData.email.trim() || undefined,
-        producto_id: producto?.id,
-        producto_nombre: producto?.nombre,
-        producto_precio: producto?.precio,
-        detalles: formData.detalles,
-        colores: formData.colores,
-        tamano: formData.tamano,
-        extras: formData.extras,
-        fecha_entrega: formData.fechaEntrega,
+      await fetch("/api/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "personalizado",
+          data: {
+            nombre_cliente: formData.nombreCliente.trim(),
+            telefono: formData.telefono.trim(),
+            email: formData.email.trim() || undefined,
+            producto_id: producto?.id,
+            producto_nombre: producto?.nombre,
+            producto_precio: producto?.precio,
+            detalles: formData.detalles,
+            colores: formData.colores,
+            tamano: formData.tamano,
+            extras: formData.extras,
+            fecha_entrega: formData.fechaEntrega,
+          }
+        })
       });
 
       showToast("Pedido registrado correctamente", "success");

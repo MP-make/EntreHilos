@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Fredoka, Quicksand, Caveat } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
+import { AuthProvider } from "@/context/AuthContext";
 import NavigationWrapper from "@/components/layout/NavigationWrapper";
 import { ToastProvider } from "@/components/Toast";
 
@@ -44,13 +45,15 @@ export default function RootLayout({
       <body
         className={`${fredoka.variable} ${quicksand.variable} ${caveat.variable} antialiased`}
       >
-        <ToastProvider>
-          <CartProvider>
-            <NavigationWrapper>
-              {children}
-            </NavigationWrapper>
-          </CartProvider>
-        </ToastProvider>
+        <AuthProvider>
+          <ToastProvider>
+            <CartProvider>
+              <NavigationWrapper>
+                {children}
+              </NavigationWrapper>
+            </CartProvider>
+          </ToastProvider>
+        </AuthProvider>
       </body>
     </html>
   );

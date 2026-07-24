@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase/client'
+import { getSupabaseBrowserClient } from '@/lib/supabase/client'
 
 export interface Suscriptor {
   id?: number
@@ -10,7 +10,7 @@ export interface Suscriptor {
 }
 
 export async function insertSuscriptor(data: { email: string; nombre?: string; fuente?: string }) {
-  const { error } = await supabase
+  const { error } = await getSupabaseBrowserClient()
     .from('suscriptores')
     .insert([{ email: data.email, nombre: data.nombre || null, fuente: data.fuente || 'newsletter' }])
 

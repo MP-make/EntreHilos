@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase/client'
+import { getSupabaseBrowserClient } from '@/lib/supabase/client'
 
 export interface LibroReclamacion {
   id?: number
@@ -17,7 +17,7 @@ export interface LibroReclamacion {
 }
 
 export async function insertReclamacion(data: LibroReclamacion) {
-  const { error } = await supabase
+  const { error } = await getSupabaseBrowserClient()
     .from('libro_reclamaciones')
     .insert([data])
 

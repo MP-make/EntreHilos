@@ -55,7 +55,7 @@ export default function WishlistButton({ productoId, productoNombre, productoPre
         className={`transition-all duration-300 ${
           isFav
             ? "fill-[#EE6B8D] text-[#EE6B8D] scale-110"
-            : "text-[#9F86C0] hover:text-[#EE6B8D]"
+            : "text-[#C04267] hover:text-[#EE6B8D]"
         } ${loading ? "animate-pulse" : ""}`}
       />
     </button>

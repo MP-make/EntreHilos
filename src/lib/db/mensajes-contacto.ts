@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase/client'
+import { getSupabaseBrowserClient } from '@/lib/supabase/client'
 
 export interface MensajeContacto {
   id?: number
@@ -12,6 +12,6 @@ export interface MensajeContacto {
 }
 
 export async function insertMensajeContacto(data: MensajeContacto) {
-  const { error } = await supabase.from('mensajes_contacto').insert([data])
+  const { error } = await getSupabaseBrowserClient().from('mensajes_contacto').insert([data])
   if (error) throw error
 }

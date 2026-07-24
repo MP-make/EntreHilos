@@ -15,6 +15,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "ventify-xead3.firebasestorage.app",
       },
+      {
+        protocol: "https",
+        hostname: "rydogoubjnytzfctfnxz.supabase.co",
+      },
     ],
   },
 };

@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingBag, Search, Truck, Clock, Menu, X, ChevronDown, User, LogIn, UserPlus } from "lucide-react";
+import { ShoppingBag, Search, Truck, Clock, Menu, X, ChevronDown, User, LogIn, UserPlus, UserCircle, Package, Bell, LogOut } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useState, useEffect, useRef } from "react";
 import SearchModal from "@/components/SearchModal";
+import QuickViewDrawer from "@/components/QuickViewDrawer";
 import CartDrawer from "@/components/CartDrawer";
 import AuthModal from "@/components/AuthModal";
+import { useAuth } from "@/context/AuthContext";
 import { getVentifyProducts } from "@/lib/ventify";
 import { Product } from "@/lib/ventify";
 
@@ -75,12 +77,25 @@ function Dropdown({ label, items }: DropdownProps) {
 
 export default function Navbar() {
   const { totalItems } = useCart();
+  const { user, signOut } = useAuth();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [authView, setAuthView] = useState<"login" | "register">("login");
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+  const { addToCart } = useCart();
+
+  const handleProductClick = (product: any) => {
+    setSelectedProduct(product);
+  };
+
+  const handleDrawerAddToCart = (product: any, quantity: number) => {
+    for (let i = 0; i < quantity; i++) {
+      addToCart(product);
+    }
+  };
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -223,20 +238,43 @@ export default function Navbar() {
                       isUserOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
                     }`}
                   >
-                    <button
-                      onClick={() => { setIsUserOpen(false); setAuthView("login"); setIsAuthOpen(true); }}
-                      className="flex items-center gap-3 w-full px-5 py-2.5 font-quicksand text-sm text-gray-700 hover:text-[#EE6B8D] hover:bg-[#FDF4F7] transition-colors text-left"
-                    >
-                      <LogIn size={16} />
-                      Iniciar sesión
-                    </button>
-                    <button
-                      onClick={() => { setIsUserOpen(false); setAuthView("register"); setIsAuthOpen(true); }}
-                      className="flex items-center gap-3 w-full px-5 py-2.5 font-quicksand text-sm text-gray-700 hover:text-[#EE6B8D] hover:bg-[#FDF4F7] transition-colors text-left"
-                    >
-                      <UserPlus size={16} />
-                      Registrarse
-                    </button>
+                    {user ? (
+                      <>
+                        <Link
+                          href="/perfil"
+                          onClick={() => setIsUserOpen(false)}
+                          className="flex items-center gap-3 w-full px-5 py-2.5 font-quicksand text-sm text-gray-700 hover:text-[#EE6B8D] hover:bg-[#FDF4F7] transition-colors text-left"
+                        >
+                          <UserCircle size={16} />
+                          Mi perfil
+                        </Link>
+                        <hr className="my-1 border-gray-100" />
+                        <button
+                          onClick={() => { setIsUserOpen(false); signOut(); }}
+                          className="flex items-center gap-3 w-full px-5 py-2.5 font-quicksand text-sm text-red-500 hover:text-red-600 hover:bg-red-50 transition-colors text-left"
+                        >
+                          <LogOut size={16} />
+                          Cerrar sesión
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => { setIsUserOpen(false); setAuthView("login"); setIsAuthOpen(true); }}
+                          className="flex items-center gap-3 w-full px-5 py-2.5 font-quicksand text-sm text-gray-700 hover:text-[#EE6B8D] hover:bg-[#FDF4F7] transition-colors text-left"
+                        >
+                          <LogIn size={16} />
+                          Iniciar sesión
+                        </button>
+                        <button
+                          onClick={() => { setIsUserOpen(false); setAuthView("register"); setIsAuthOpen(true); }}
+                          className="flex items-center gap-3 w-full px-5 py-2.5 font-quicksand text-sm text-gray-700 hover:text-[#EE6B8D] hover:bg-[#FDF4F7] transition-colors text-left"
+                        >
+                          <UserPlus size={16} />
+                          Registrarse
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -358,20 +396,43 @@ export default function Navbar() {
               Día de la Novia
             </Link>
 
-            <button
-              onClick={() => { setIsMobileMenuOpen(false); setAuthView("login"); setIsAuthOpen(true); }}
-              className="flex items-center gap-2 px-6 py-3.5 font-lato text-base text-gray-700 border-l-4 border-transparent hover:border-[#EE6B8D] hover:bg-[#FDF4F7] hover:text-[#C04267] transition-all w-full text-left"
-            >
-              <LogIn size={18} />
-              Iniciar sesión
-            </button>
-            <button
-              onClick={() => { setIsMobileMenuOpen(false); setAuthView("register"); setIsAuthOpen(true); }}
-              className="flex items-center gap-2 px-6 py-3.5 font-lato text-base text-gray-700 border-l-4 border-transparent hover:border-[#EE6B8D] hover:bg-[#FDF4F7] hover:text-[#C04267] transition-all w-full text-left"
-            >
-              <UserPlus size={18} />
-              Registrarse
-            </button>
+            {user ? (
+              <>
+                <Link
+                  href="/perfil"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-2 px-6 py-3.5 font-lato text-base text-gray-700 border-l-4 border-transparent hover:border-[#EE6B8D] hover:bg-[#FDF4F7] hover:text-[#C04267] transition-all w-full text-left"
+                >
+                  <UserCircle size={18} />
+                  Mi cuenta
+                </Link>
+                <hr className="mx-6 my-1 border-gray-200" />
+                <button
+                  onClick={() => { setIsMobileMenuOpen(false); signOut(); }}
+                  className="flex items-center gap-2 px-6 py-3.5 font-lato text-base text-red-500 border-l-4 border-transparent hover:border-red-400 hover:bg-red-50 transition-all w-full text-left"
+                >
+                  <LogOut size={18} />
+                  Cerrar sesión
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => { setIsMobileMenuOpen(false); setAuthView("login"); setIsAuthOpen(true); }}
+                  className="flex items-center gap-2 px-6 py-3.5 font-lato text-base text-gray-700 border-l-4 border-transparent hover:border-[#EE6B8D] hover:bg-[#FDF4F7] hover:text-[#C04267] transition-all w-full text-left"
+                >
+                  <LogIn size={18} />
+                  Iniciar sesión
+                </button>
+                <button
+                  onClick={() => { setIsMobileMenuOpen(false); setAuthView("register"); setIsAuthOpen(true); }}
+                  className="flex items-center gap-2 px-6 py-3.5 font-lato text-base text-gray-700 border-l-4 border-transparent hover:border-[#EE6B8D] hover:bg-[#FDF4F7] hover:text-[#C04267] transition-all w-full text-left"
+                >
+                  <UserPlus size={18} />
+                  Registrarse
+                </button>
+              </>
+            )}
           </nav>
 
           <div className="absolute bottom-0 left-0 right-0 p-6 bg-[#FDF4F7] border-t border-gray-200">
@@ -389,16 +450,25 @@ export default function Navbar() {
         </div>
       </div>
 
-      <SearchModal 
-        isOpen={isSearchOpen} 
-        onClose={() => setIsSearchOpen(false)} 
-        products={products} 
+      <SearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        products={products}
+        onProductClick={handleProductClick}
       />
 
-      <CartDrawer 
-        isOpen={isCartOpen} 
-        onClose={() => setIsCartOpen(false)} 
+      <CartDrawer
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
       />
+
+      {selectedProduct && (
+        <QuickViewDrawer
+          product={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+          onAddToCart={handleDrawerAddToCart}
+        />
+      )}
 
       <AuthModal
         isOpen={isAuthOpen}

@@ -60,3 +60,31 @@ export async function actualizarEstadoPedido(id: number, estado: string) {
     .eq('id', id)
   if (error) throw error
 }
+
+// Heroes
+export async function getAdminHeroes() {
+  const { data, error } = await supabaseAdmin
+    .from('hero_config')
+    .select('*')
+    .order('clave', { ascending: true })
+  if (error) throw error
+  return data || []
+}
+
+export async function actualizarHero(id: number, updates: Record<string, any>) {
+  const { error } = await supabaseAdmin
+    .from('hero_config')
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq('id', id)
+  if (error) throw error
+}
+
+// Profiles (usuarios)
+export async function getAdminUsuarios() {
+  const { data, error } = await supabaseAdmin
+    .from('profiles')
+    .select('*')
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data || []
+}

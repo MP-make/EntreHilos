@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase/client'
+import { getSupabaseBrowserClient } from '@/lib/supabase/client'
 
 export interface Pedido {
   id?: number
@@ -16,12 +16,12 @@ export interface Pedido {
 }
 
 export async function insertPedido(data: Pedido) {
-  const { error } = await supabase.from('pedidos').insert([data])
+  const { error } = await getSupabaseBrowserClient().from('pedidos').insert([data])
   if (error) throw error
 }
 
 export async function getPedidos(usuario_id?: string): Promise<Pedido[]> {
-  let query = supabase.from('pedidos').select('*').order('created_at', { ascending: false })
+  let query = getSupabaseBrowserClient().from('pedidos').select('*').order('created_at', { ascending: false })
   if (usuario_id) query = query.eq('usuario_id', usuario_id)
   const { data, error } = await query
   if (error) throw error

@@ -1,11 +1,17 @@
 'use client';
 
 import Image from "next/image";
-import { X, Plus, Minus, ChevronRight, Sparkles } from "lucide-react";
+import { X, Plus, Minus, ChevronRight, Sparkles, Ruler, Calendar } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Product } from "@/lib/ventify";
 import { useCart } from "@/context/CartContext";
 import { loadExtras } from "@/lib/extras-cache";
+
+const TAMANOS = [
+  { valor: "pequeno", label: "Pequeño", desc: "10–15 cm" },
+  { valor: "mediano", label: "Mediano", desc: "16–25 cm" },
+  { valor: "grande", label: "Grande", desc: "26 cm a más" },
+];
 
 const BRAND = {
   ink: '#2E2422',
@@ -35,12 +41,22 @@ function cleanDescription(desc: string | undefined | null): string {
 export default function QuickViewDrawer({ product, onClose, onAddToCart }: QuickViewDrawerProps) {
   const [quantity, setQuantity] = useState(1);
   const [availableExtras, setAvailableExtras] = useState<Product[]>([]);
+  const [tamano, setTamano] = useState("mediano");
+  const [fechaEntrega, setFechaEntrega] = useState("");
   const drawerRef = useRef<HTMLDivElement>(null);
   const { items, addToCart, addExtraToItem, removeExtraFromItem, updateExtraQuantity } = useCart();
+
+  const fechaMinima = (() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 7);
+    return d.toISOString().split("T")[0];
+  })();
 
   useEffect(() => {
     if (!product) return;
     setQuantity(1);
+    setTamano("mediano");
+    setFechaEntrega("");
     loadExtras(setAvailableExtras);
   }, [product]);
 
@@ -272,8 +288,65 @@ export default function QuickViewDrawer({ product, onClose, onAddToCart }: Quick
               </div>
             </div>
 
-            {/* Extras — horizontal carrusel compacto */}
-            {availableExtras.length > 0 && (
+            {/* Personalización para Amigurumis */}
+            {product.sku.startsWith('Amigu-') && (
+              <div className="px-6 pb-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Sparkles size={16} style={{ color: '#EE6B8D' }} />
+                  <span className="font-lato text-sm font-semibold" style={{ color: BRAND.ink }}>
+                    Personaliza tu pedido
+                  </span>
+                </div>
+
+                <div className="space-y-4">
+                  {/* Tamaño */}
+                  <div>
+                    <label className="flex items-center gap-1.5 font-lato text-xs font-bold text-gray-700 uppercase tracking-wider mb-2.5">
+                      <Ruler size={14} />
+                      Tamaño
+                    </label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {TAMANOS.map((t) => (
+                        <button
+                          type="button"
+                          key={t.valor}
+                          onClick={() => setTamano(t.valor)}
+                          className={`rounded-xl border-2 px-3 py-2.5 text-center transition-all ${
+                            tamano === t.valor
+                              ? "border-[#EE6B8D] bg-[#FDF4F7] shadow-sm"
+                              : "border-gray-100 bg-white hover:border-gray-200"
+                          }`}
+                        >
+                          <p className="font-quicksand text-sm font-bold text-[#4A4A4A]">{t.label}</p>
+                          <p className="font-quicksand text-[11px] text-gray-400 mt-0.5">{t.desc}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Fecha de entrega */}
+                  <div>
+                    <label className="flex items-center gap-1.5 font-lato text-xs font-bold text-gray-700 uppercase tracking-wider mb-2.5">
+                      <Calendar size={14} />
+                      ¿Para cuándo lo quieres?
+                    </label>
+                    <input
+                      type="date"
+                      value={fechaEntrega}
+                      min={fechaMinima}
+                      onChange={(e) => setFechaEntrega(e.target.value)}
+                      className="w-full rounded-lg border border-gray-200 px-4 py-2.5 font-quicksand text-sm text-[#4A4A4A] focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] transition-shadow"
+                    />
+                    <p className="font-quicksand text-[11px] text-gray-400 mt-1">
+                      Mínimo 1 semana de producción. Te confirmaremos la fecha exacta.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Extras — solo para productos no personalizados */}
+            {!product.sku.startsWith('Amigu-') && availableExtras.length > 0 && (
               <div className="px-6 pb-6">
                 <div className="flex items-center gap-2 mb-4">
                   <Sparkles size={16} style={{ color: '#EE6B8D' }} />

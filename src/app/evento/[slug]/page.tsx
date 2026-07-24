@@ -10,6 +10,15 @@ import QuickViewDrawer from "@/components/QuickViewDrawer";
 
 const eventSlugs = ['dia-de-la-novia', 'dia-de-la-mujer', 'san-valentin', 'dia-de-la-madre', 'flores-amarillas', 'personalizados'];
 
+const slugToHeroClave: Record<string, string> = {
+  'dia-de-la-novia': 'evento_dia_de_la_novia',
+  'dia-de-la-mujer': 'evento_dia_de_la_mujer',
+  'san-valentin': 'evento_san_valentin',
+  'dia-de-la-madre': 'evento_dia_de_la_madre',
+  'flores-amarillas': 'evento_flores_amarillas',
+  'personalizados': 'evento_personalizados',
+};
+
 const eventTitles: Record<string, string> = {
   'dia-de-la-novia': 'Día de la Novia',
   'dia-de-la-mujer': 'Día de la Mujer',
@@ -34,6 +43,8 @@ export default function EventoPage({ params }: { params: Promise<{ slug: string 
   const [currentSlug, setCurrentSlug] = useState('');
   const [loading, setLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+  const [heroImg, setHeroImg] = useState("");
+  const [heroImgMobile, setHeroImgMobile] = useState("");
 
   useEffect(() => {
     loadExtras(() => {});
@@ -53,6 +64,23 @@ export default function EventoPage({ params }: { params: Promise<{ slug: string 
         return;
       }
       setCurrentSlug(slug);
+
+      const heroClave = slugToHeroClave[slug];
+      if (heroClave) {
+        try {
+          const { getSupabaseBrowserClient } = await import("@/lib/supabase/client");
+          const supabase = getSupabaseBrowserClient();
+          const { data: hero } = await supabase
+            .from("hero_config")
+            .select("imagen_url, imagen_url_mobile")
+            .eq("clave", heroClave)
+            .maybeSingle();
+          if (hero) {
+            setHeroImg(hero.imagen_url || "");
+            setHeroImgMobile(hero.imagen_url_mobile || "");
+          }
+        } catch (e) { console.error(e); }
+      }
       const allProducts = await getVentifyProducts();
       let filtered: any[];
       switch (slug) {
@@ -102,16 +130,37 @@ export default function EventoPage({ params }: { params: Promise<{ slug: string 
 
   return (
     <div className="min-h-screen bg-[#FDF4F7]">
-      <section className="relative bg-gradient-to-br from-[#FDE8EF] via-white to-[#FDE8EF] py-20 px-4 border-b border-[#FDE8EF] overflow-hidden">
-        <div className="absolute top-0 left-0 w-72 h-72 bg-[#EE6B8D] rounded-full mix-blend-multiply filter blur-[80px] opacity-20 transform -translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute bottom-0 right-0 w-72 h-72 bg-[#C04267] rounded-full mix-blend-multiply filter blur-[80px] opacity-10 transform translate-x-1/3 translate-y-1/3" />
-        <div className="relative max-w-4xl mx-auto text-center z-10">
-          <h1 className="font-playfair text-4xl md:text-6xl font-bold text-[#C04267] mb-4 tracking-tight">
-            {eventTitles[currentSlug] || 'Evento'}
+      <section className="relative w-full h-[220px] sm:h-[300px] md:h-[380px] overflow-hidden">
+        {heroImg && (
+          <img
+            src={heroImg}
+            alt={eventTitles[currentSlug] || 'Evento'}
+            className="object-cover object-center w-full h-full hidden lg:block"
+          />
+        )}
+        {heroImgMobile && (
+          <img
+            src={heroImgMobile}
+            alt={`${eventTitles[currentSlug] || 'Evento'} Móvil`}
+            className="object-cover object-center w-full h-full block lg:hidden"
+          />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#C04267]/60 to-transparent flex flex-col items-center justify-end pb-6 md:pb-8 px-4">
+          <h1 className="font-playfair text-2xl md:text-4xl lg:text-5xl font-bold text-white text-center mb-2 drop-shadow-lg">
+            {eventTitles[currentSlug] || ''}
           </h1>
-          <p className="font-lato text-lg md:text-xl text-[#6B6B6B] font-light max-w-2xl mx-auto">
+          <p className="font-lato text-sm md:text-base text-white/90 text-center mb-4 md:mb-5 max-w-xl">
             {eventDescriptions[currentSlug] || ''}
           </p>
+          <a
+            href={`https://wa.me/51902578295?text=${encodeURIComponent(`Hola, quiero más información sobre ${eventTitles[currentSlug] || 'este evento'}`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-lato px-6 py-2.5 bg-white text-[#C04267] font-semibold text-sm rounded-full flex items-center gap-2 hover:bg-[#EE6B8D] hover:text-white transition-all shadow-lg"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/></svg>
+            Pedir por WhatsApp
+          </a>
         </div>
       </section>
 

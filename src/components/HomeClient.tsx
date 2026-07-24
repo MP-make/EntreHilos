@@ -36,48 +36,91 @@ const BRAND = {
 // ==================== COMPONENTE HERO CARRUSEL ====================
 function HeroCarousel({ products }: { products: any[] }) {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [heroDesktop, setHeroDesktop] = useState("");
+  const [heroMobile, setHeroMobile] = useState("");
+  const [heroData, setHeroData] = useState<any[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { getSupabaseBrowserClient } = await import("@/lib/supabase/client");
+        const supabase = getSupabaseBrowserClient();
+        const heroKeys = ['home_hero_1', 'home_hero_2', 'home_hero_3', 'home_hero_4'];
+        const { data } = await supabase
+          .from("hero_config")
+          .select("*")
+          .in("clave", heroKeys)
+          .order("clave");
+        if (data) {
+          const ordered = heroKeys.map(k => data.find((h: any) => h.clave === k)).filter(Boolean);
+          setHeroData(ordered);
+          const h1 = ordered.find((h: any) => h.clave === 'home_hero_1');
+          if (h1) {
+            setHeroDesktop(h1.imagen_url || "");
+            setHeroMobile(h1.imagen_url_mobile || "");
+          }
+        }
+      } catch (e) { console.error(e); }
+    })();
+  }, []);
+
+  function getHeroValue(clave: string, field: string, defaultValue: any) {
+    const h = heroData.find((h: any) => h.clave === clave);
+    if (!h || h[field] === null || h[field] === undefined || h[field] === '') return defaultValue;
+    return h[field];
+  }
 
   const slides = [
     {
       isFlyer: true,
-      imageDesktop: '/dia-de-la-madre-horizontal.png',
-      imageMobile: '/dia-de-la-madre-vertical.png',
-      link: '/evento/dia-de-la-madre',
+      imageDesktop: heroDesktop || '/dia-de-la-madre-horizontal.png',
+      imageMobile: heroMobile || '/dia-de-la-madre-vertical.png',
+      link: getHeroValue('home_hero_1', 'link_url', '/evento/dia-de-la-madre'),
     },
     {
       isFlyer: false,
-      badge: 'Especial',
-      title: 'Haz que su corazón',
-      titleHighlight: 'lata más fuerte ',
-      subtitle: 'Arreglos personalizados, globos y detalles únicos en Pisco.',
+      badge: getHeroValue('home_hero_2', 'badge', 'Especial'),
+      title: getHeroValue('home_hero_2', 'titulo', 'Haz que su corazón'),
+      titleHighlight: getHeroValue('home_hero_2', 'subtitulo', 'lata más fuerte '),
+      subtitle: getHeroValue('home_hero_2', 'descripcion', 'Arreglos personalizados, globos y detalles únicos en Pisco.'),
       description: 'Porque cada momento merece ser celebrado.',
-      image: products.find(p => p?.nombre?.toLowerCase().includes('snoopy'))?.imagen || products.find(p => p?.nombre?.toLowerCase().includes('ramo'))?.imagen || '/logo.png',
-      price: 80,
-      link: '#catalogo',
+      image: getHeroProductImage('home_hero_2') || products.find(p => p?.nombre?.toLowerCase().includes('snoopy'))?.imagen || products.find(p => p?.nombre?.toLowerCase().includes('ramo'))?.imagen || '/logo.png',
+      price: getHeroValue('home_hero_2', 'precio', 80),
+      link: getHeroValue('home_hero_2', 'link_url', '#catalogo'),
     },
     {
       isFlyer: false,
-      badge: 'Tus Personajes Favoritos',
-      title: 'Imagina tu personaje favorito',
-      titleHighlight: 'tejido a crochet ',
-      subtitle: 'Creamos el amigurumi de tus sueños',
+      badge: getHeroValue('home_hero_3', 'badge', 'Tus Personajes Favoritos'),
+      title: getHeroValue('home_hero_3', 'titulo', 'Imagina tu personaje favorito'),
+      titleHighlight: getHeroValue('home_hero_3', 'subtitulo', 'tejido a crochet '),
+      subtitle: getHeroValue('home_hero_3', 'descripcion', 'Creamos el amigurumi de tus sueños'),
       description: 'Cada puntada lleva dedicación y amor',
-      image: products.find(p => p?.nombre?.toLowerCase().includes('messi'))?.imagen || products.find(p => p?.nombre?.toLowerCase().includes('goku') || p?.nombre?.toLowerCase().includes('naruto'))?.imagen || '/logo.png',
-      price: 115,
-      link: '#catalogo',
+      image: getHeroProductImage('home_hero_3') || products.find(p => p?.nombre?.toLowerCase().includes('messi'))?.imagen || products.find(p => p?.nombre?.toLowerCase().includes('goku') || p?.nombre?.toLowerCase().includes('naruto'))?.imagen || '/logo.png',
+      price: getHeroValue('home_hero_3', 'precio', 115),
+      link: getHeroValue('home_hero_3', 'link_url', '#catalogo'),
     },
     {
       isFlyer: false,
-      badge: 'A Tu Medida',
-      title: 'Crea algo especial',
-      titleHighlight: 'para alguien especial ',
-      subtitle: 'Cajas decoradas, tulipanes y diseños únicos hechos para ti',
+      badge: getHeroValue('home_hero_4', 'badge', 'A Tu Medida'),
+      title: getHeroValue('home_hero_4', 'titulo', 'Crea algo especial'),
+      titleHighlight: getHeroValue('home_hero_4', 'subtitulo', 'para alguien especial '),
+      subtitle: getHeroValue('home_hero_4', 'descripcion', 'Cajas decoradas, tulipanes y diseños únicos hechos para ti'),
       description: 'Convierte tus ideas en realidad con nuestros diseños',
-      image: products.find(p => p?.nombre?.toLowerCase().includes('cajita') && p?.nombre?.toLowerCase().includes('tulipan'))?.imagen || products.find(p => p?.nombre?.toLowerCase().includes('caja'))?.imagen || '/logo.png',
-      price: 50,
-      link: '#catalogo',
+      image: getHeroProductImage('home_hero_4') || products.find(p => p?.nombre?.toLowerCase().includes('cajita') && p?.nombre?.toLowerCase().includes('tulipan'))?.imagen || products.find(p => p?.nombre?.toLowerCase().includes('caja'))?.imagen || '/logo.png',
+      price: getHeroValue('home_hero_4', 'precio', 50),
+      link: getHeroValue('home_hero_4', 'link_url', '#catalogo'),
     },
   ];
+
+  function getHeroProductImage(clave: string) {
+    const h = heroData.find((h: any) => h.clave === clave);
+    if (h?.producto_sku) {
+      const prod = products.find((p: any) => p.sku === h.producto_sku);
+      if (prod) return prod.imagen;
+    }
+    const fallbackImg = h?.imagen_url;
+    return fallbackImg || null;
+  }
 
   useEffect(() => {
     const interval = setInterval(() => {

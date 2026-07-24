@@ -7,7 +7,6 @@ import { loadExtras } from "@/lib/extras-cache";
 import { useState, useEffect } from "react";
 import { Product } from "@/lib/ventify";
 import { useToast } from "@/components/Toast";
-import { insertPedido } from "@/lib/db/pedidos";
 import { getUsuarioId } from "@/lib/anon-id";
 
 export default function CartPage() {
@@ -51,14 +50,21 @@ export default function CartPage() {
     }
     setShowCheckoutForm(false);
     try {
-      await insertPedido({
-        usuario_id: getUsuarioId(),
-        cliente_nombre: clienteNombre.trim(),
-        cliente_telefono: clienteTelefono.trim(),
-        cliente_email: clienteEmail.trim() || undefined,
-        items: items.map(function(i) { return { id: i.id, nombre: i.nombre, precio: i.precio, cantidad: i.quantity, extras: i.extras }; }),
-        total: totalPrice,
-        estado: "pendiente"
+      await fetch("/api/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "pedido",
+          data: {
+            usuario_id: getUsuarioId(),
+            cliente_nombre: clienteNombre.trim(),
+            cliente_telefono: clienteTelefono.trim(),
+            cliente_email: clienteEmail.trim() || undefined,
+            items: items.map(function(i) { return { id: i.id, nombre: i.nombre, precio: i.precio, cantidad: i.quantity, extras: i.extras }; }),
+            total: totalPrice,
+            estado: "pendiente"
+          }
+        })
       });
     } catch (e) {
       console.error("Error saving order:", e);

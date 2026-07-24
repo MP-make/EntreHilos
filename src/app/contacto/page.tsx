@@ -1,6 +1,5 @@
 "use client"
 import { useState } from "react"
-import { insertMensajeContacto } from "@/lib/db/mensajes-contacto"
 import { Send, Mail, Phone, User, MessageSquare } from "lucide-react"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
@@ -14,14 +13,21 @@ export default function ContactoPage() {
     if (!form.nombre || !form.email || !form.mensaje) return
     setStatus("loading")
     try {
-      await insertMensajeContacto({
-        nombre: form.nombre,
-        email: form.email,
-        telefono: form.telefono || undefined,
-        asunto: form.asunto || undefined,
-        mensaje: form.mensaje
-      })
-      setStatus("success")
+      await fetch("/api/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "mensaje",
+          data: {
+            nombre: form.nombre,
+            email: form.email,
+            telefono: form.telefono || undefined,
+            asunto: form.asunto || undefined,
+            mensaje: form.mensaje
+          }
+        })
+      });
+      setStatus("success");
       setForm({ nombre: "", email: "", telefono: "", asunto: "", mensaje: "" })
     } catch {
       setStatus("error")

@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase/client'
+import { getSupabaseBrowserClient } from '@/lib/supabase/client'
 
 export interface CarritoAbandonado {
   id?: number
@@ -12,7 +12,7 @@ export interface CarritoAbandonado {
 }
 
 export async function upsertCarritoAbandonado(data: CarritoAbandonado) {
-  const { error } = await supabase.from('carritos_abandonados').upsert(
+  const { error } = await getSupabaseBrowserClient().from('carritos_abandonados').upsert(
     [data],
     { onConflict: 'usuario_id', ignoreDuplicates: false }
   )
@@ -20,7 +20,7 @@ export async function upsertCarritoAbandonado(data: CarritoAbandonado) {
 }
 
 export async function getCarritosAbandonados(): Promise<CarritoAbandonado[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabaseBrowserClient()
     .from('carritos_abandonados')
     .select('*')
     .eq('recuperado', false)

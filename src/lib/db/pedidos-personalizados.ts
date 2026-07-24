@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase/client'
+import { getSupabaseBrowserClient } from '@/lib/supabase/client'
 
 export interface PedidoPersonalizado {
   id?: number
@@ -18,7 +18,7 @@ export interface PedidoPersonalizado {
 }
 
 export async function insertPedidoPersonalizado(data: PedidoPersonalizado) {
-  const { error } = await supabase
+  const { error } = await getSupabaseBrowserClient()
     .from('pedidos_personalizados')
     .insert([data])
 

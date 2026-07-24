@@ -19,9 +19,9 @@ export default function AddToCartBtn({ product }: { product: Product }) {
     <button
       disabled={!hasStock}
       onClick={handleAddToCart}
-      className={`w-full py-4 px-8 rounded-xl flex items-center justify-center gap-2 text-lg font-medium transition-all ${
+      className={`w-full py-3.5 px-8 rounded-full flex items-center justify-center gap-2 font-lato font-semibold text-sm tracking-wide transition-all ${
         hasStock
-          ? "bg-[#9F86C0] text-white hover:bg-[#8A72B0] shadow-lg shadow-purple-100 hover:-translate-y-1"
+          ? "bg-[#EE6B8D] text-white hover:bg-[#C04267] shadow-lg shadow-[#EE6B8D]/20 hover:-translate-y-1"
           : "bg-gray-200 text-gray-400 cursor-not-allowed"
       }`}
     >
