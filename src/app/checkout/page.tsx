@@ -7,9 +7,15 @@ import { loadExtras } from "@/lib/extras-cache";
 import { useState, useEffect } from "react";
 import { Product } from "@/lib/ventify";
 import { useToast } from "@/components/Toast";
+import { insertPedido } from "@/lib/db/pedidos";
+import { getUsuarioId } from "@/lib/anon-id";
 
 export default function CartPage() {
   const { showToast } = useToast();
+  const [showCheckoutForm, setShowCheckoutForm] = useState(false);
+  const [clienteNombre, setClienteNombre] = useState("");
+  const [clienteTelefono, setClienteTelefono] = useState("");
+  const [clienteEmail, setClienteEmail] = useState("");
   const { 
     items, 
     removeFromCart, 
@@ -35,7 +41,29 @@ export default function CartPage() {
       showToast("Tu carrito está vacío", "warning");
       return;
     }
-    const whatsappUrl = `https://wa.me/51902578295?text=${getWhatsAppMessage()}`;
+    setShowCheckoutForm(true);
+  };
+
+  const handleConfirmCheckout = async () => {
+    if (!clienteNombre.trim() || !clienteTelefono.trim()) {
+      showToast("Completa tu nombre y teléfono", "warning");
+      return;
+    }
+    setShowCheckoutForm(false);
+    try {
+      await insertPedido({
+        usuario_id: getUsuarioId(),
+        cliente_nombre: clienteNombre.trim(),
+        cliente_telefono: clienteTelefono.trim(),
+        cliente_email: clienteEmail.trim() || undefined,
+        items: items.map(function(i) { return { id: i.id, nombre: i.nombre, precio: i.precio, cantidad: i.quantity, extras: i.extras }; }),
+        total: totalPrice,
+        estado: "pendiente"
+      });
+    } catch (e) {
+      console.error("Error saving order:", e);
+    }
+    const whatsappUrl = "https://wa.me/51902578295?text=" + getWhatsAppMessage();
     window.open(whatsappUrl, "_blank");
   };
 
@@ -169,6 +197,66 @@ export default function CartPage() {
               </button>
             </div>
           )}
+        </div>
+      </div>
+    );
+  };
+
+  const CheckoutFormModal = () => {
+    if (!showCheckoutForm) return null;
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
+          <div className="p-6 bg-gradient-to-r from-[#FDE8EF] to-white border-b border-gray-100">
+            <h3 className="font-fredoka text-xl font-bold text-[#C04267]">Completar pedido</h3>
+            <p className="font-quicksand text-sm text-gray-500 mt-1">Déjanos tus datos para registrar el pedido</p>
+          </div>
+          <div className="p-6 space-y-4">
+            <div>
+              <label className="font-quicksand text-sm font-semibold text-gray-700 mb-1 block">Nombre completo *</label>
+              <input
+                type="text"
+                value={clienteNombre}
+                onChange={e => setClienteNombre(e.target.value)}
+                placeholder="Ej: María Pérez"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] font-quicksand text-sm"
+              />
+            </div>
+            <div>
+              <label className="font-quicksand text-sm font-semibold text-gray-700 mb-1 block">Teléfono *</label>
+              <input
+                type="tel"
+                value={clienteTelefono}
+                onChange={e => setClienteTelefono(e.target.value)}
+                placeholder="Ej: 999888777"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] font-quicksand text-sm"
+              />
+            </div>
+            <div>
+              <label className="font-quicksand text-sm font-semibold text-gray-700 mb-1 block">Email (opcional)</label>
+              <input
+                type="email"
+                value={clienteEmail}
+                onChange={e => setClienteEmail(e.target.value)}
+                placeholder="Ej: maria@email.com"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] font-quicksand text-sm"
+              />
+            </div>
+          </div>
+          <div className="p-6 pt-0 flex gap-3">
+            <button
+              onClick={() => setShowCheckoutForm(false)}
+              className="flex-1 py-3 border border-gray-300 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-colors font-quicksand"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleConfirmCheckout}
+              className="flex-1 py-3 bg-gradient-to-r from-[#25D366] to-[#1DA851] text-white font-bold rounded-xl hover:shadow-lg transition-all font-quicksand"
+            >
+              Confirmar
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -353,6 +441,7 @@ export default function CartPage() {
       </div>
       
       <ExtrasModal />
+      <CheckoutFormModal />
     </div>
   );
 }

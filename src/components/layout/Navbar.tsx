@@ -2,13 +2,76 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingBag, Search, Truck, Clock, Menu, X } from "lucide-react";
+import { ShoppingBag, Search, Truck, Clock, Menu, X, ChevronDown, User, LogIn, UserPlus } from "lucide-react";
 import { useCart } from "@/context/CartContext";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import SearchModal from "@/components/SearchModal";
 import CartDrawer from "@/components/CartDrawer";
+import AuthModal from "@/components/AuthModal";
 import { getVentifyProducts } from "@/lib/ventify";
 import { Product } from "@/lib/ventify";
+
+const categorias = [
+  { href: "/category/ramos", label: "Ramos" },
+  { href: "/category/amigurumis", label: "Amigurumis" },
+  { href: "/category/cajas", label: "Cajas" },
+  { href: "/category/hotwheels", label: "HotWheels" },
+];
+
+const eventos = [
+  { href: "/evento/dia-de-la-madre", label: "Día de la Madre" },
+  { href: "/evento/dia-de-la-mujer", label: "Día de la Mujer" },
+  { href: "/evento/san-valentin", label: "San Valentín" },
+  { href: "/evento/flores-amarillas", label: "Flores Amarillas" },
+];
+
+interface DropdownProps {
+  label: string;
+  items: { href: string; label: string }[];
+}
+
+function Dropdown({ label, items }: DropdownProps) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative inline-block">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-1 font-lato text-sm xl:text-base font-medium tracking-wide text-[#5C4040] hover:text-[#EE6B8D] transition-colors duration-200 cursor-pointer"
+      >
+        {label}
+        <ChevronDown size={14} className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div
+          className="absolute top-full left-0 mt-2 w-52 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-[100] animate-fadeIn"
+          onClick={() => setOpen(false)}
+        >
+          {items.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="block px-5 py-2.5 font-lato text-sm text-gray-700 hover:text-[#EE6B8D] hover:bg-[#FDF4F7] transition-colors cursor-pointer"
+            >
+              {item.label}
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Navbar() {
   const { totalItems } = useCart();
@@ -16,8 +79,9 @@ export default function Navbar() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
+  const [authView, setAuthView] = useState<"login" | "register">("login");
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
 
-  // Cargar productos para el buscador
   useEffect(() => {
     const loadProducts = async () => {
       const allProducts = await getVentifyProducts();
@@ -26,7 +90,6 @@ export default function Navbar() {
     loadProducts();
   }, []);
 
-  // Bloquear scroll cuando el menú móvil está abierto
   useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = 'hidden';
@@ -38,30 +101,31 @@ export default function Navbar() {
     };
   }, [isMobileMenuOpen]);
 
-  const menuItems = [
-    { href: "/", label: "Inicio", highlight: false },
-    { href: "/category/dia-de-la-novia", label: "Día de la Novia", highlight: true },
-    { href: "/category/dia-de-la-madre", label: "Día de la Madre", highlight: false }, 
-    { href: "/category/dia-de-la-mujer", label: "Día de la Mujer", highlight: false },
-    { href: "/category/san-valentin", label: "San Valentín", highlight: false },
-    { href: "/category/flores-amarillas", label: "Flores Amarillas", highlight: false },
-    { href: "/personalizados", label: "Personalizados", highlight: false },
-  ];
+  const [mobileExpanded, setMobileExpanded] = useState<string | null>(null);
+  const [isUserOpen, setIsUserOpen] = useState(false);
+  const userRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (userRef.current && !userRef.current.contains(e.target as Node)) {
+        setIsUserOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <>
-      {/* FRANJA ROSA - Día de la Madre (SCROLLEA) */}
       <div className="bg-[#ec4899] text-white py-2 sm:py-2.5 px-2 sm:px-4">
         <div className="max-w-7xl mx-auto text-center">
           <p className="font-lato text-xs sm:text-sm md:text-base font-semibold tracking-wide">
-             ¡Campaña Día de la Madre! Reserva el regalo perfecto para mamá 
+             ¡Campaña Día de la Novia! Reserva el regalo perfecto para el amor de tu vida 
           </p>
         </div>
       </div>
 
-      {/* NAVBAR STICKY (NO SCROLLEA) */}
       <nav className="sticky top-0 z-50">
-        {/* FRANJA SUPERIOR - Información logística */}
         <div className="bg-gradient-to-r from-[#EE6B8D] via-[#F48FB0] to-[#EE6B8D] text-white py-2 px-2 sm:px-4">
           <div className="max-w-7xl mx-auto text-center">
             <p className="font-lato text-[10px] sm:text-xs md:text-sm font-light tracking-wide flex flex-wrap items-center justify-center gap-1 sm:gap-2">
@@ -76,11 +140,9 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* NAVBAR PRINCIPAL */}
         <div className="bg-white/95 backdrop-blur-sm shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-5">
             <div className="flex items-center justify-between w-full">
-              {/* BLOQUE IZQUIERDO: Solo Logo (sin texto duplicado) */}
               <Link href="/" className="flex-shrink-0 group">
                 <Image 
                   src="/logo.png" 
@@ -91,36 +153,42 @@ export default function Navbar() {
                 />
               </Link>
 
-              {/* TEXTO MÓVIL CENTRAL */}
               <div className="flex lg:hidden flex-1 justify-center px-1">
                 <Link 
-                  href="/category/dia-de-la-novia"
+                  href="/evento/dia-de-la-novia"
                   className="font-playfair text-base sm:text-lg font-medium text-[#C04267] border-b border-[#C04267]/30 pb-0.5 hover:text-[#EE6B8D] transition-colors whitespace-nowrap"
                 >
                   Día de la Novia
                 </Link>
               </div>
 
-              {/* BLOQUE CENTRAL: Navegación - Solo Desktop */}
-              <div className="hidden lg:flex items-center gap-6 xl:gap-8">
-                {menuItems.map((item) => (
-                  <Link 
-                    key={item.href}
-                    href={item.href}
-                    className={`font-lato text-sm xl:text-base font-medium tracking-wide transition-colors duration-200 ${
-                      item.highlight 
-                        ? 'text-[#C04267] hover:text-[#EE6B8D]' 
-                        : 'text-[#5C4040] hover:text-[#EE6B8D]'
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
+              <div className="hidden lg:flex items-center gap-5 xl:gap-7">
+                <Link 
+                  href="/"
+                  className="font-lato text-sm xl:text-base font-medium tracking-wide text-[#5C4040] hover:text-[#EE6B8D] transition-colors duration-200"
+                >
+                  Inicio
+                </Link>
+
+                <Link 
+                  href="/evento/dia-de-la-novia"
+                  className="font-lato text-sm xl:text-base font-medium tracking-wide text-[#C04267] hover:text-[#EE6B8D] transition-colors duration-200 font-semibold"
+                >
+                  Día de la Novia
+                </Link>
+
+                <Dropdown label="Categorías" items={categorias} />
+                <Dropdown label="Eventos" items={eventos} />
+
+                <Link 
+                  href="/personalizados"
+                  className="font-lato text-sm xl:text-base font-medium tracking-wide text-[#5C4040] hover:text-[#EE6B8D] transition-colors duration-200"
+                >
+                  Personalizados
+                </Link>
               </div>
 
-              {/* BLOQUE DERECHO: Utilidades */}
               <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
-                {/* Icono de búsqueda */}
                 <button 
                   onClick={() => setIsSearchOpen(true)}
                   className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -129,7 +197,6 @@ export default function Navbar() {
                   <Search size={20} className="sm:w-5 sm:h-5 text-[#5C4040]" />
                 </button>
 
-                {/* Carrito con badge — abre drawer */}
                 <button
                   onClick={() => setIsCartOpen(true)}
                   className="relative p-1.5 sm:p-2 hover:bg-[#FDF4F7] rounded-full transition-all duration-300 group"
@@ -142,7 +209,37 @@ export default function Navbar() {
                   )}
                 </button>
 
-                {/* Botón Hamburguesa - Solo Móvil */}
+                {/* Dropdown Usuario */}
+                <div ref={userRef} className="relative hidden sm:inline-block">
+                  <button
+                    onClick={() => setIsUserOpen(!isUserOpen)}
+                    className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors"
+                    aria-label="Usuario"
+                  >
+                    <User size={20} className="sm:w-5 sm:h-5 text-[#5C4040] hover:text-[#EE6B8D] transition-colors" />
+                  </button>
+                  <div
+                    className={`absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-[100] transition-all duration-200 ${
+                      isUserOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+                    }`}
+                  >
+                    <button
+                      onClick={() => { setIsUserOpen(false); setAuthView("login"); setIsAuthOpen(true); }}
+                      className="flex items-center gap-3 w-full px-5 py-2.5 font-quicksand text-sm text-gray-700 hover:text-[#EE6B8D] hover:bg-[#FDF4F7] transition-colors text-left"
+                    >
+                      <LogIn size={16} />
+                      Iniciar sesión
+                    </button>
+                    <button
+                      onClick={() => { setIsUserOpen(false); setAuthView("register"); setIsAuthOpen(true); }}
+                      className="flex items-center gap-3 w-full px-5 py-2.5 font-quicksand text-sm text-gray-700 hover:text-[#EE6B8D] hover:bg-[#FDF4F7] transition-colors text-left"
+                    >
+                      <UserPlus size={16} />
+                      Registrarse
+                    </button>
+                  </div>
+                </div>
+
                 <button 
                   onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                   className="lg:hidden p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -160,31 +257,24 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* MENÚ MÓVIL - Overlay con animación */}
-      {/* ¡AQUÍ ESTÁ LA SOLUCIÓN! Cambié z-40 por z-[60] */}
       <div 
         className={`fixed inset-0 z-[60] lg:hidden transition-opacity duration-300 ${
           isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       >
-        {/* Overlay oscuro */}
         <div 
           className="absolute inset-0 bg-black/50 backdrop-blur-sm"
           onClick={() => setIsMobileMenuOpen(false)}
         />
         
-        {/* Panel del menú */}
         <div 
           className={`absolute top-0 right-0 h-full w-[280px] sm:w-[320px] bg-white shadow-2xl transform transition-transform duration-300 ease-out ${
             isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
         >
-          {/* Header del menú */}
           <div className="bg-gradient-to-r from-[#EE6B8D] to-[#F48FB0] p-6">
             <div className="flex items-center justify-between">
-              <h2 className="font-playfair text-xl font-bold text-white">
-                Menú
-              </h2>
+              <h2 className="font-playfair text-xl font-bold text-white">Menú</h2>
               <button 
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="p-2 hover:bg-white/20 rounded-full transition-colors"
@@ -195,29 +285,95 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Lista de links */}
-          <nav className="py-6">
-            {menuItems.map((item, index) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={`block px-6 py-4 font-lato text-base tracking-wide transition-all duration-200 border-l-4 ${
-                  item.highlight
-                    ? 'text-[#E91E63] font-bold border-[#E91E63] bg-pink-50 hover:bg-pink-100'
-                    : 'text-gray-700 border-transparent hover:border-[#EE6B8D] hover:bg-[#FDF4F7] hover:text-[#C04267]'
-                }`}
-                style={{ 
-                  animationDelay: `${index * 50}ms`,
-                  animation: isMobileMenuOpen ? 'slideInRight 0.3s ease-out forwards' : 'none'
-                }}
+          <nav className="py-4 overflow-y-auto max-h-[calc(100vh-120px)]">
+            <Link
+              href="/"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block px-6 py-3.5 font-lato text-base text-gray-700 border-l-4 border-transparent hover:border-[#EE6B8D] hover:bg-[#FDF4F7] hover:text-[#C04267] transition-all"
+            >
+              Inicio
+            </Link>
+
+            <div>
+              <button
+                onClick={() => setMobileExpanded(mobileExpanded === 'categorias' ? null : 'categorias')}
+                className="flex items-center justify-between w-full px-6 py-3.5 font-lato text-base text-gray-700 border-l-4 border-transparent hover:border-[#EE6B8D] hover:bg-[#FDF4F7] hover:text-[#C04267] transition-all"
               >
-                {item.label}
-              </Link>
-            ))}
+                Categorías
+                <ChevronDown size={16} className={`transition-transform ${mobileExpanded === 'categorias' ? 'rotate-180' : ''}`} />
+              </button>
+              {mobileExpanded === 'categorias' && (
+                <div className="bg-gray-50">
+                  {categorias.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block px-10 py-3 font-lato text-sm text-gray-600 hover:text-[#EE6B8D] hover:bg-white transition-colors"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <button
+                onClick={() => setMobileExpanded(mobileExpanded === 'eventos' ? null : 'eventos')}
+                className="flex items-center justify-between w-full px-6 py-3.5 font-lato text-base text-gray-700 border-l-4 border-transparent hover:border-[#EE6B8D] hover:bg-[#FDF4F7] hover:text-[#C04267] transition-all"
+              >
+                Eventos
+                <ChevronDown size={16} className={`transition-transform ${mobileExpanded === 'eventos' ? 'rotate-180' : ''}`} />
+              </button>
+              {mobileExpanded === 'eventos' && (
+                <div className="bg-gray-50">
+                  {eventos.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block px-10 py-3 font-lato text-sm text-gray-600 hover:text-[#EE6B8D] hover:bg-white transition-colors"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <Link
+              href="/personalizados"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block px-6 py-3.5 font-lato text-base text-gray-700 border-l-4 border-transparent hover:border-[#EE6B8D] hover:bg-[#FDF4F7] hover:text-[#C04267] transition-all"
+            >
+              Personalizados
+            </Link>
+
+            <Link
+              href="/evento/dia-de-la-novia"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block px-6 py-3.5 font-lato text-base text-[#E91E63] font-bold border-l-4 border-[#E91E63] bg-pink-50 hover:bg-pink-100 transition-all"
+            >
+              Día de la Novia
+            </Link>
+
+            <button
+              onClick={() => { setIsMobileMenuOpen(false); setAuthView("login"); setIsAuthOpen(true); }}
+              className="flex items-center gap-2 px-6 py-3.5 font-lato text-base text-gray-700 border-l-4 border-transparent hover:border-[#EE6B8D] hover:bg-[#FDF4F7] hover:text-[#C04267] transition-all w-full text-left"
+            >
+              <LogIn size={18} />
+              Iniciar sesión
+            </button>
+            <button
+              onClick={() => { setIsMobileMenuOpen(false); setAuthView("register"); setIsAuthOpen(true); }}
+              className="flex items-center gap-2 px-6 py-3.5 font-lato text-base text-gray-700 border-l-4 border-transparent hover:border-[#EE6B8D] hover:bg-[#FDF4F7] hover:text-[#C04267] transition-all w-full text-left"
+            >
+              <UserPlus size={18} />
+              Registrarse
+            </button>
           </nav>
 
-          {/* Footer del menú con info */}
           <div className="absolute bottom-0 left-0 right-0 p-6 bg-[#FDF4F7] border-t border-gray-200">
             <div className="space-y-3">
               <div className="flex items-center gap-3 text-sm text-gray-600">
@@ -233,30 +389,34 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Modal de Búsqueda */}
       <SearchModal 
         isOpen={isSearchOpen} 
         onClose={() => setIsSearchOpen(false)} 
         products={products} 
       />
 
-      {/* Cart Drawer */}
       <CartDrawer 
         isOpen={isCartOpen} 
         onClose={() => setIsCartOpen(false)} 
       />
 
-      {/* Estilos para animaciones */}
+      <AuthModal
+        isOpen={isAuthOpen}
+        initialView={authView}
+        onClose={() => setIsAuthOpen(false)}
+      />
+
       <style jsx>{`
         @keyframes slideInRight {
-          from {
-            opacity: 0;
-            transform: translateX(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
+          from { opacity: 0; transform: translateX(20px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.2s ease-out;
         }
       `}</style>
     </>

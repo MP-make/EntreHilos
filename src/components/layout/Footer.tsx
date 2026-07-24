@@ -108,6 +108,14 @@ export default function Footer() {
                   Libro de Reclamaciones
                 </Link>
               </li>
+              <li>
+                <Link 
+                  href="/contacto" 
+                  className="text-[#6B6B6B] hover:text-[#EE6B8D] transition-colors duration-200 block"
+                >
+                  Contacto
+                </Link>
+              </li>
             </ul>
           </div>
 

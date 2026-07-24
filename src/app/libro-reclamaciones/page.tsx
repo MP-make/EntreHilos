@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { BookOpen, AlertCircle, Send, CheckCircle } from "lucide-react";
 import { useState } from "react";
+import { insertReclamacion } from "@/lib/db/libro-reclamaciones";
 
 export default function LibroReclamacionesPage() {
   const [formData, setFormData] = useState({
@@ -20,9 +21,32 @@ export default function LibroReclamacionesPage() {
   });
 
   const [submitted, setSubmitted] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    setSaving(true);
+
+    try {
+      await insertReclamacion({
+        tipo: formData.tipo as 'reclamo' | 'queja',
+        nombre_completo: formData.nombreCompleto,
+        tipo_documento: formData.tipoDocumento,
+        numero_documento: formData.numeroDocumento,
+        telefono: formData.telefono,
+        email: formData.email,
+        direccion: formData.direccion,
+        producto_servicio: formData.producto,
+        monto: parseFloat(formData.monto) || 0,
+        pedido_id: formData.pedido || undefined,
+        detalle: formData.detalle,
+      });
+    } catch {
+      // El reclamo se guardó igual via WhatsApp aunque falle la DB
+    }
+
+    setSaving(false);
     
     // Crear mensaje para WhatsApp
     const mensaje = `
@@ -341,10 +365,11 @@ _Registro generado el ${new Date().toLocaleDateString('es-PE')} a las ${new Date
             <div className="text-center">
               <button
                 type="submit"
-                className="inline-flex items-center gap-2 sm:gap-3 font-lato px-8 sm:px-10 py-3 sm:py-4 bg-[#9F86C0] text-white font-semibold text-base sm:text-lg rounded-full hover:bg-[#5E548E] transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 w-full sm:w-auto"
+                disabled={saving}
+                className="inline-flex items-center gap-2 sm:gap-3 font-lato px-8 sm:px-10 py-3 sm:py-4 bg-[#9F86C0] text-white font-semibold text-base sm:text-lg rounded-full hover:bg-[#5E548E] disabled:bg-gray-400 transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 w-full sm:w-auto"
               >
                 <Send size={18} className="sm:w-5 sm:h-5" />
-                Enviar {formData.tipo === 'reclamo' ? 'Reclamo' : 'Queja'}
+                {saving ? "Guardando..." : `Enviar ${formData.tipo === 'reclamo' ? 'Reclamo' : 'Queja'}`}
               </button>
               <p className="font-lato text-xs text-gray-500 mt-3 sm:mt-4 px-4">
                 Al enviar, se abrirá WhatsApp con los detalles de tu registro

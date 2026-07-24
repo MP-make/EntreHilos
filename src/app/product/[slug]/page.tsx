@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { getVentifyProducts } from "@/lib/ventify";
 import { slugify } from "@/lib/utils";
-import { ArrowLeft, Heart, Truck, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Truck, ShieldCheck } from "lucide-react";
+import WishlistButton from "@/components/WishlistButton";
 import { notFound } from "next/navigation";
 import AddToCartBtn from "@/components/AddToCartBtn"; // Asegúrate de haber creado el paso 1
 
@@ -52,9 +53,12 @@ export default function ProductPage({ params }: Props) {
             <ArrowLeft size={20} />
             <span className="font-lato font-medium hidden sm:inline">Volver al catálogo</span>
           </Link>
-          <button className="p-2 hover:bg-[#FDF4F7] rounded-full transition-colors text-[#9F86C0]">
-            <Heart size={24} />
-          </button>
+          <WishlistButton
+            productoId={product.id}
+            productoNombre={product.nombre}
+            productoPrecio={product.precio}
+            productoImagen={product.imagen}
+          />
         </div>
       </div>
 

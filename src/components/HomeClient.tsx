@@ -6,6 +6,7 @@ import { Product } from "@/lib/ventify";
 import { slugify } from "@/lib/utils";
 import { Sparkles, Heart, Package, Truck } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { loadExtras } from "@/lib/extras-cache";
 import QuickViewDrawer from "@/components/QuickViewDrawer";
@@ -41,7 +42,7 @@ function HeroCarousel({ products }: { products: any[] }) {
       isFlyer: true,
       imageDesktop: '/dia-de-la-madre-horizontal.png',
       imageMobile: '/dia-de-la-madre-vertical.png',
-      link: '/category/dia-de-la-madre',
+      link: '/evento/dia-de-la-madre',
     },
     {
       isFlyer: false,
@@ -264,7 +265,12 @@ function getAutoDescription(category: string, description?: string): string {
 // ==================== COMPONENTE PRINCIPAL ====================
 
 export default function HomeClient({ products }: HomeClientProps) {
-  const [activeTab, setActiveTab] = useState<TabType>('Ramos');
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const initialTab: TabType = (['Ramos', 'Amigurumis', 'Cajas', 'HotWheels'].includes(tabParam || ''))
+    ? tabParam as TabType
+    : 'Ramos';
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab);
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
   const { addToCart } = useCart();
 

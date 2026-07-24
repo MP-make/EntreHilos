@@ -4,12 +4,17 @@ import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { Calendar, Clock, MessageCircle, CheckCircle } from "lucide-react";
 import { useToast } from "@/components/Toast";
+import { insertPedidoPersonalizado } from "@/lib/db/pedidos-personalizados";
 
 function PedidoPersonalizadoContent() {
   const { showToast } = useToast();
   const searchParams = useSearchParams();
   const [producto, setProducto] = useState<any>(null);
+  const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
+    nombreCliente: "",
+    telefono: "",
+    email: "",
     detalles: "",
     fechaEntrega: "",
     colores: "",
@@ -31,11 +36,16 @@ function PedidoPersonalizadoContent() {
     }
   }, [searchParams]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.fechaEntrega) {
       showToast("Por favor indica la fecha de entrega deseada", "warning");
+      return;
+    }
+
+    if (!formData.nombreCliente.trim() || !formData.telefono.trim()) {
+      showToast("Completa tu nombre y teléfono para contactarte", "warning");
       return;
     }
 
@@ -48,9 +58,37 @@ function PedidoPersonalizadoContent() {
       return;
     }
 
+    setSaving(true);
+
+    try {
+      await insertPedidoPersonalizado({
+        nombre_cliente: formData.nombreCliente.trim(),
+        telefono: formData.telefono.trim(),
+        email: formData.email.trim() || undefined,
+        producto_id: producto?.id,
+        producto_nombre: producto?.nombre,
+        producto_precio: producto?.precio,
+        detalles: formData.detalles,
+        colores: formData.colores,
+        tamano: formData.tamano,
+        extras: formData.extras,
+        fecha_entrega: formData.fechaEntrega,
+      });
+
+      showToast("Pedido registrado correctamente", "success");
+    } catch {
+      showToast("No se pudo guardar el pedido, pero igual puedes enviarlo por WhatsApp", "warning");
+    }
+
+    setSaving(false);
+
     // Construir mensaje de WhatsApp
     const mensaje = `
  *PEDIDO PERSONALIZADO - Entre Hilos* 
+
+ *Cliente:* ${formData.nombreCliente.trim()}
+ *Teléfono:* ${formData.telefono.trim()}
+ ${formData.email.trim() ? ` *Email:* ${formData.email.trim()}` : ""}
 
  *Producto:* ${producto?.nombre || "Producto personalizado"}
  *Precio:* S/ ${producto?.precio?.toFixed(2) || "0.00"}
@@ -186,6 +224,56 @@ Deseo confirmar este pedido personalizado. ¡Gracias!
             </h2>
 
             <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Nombre */}
+              <div>
+                <label className="font-lato text-sm font-semibold text-[#5E548E] mb-2 block">
+                  Nombre completo *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ej: María Pérez"
+                  value={formData.nombreCliente}
+                  onChange={(e) =>
+                    setFormData({ ...formData, nombreCliente: e.target.value })
+                  }
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9F86C0] focus:border-transparent font-lato text-sm"
+                />
+              </div>
+
+              {/* Teléfono */}
+              <div>
+                <label className="font-lato text-sm font-semibold text-[#5E548E] mb-2 block">
+                  Teléfono *
+                </label>
+                <input
+                  type="tel"
+                  required
+                  placeholder="Ej: 999888777"
+                  value={formData.telefono}
+                  onChange={(e) =>
+                    setFormData({ ...formData, telefono: e.target.value })
+                  }
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9F86C0] focus:border-transparent font-lato text-sm"
+                />
+              </div>
+
+              {/* Email */}
+              <div>
+                <label className="font-lato text-sm font-semibold text-[#5E548E] mb-2 block">
+                  Email (opcional)
+                </label>
+                <input
+                  type="email"
+                  placeholder="Ej: maria@email.com"
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9F86C0] focus:border-transparent font-lato text-sm"
+                />
+              </div>
+
               {/* Fecha de Entrega */}
               <div>
                 <label className="flex items-center gap-2 font-lato text-sm font-semibold text-[#5E548E] mb-2">
@@ -280,10 +368,11 @@ Deseo confirmar este pedido personalizado. ¡Gracias!
               {/* Botón de envío */}
               <button
                 type="submit"
-                className="w-full flex items-center justify-center gap-3 font-lato px-8 py-4 bg-[#25D366] hover:bg-[#20BA5A] text-white font-semibold text-base tracking-wide transition-all duration-300 rounded-lg shadow-lg hover:shadow-xl"
+                disabled={saving}
+                className="w-full flex items-center justify-center gap-3 font-lato px-8 py-4 bg-[#25D366] hover:bg-[#20BA5A] disabled:bg-gray-400 text-white font-semibold text-base tracking-wide transition-all duration-300 rounded-lg shadow-lg hover:shadow-xl"
               >
                 <MessageCircle size={22} />
-                Enviar pedido por WhatsApp
+                {saving ? "Guardando..." : "Enviar pedido por WhatsApp"}
               </button>
 
               <p className="font-lato text-xs text-center text-[#6B6B6B] leading-relaxed">
