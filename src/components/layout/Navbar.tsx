@@ -85,16 +85,8 @@ export default function Navbar() {
   const [authView, setAuthView] = useState<"login" | "register">("login");
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
-  const { addToCart } = useCart();
-
   const handleProductClick = (product: any) => {
     setSelectedProduct(product);
-  };
-
-  const handleDrawerAddToCart = (product: any, quantity: number) => {
-    for (let i = 0; i < quantity; i++) {
-      addToCart(product);
-    }
   };
 
   useEffect(() => {
@@ -466,7 +458,6 @@ export default function Navbar() {
         <QuickViewDrawer
           product={selectedProduct}
           onClose={() => setSelectedProduct(null)}
-          onAddToCart={handleDrawerAddToCart}
         />
       )}
 

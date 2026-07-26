@@ -2,8 +2,6 @@
 
 import { useMemo, useState } from "react";
 import type { Product } from "@/lib/ventify";
-import { useCart } from "@/context/CartContext";
-import { useToast } from "@/components/Toast";
 import ProductCard from "@/components/ProductCard";
 import QuickViewDrawer from "@/components/QuickViewDrawer";
 
@@ -20,8 +18,6 @@ interface Props {
 }
 
 export default function Gallery({ products }: Props) {
-  const { addToCart } = useCart();
-  const { showToast } = useToast();
   const [active, setActive] = useState<(typeof CATEGORIES)[number]>("Todos");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
@@ -36,14 +32,6 @@ export default function Gallery({ products }: Props) {
 
   function handleCloseDrawer() {
     setSelectedProduct(null);
-  }
-
-  function handleDrawerAddToCart(product: any, quantity: number) {
-    for (let i = 0; i < quantity; i++) {
-      addToCart(product);
-    }
-    showToast("Agregado al carrito — La entrega mínima es de 1 semana", "success");
-    handleCloseDrawer();
   }
 
   return (
@@ -100,7 +88,6 @@ export default function Gallery({ products }: Props) {
         <QuickViewDrawer
           product={selectedProduct}
           onClose={handleCloseDrawer}
-          onAddToCart={handleDrawerAddToCart}
         />
       )}
     </section>

@@ -3,7 +3,6 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { getVentifyProducts } from "@/lib/ventify";
 import { notFound } from "next/navigation";
-import { useCart } from "@/context/CartContext";
 import { loadExtras } from "@/lib/extras-cache";
 import ProductCard from "@/components/ProductCard";
 import QuickViewDrawer from "@/components/QuickViewDrawer";
@@ -38,7 +37,6 @@ const eventDescriptions: Record<string, string> = {
 };
 
 export default function EventoPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { addToCart } = useCart();
   const [products, setProducts] = useState<any[]>([]);
   const [currentSlug, setCurrentSlug] = useState('');
   const [loading, setLoading] = useState(true);
@@ -51,10 +49,6 @@ export default function EventoPage({ params }: { params: Promise<{ slug: string 
   }, []);
 
   const handleQuickView = (producto: any) => setSelectedProduct(producto);
-
-  const handleDrawerAddToCart = (producto: any, quantity: number) => {
-    for (let i = 0; i < quantity; i++) addToCart(producto);
-  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -204,7 +198,7 @@ export default function EventoPage({ params }: { params: Promise<{ slug: string 
       </section>
 
       {selectedProduct && (
-        <QuickViewDrawer product={selectedProduct} onClose={() => setSelectedProduct(null)} onAddToCart={handleDrawerAddToCart} />
+        <QuickViewDrawer product={selectedProduct} onClose={() => setSelectedProduct(null)} />
       )}
     </div>
   );

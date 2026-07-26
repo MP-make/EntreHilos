@@ -3,7 +3,6 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { getVentifyProducts } from "@/lib/ventify";
 import { MessageCircle } from "lucide-react";
-import { useCart } from "@/context/CartContext";
 import { loadExtras } from "@/lib/extras-cache";
 import ProductCard from "@/components/ProductCard";
 import QuickViewDrawer from "@/components/QuickViewDrawer";
@@ -19,7 +18,6 @@ const CAJITAS_8M = [
 ];
 
 export default function DiaDelaMujerPage() {
-  const { addToCart } = useCart();
   const [ramos, setRamos] = useState<any[]>([]);
   const [cajitas, setCajitas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,12 +29,6 @@ export default function DiaDelaMujerPage() {
 
   const handleQuickView = (producto: any) => {
     setSelectedProduct(producto);
-  };
-
-  const handleDrawerAddToCart = (producto: any, quantity: number) => {
-    for (let i = 0; i < quantity; i++) {
-      addToCart(producto);
-    }
   };
 
   useEffect(() => {
@@ -166,7 +158,6 @@ export default function DiaDelaMujerPage() {
         <QuickViewDrawer
           product={selectedProduct}
           onClose={() => setSelectedProduct(null)}
-          onAddToCart={handleDrawerAddToCart}
         />
       )}
     </div>

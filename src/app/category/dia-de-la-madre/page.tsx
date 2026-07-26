@@ -4,13 +4,11 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { getVentifyProducts } from "@/lib/ventify";
 import { MessageCircle } from "lucide-react";
-import { useCart } from "@/context/CartContext";
 import { loadExtras } from "@/lib/extras-cache";
 import ProductCard from "@/components/ProductCard";
 import QuickViewDrawer from "@/components/QuickViewDrawer";
 
 export default function DiaDeLaMadrePage() {
-  const { addToCart } = useCart();
   const [productos, setProductos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
@@ -21,12 +19,6 @@ export default function DiaDeLaMadrePage() {
 
   const handleQuickView = (producto: any) => {
     setSelectedProduct(producto);
-  };
-
-  const handleDrawerAddToCart = (producto: any, quantity: number) => {
-    for (let i = 0; i < quantity; i++) {
-      addToCart(producto);
-    }
   };
 
   useEffect(() => {
@@ -141,7 +133,6 @@ export default function DiaDeLaMadrePage() {
         <QuickViewDrawer
           product={selectedProduct}
           onClose={() => setSelectedProduct(null)}
-          onAddToCart={handleDrawerAddToCart}
         />
       )}
     </div>

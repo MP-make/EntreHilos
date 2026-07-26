@@ -5,7 +5,6 @@ import { X, Plus, Minus, ChevronRight, Sparkles, Ruler, Calendar } from "lucide-
 import { useState, useEffect, useRef } from "react";
 import { Product } from "@/lib/ventify";
 import { useCart } from "@/context/CartContext";
-import { loadExtras } from "@/lib/extras-cache";
 
 const TAMANOS = [
   { valor: "pequeno", label: "Pequeño", desc: "10–15 cm" },
@@ -29,7 +28,11 @@ const BRAND = {
 interface QuickViewDrawerProps {
   product: any;
   onClose: () => void;
-  onAddToCart: (product: any, quantity: number) => void;
+}
+
+interface LocalExtra {
+  producto: Product;
+  cantidad: number;
 }
 
 function cleanDescription(desc: string | undefined | null): string {
@@ -38,13 +41,14 @@ function cleanDescription(desc: string | undefined | null): string {
   return cleaned || 'Producto artesanal tejido a mano con amor';
 }
 
-export default function QuickViewDrawer({ product, onClose, onAddToCart }: QuickViewDrawerProps) {
+export default function QuickViewDrawer({ product, onClose }: QuickViewDrawerProps) {
   const [quantity, setQuantity] = useState(1);
   const [availableExtras, setAvailableExtras] = useState<Product[]>([]);
+  const [localExtras, setLocalExtras] = useState<LocalExtra[]>([]);
   const [tamano, setTamano] = useState("mediano");
   const [fechaEntrega, setFechaEntrega] = useState("");
   const drawerRef = useRef<HTMLDivElement>(null);
-  const { items, addToCart, addExtraToItem, removeExtraFromItem, updateExtraQuantity } = useCart();
+  const { addToCart, removeFromCart, addExtraToItem } = useCart();
 
   const fechaMinima = (() => {
     const d = new Date();
@@ -57,7 +61,11 @@ export default function QuickViewDrawer({ product, onClose, onAddToCart }: Quick
     setQuantity(1);
     setTamano("mediano");
     setFechaEntrega("");
-    loadExtras(setAvailableExtras);
+    setLocalExtras([]);
+    (async () => {
+      const { loadExtras } = await import("@/lib/extras-cache");
+      loadExtras(setAvailableExtras);
+    })();
   }, [product]);
 
   useEffect(() => {
@@ -76,12 +84,46 @@ export default function QuickViewDrawer({ product, onClose, onAddToCart }: Quick
   const isAmigurumiOrCaja = product.sku.startsWith('Amigu-') || product.sku.startsWith('Caja-');
   const canAdd = !isSoldOut || isAmigurumiOrCaja;
 
-  const handleAdd = () => {
-    onAddToCart(product, quantity);
-    handleClose();
+  const extrasTotal = localExtras.reduce((sum, e) => sum + (e.producto.precio * e.cantidad), 0);
+  const totalConExtras = (product.precio * quantity) + extrasTotal;
+
+  const handleAddExtra = (extraProduct: Product) => {
+    setLocalExtras(prev => {
+      const existing = prev.find(e => e.producto.id === extraProduct.id);
+      if (existing) {
+        if (existing.cantidad >= extraProduct.stock) return prev;
+        return prev.map(e =>
+          e.producto.id === extraProduct.id ? { ...e, cantidad: e.cantidad + 1 } : e
+        );
+      }
+      if (extraProduct.stock === 0) return prev;
+      return [...prev, { producto: extraProduct, cantidad: 1 }];
+    });
   };
 
-  const cartItem = items.find(i => i.id === product.id);
+  const handleRemoveExtra = (extraId: string) => {
+    setLocalExtras(prev => {
+      const existing = prev.find(e => e.producto.id === extraId);
+      if (!existing) return prev;
+      if (existing.cantidad <= 1) return prev.filter(e => e.producto.id !== extraId);
+      return prev.map(e =>
+        e.producto.id === extraId ? { ...e, cantidad: e.cantidad - 1 } : e
+      );
+    });
+  };
+
+  const handleAdd = () => {
+    removeFromCart(product.id);
+    for (let i = 0; i < quantity; i++) {
+      addToCart(product);
+    }
+    localExtras.forEach(extra => {
+      for (let i = 0; i < extra.cantidad; i++) {
+        addExtraToItem(product.id, extra.producto);
+      }
+    });
+    handleClose();
+  };
 
   const extrasLucesGlobos = availableExtras.filter(e =>
     !e.categoriaOriginal?.toLowerCase().includes('dulces') &&
@@ -127,8 +169,8 @@ export default function QuickViewDrawer({ product, onClose, onAddToCart }: Quick
           className="flex gap-3 overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
         >
           {items.map(extra => {
-            const extraInCart = cartItem?.extras?.find((e: any) => e.id === extra.id);
-            const qty = extraInCart ? extraInCart.cantidad : 0;
+            const localExtra = localExtras.find(e => e.producto.id === extra.id);
+            const qty = localExtra ? localExtra.cantidad : 0;
             const added = qty > 0;
 
             return (
@@ -151,22 +193,17 @@ export default function QuickViewDrawer({ product, onClose, onAddToCart }: Quick
                   <p className="font-lato text-[11px] font-semibold text-gray-800 truncate leading-tight mb-2">{extra.nombre}</p>
                   {added ? (
                     <div className="flex items-center gap-1 bg-white border border-[#EE6B8D] rounded-lg py-1.5 mt-auto">
-                      <button onClick={() => updateExtraQuantity(product.id, extra.id, qty - 1)} className="flex-1 flex items-center justify-center text-gray-600">
+                      <button onClick={() => handleRemoveExtra(extra.id)} className="flex-1 flex items-center justify-center text-gray-600">
                         <Minus size={11} />
                       </button>
                       <span className="font-lato text-[11px] font-bold text-center min-w-[16px]">{qty}</span>
-                      <button onClick={() => updateExtraQuantity(product.id, extra.id, qty + 1)} className="flex-1 flex items-center justify-center text-[#C04267]">
+                      <button onClick={() => handleAddExtra(extra)} className="flex-1 flex items-center justify-center text-[#C04267]">
                         <Plus size={11} />
                       </button>
                     </div>
                   ) : (
                     <button
-                      onClick={() => {
-                        if (!cartItem) {
-                          addToCart(product);
-                        }
-                        addExtraToItem(product.id, extra);
-                      }}
+                      onClick={() => handleAddExtra(extra)}
                       disabled={extra.stock === 0}
                       className="w-full font-lato text-[11px] font-semibold py-2 rounded-lg transition-all mt-auto flex items-center justify-center gap-1"
                       style={{
@@ -369,10 +406,27 @@ export default function QuickViewDrawer({ product, onClose, onAddToCart }: Quick
               </div>
             )}
 
+            {/* Resumen de extras seleccionados */}
+            {localExtras.length > 0 && (
+              <div className="px-6 pb-4">
+                <div className="bg-[#FDF4F7] rounded-xl p-4 border border-[#FDE8EF]">
+                  <p className="font-lato text-xs font-bold text-[#C04267] uppercase tracking-wider mb-2">Extras seleccionados</p>
+                  <div className="space-y-1.5">
+                    {localExtras.map(e => (
+                      <div key={e.producto.id} className="flex justify-between text-sm font-lato text-gray-700">
+                        <span>{e.cantidad}x {e.producto.nombre}</span>
+                        <span className="font-medium">S/ {(e.producto.precio * e.cantidad).toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="h-4" />
           </div>
 
-          {/* Sticky Bottom Bar — mejorada */}
+          {/* Sticky Bottom Bar */}
           <div className="sticky bottom-0 left-0 right-0 bg-gradient-to-b from-white to-gray-50/80 border-t-2 border-dashed px-6 py-5" style={{ borderColor: BRAND.line }}>
             <div className="flex items-center gap-4">
               <div className="flex items-center border-2 rounded-full" style={{ borderColor: BRAND.line }}>
@@ -410,7 +464,7 @@ export default function QuickViewDrawer({ product, onClose, onAddToCart }: Quick
                   ? 'Agotado'
                   : isSoldOut && isAmigurumiOrCaja
                     ? 'Solicitar a pedido'
-                    : `Agregar — S/ ${(product.precio * quantity).toFixed(2)}`}
+                    : `Agregar — S/ ${totalConExtras.toFixed(2)}`}
                 {canAdd && !isSoldOut && <ChevronRight size={18} />}
               </button>
             </div>

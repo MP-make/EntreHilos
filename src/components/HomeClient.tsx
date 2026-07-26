@@ -7,7 +7,6 @@ import { slugify } from "@/lib/utils";
 import { Sparkles, Heart, Package, Truck } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
-import { useCart } from "@/context/CartContext";
 import { loadExtras } from "@/lib/extras-cache";
 import QuickViewDrawer from "@/components/QuickViewDrawer";
 import ProductCard from "@/components/ProductCard";
@@ -315,8 +314,6 @@ export default function HomeClient({ products }: HomeClientProps) {
     : 'Ramos';
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
-  const { addToCart } = useCart();
-
   useEffect(() => {
     loadExtras(() => {});
   }, []);
@@ -333,12 +330,6 @@ export default function HomeClient({ products }: HomeClientProps) {
   const handleCloseDrawer = useCallback(() => {
     setSelectedProduct(null);
   }, []);
-
-  const handleDrawerAddToCart = useCallback((producto: any, quantity: number) => {
-    for (let i = 0; i < quantity; i++) {
-      addToCart(producto);
-    }
-  }, [addToCart]);
 
   const getProductsByTab = (tab: TabType) => {
     let filtered: typeof enrichedProducts = [];
@@ -380,7 +371,6 @@ export default function HomeClient({ products }: HomeClientProps) {
         <QuickViewDrawer
           product={selectedProduct}
           onClose={handleCloseDrawer}
-          onAddToCart={handleDrawerAddToCart}
         />
       )}
       <HeroCarousel products={enrichedProducts} />

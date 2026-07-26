@@ -7,8 +7,15 @@ import { useAuth } from "@/context/AuthContext";
 import {
   UserCircle, Package, Bell, LogOut, Home,
   Clock, CheckCircle2, XCircle, Loader2, ChevronRight,
-  Mail, Phone, Calendar, Ruler
+  Mail, Phone, Calendar, Ruler, MapPin
 } from "lucide-react";
+
+interface ProfileData {
+  nombre: string | null;
+  telefono: string | null;
+  email: string | null;
+  direccion: string | null;
+}
 
 type Tab = "perfil" | "pedidos" | "notificaciones";
 
@@ -53,11 +60,34 @@ export default function PerfilPage() {
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [personalizados, setPersonalizados] = useState<PedidoPersonalizado[]>([]);
   const [loadingPedidos, setLoadingPedidos] = useState(false);
+  const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [loadingProfile, setLoadingProfile] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) router.push("/");
   }, [user, loading, router]);
+
+  useEffect(() => {
+    if (!user || tab !== "perfil") return;
+    (async () => {
+      setLoadingProfile(true);
+      try {
+        const { getSupabaseBrowserClient } = await import("@/lib/supabase/client");
+        const supabase = getSupabaseBrowserClient();
+        const { data } = await supabase
+          .from("profiles")
+          .select("nombre, telefono, email, direccion")
+          .eq("id", user.id)
+          .maybeSingle();
+        if (data) setProfile(data);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoadingProfile(false);
+      }
+    })();
+  }, [user, tab]);
 
   useEffect(() => {
     if (!user || tab !== "pedidos") return;
@@ -198,6 +228,11 @@ export default function PerfilPage() {
           {tab === "perfil" && (
             <div className="space-y-6">
               <h2 className="font-fredoka text-xl font-bold text-[#C04267]">Información personal</h2>
+              {loadingProfile ? (
+                <div className="flex items-center justify-center py-10">
+                  <Loader2 size={20} className="animate-spin text-[#EE6B8D]" />
+                </div>
+              ) : (
               <div className="space-y-3">
                 <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-[#FDE8EF]">
                   <UserCircle size={20} className="text-[#EE6B8D]" />
@@ -213,16 +248,26 @@ export default function PerfilPage() {
                     <p className="font-quicksand text-sm font-semibold text-gray-800">{user.email}</p>
                   </div>
                 </div>
-                {user.phone && (
+                {profile && profile.telefono && (
                   <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-[#FDE8EF]">
                     <Phone size={20} className="text-[#EE6B8D]" />
                     <div>
                       <p className="font-quicksand text-xs text-gray-400">Teléfono</p>
-                      <p className="font-quicksand text-sm font-semibold text-gray-800">{user.phone}</p>
+                      <p className="font-quicksand text-sm font-semibold text-gray-800">{profile.telefono}</p>
+                    </div>
+                  </div>
+                )}
+                {profile && profile.direccion && (
+                  <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-[#FDE8EF]">
+                    <MapPin size={20} className="text-[#EE6B8D]" />
+                    <div>
+                      <p className="font-quicksand text-xs text-gray-400">Dirección de envío</p>
+                      <p className="font-quicksand text-sm font-semibold text-gray-800">{profile.direccion}</p>
                     </div>
                   </div>
                 )}
               </div>
+              )}
             </div>
           )}
 

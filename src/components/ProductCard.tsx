@@ -51,14 +51,9 @@ export default function ProductCard({
     e.stopPropagation();
 
     if (soldOut && isAmigurumiOrCaja) {
-      const productoData = encodeURIComponent(JSON.stringify({
-        id: producto.id,
-        nombre: producto.nombre,
-        precio: producto.precio,
-        imagen: producto.imagen,
-        sku: producto.sku,
-      }));
-      window.location.href = `/pedido-personalizado?producto=${productoData}`;
+      if (onQuickView) {
+        onQuickView(producto);
+      }
       return;
     }
     if (soldOut) return;
