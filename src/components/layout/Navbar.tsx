@@ -14,10 +14,10 @@ import { getVentifyProducts } from "@/lib/ventify";
 import { Product } from "@/lib/ventify";
 
 const categorias = [
-  { href: "/category/ramos", label: "Ramos" },
-  { href: "/category/amigurumis", label: "Amigurumis" },
-  { href: "/category/cajas", label: "Cajas" },
-  { href: "/category/hotwheels", label: "HotWheels" },
+  { href: "/catalogo/ramos", label: "Ramos" },
+  { href: "/catalogo/amigurumis", label: "Amigurumis" },
+  { href: "/catalogo/cajas", label: "Cajas" },
+  { href: "/catalogo/hotwheels", label: "HotWheels" },
 ];
 
 const eventos = [
@@ -184,7 +184,7 @@ export default function Navbar() {
                   Día de la Novia
                 </Link>
 
-                <Dropdown label="Categorías" items={categorias} />
+                <Dropdown label="Catálogo" items={categorias} />
                 <Dropdown label="Eventos" items={eventos} />
 
                 <Link 
@@ -329,7 +329,7 @@ export default function Navbar() {
                 onClick={() => setMobileExpanded(mobileExpanded === 'categorias' ? null : 'categorias')}
                 className="flex items-center justify-between w-full px-6 py-3.5 font-lato text-base text-gray-700 border-l-4 border-transparent hover:border-[#EE6B8D] hover:bg-[#FDF4F7] hover:text-[#C04267] transition-all"
               >
-                Categorías
+                Catálogo
                 <ChevronDown size={16} className={`transition-transform ${mobileExpanded === 'categorias' ? 'rotate-180' : ''}`} />
               </button>
               {mobileExpanded === 'categorias' && (

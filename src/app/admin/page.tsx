@@ -505,7 +505,7 @@ export default function AdminPage() {
                   <input
                     value={editLinkUrl}
                     onChange={(e) => setEditLinkUrl(e.target.value)}
-                    placeholder="Ej: /category/cajas, /category/amigurumis, /personalizados"
+                    placeholder="Ej: /catalogo/cajas, /catalogo/amigurumis, /personalizados"
                     className="w-full px-3 py-2.5 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] mb-4"
                   />
 
