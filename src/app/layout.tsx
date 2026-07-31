@@ -3,6 +3,7 @@ import { Fredoka, Quicksand, Caveat } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
 import { AuthProvider } from "@/context/AuthContext";
+import { ReviewsProvider } from "@/context/ReviewsContext";
 import NavigationWrapper from "@/components/layout/NavigationWrapper";
 import { ToastProvider } from "@/components/Toast";
 
@@ -48,9 +49,11 @@ export default function RootLayout({
         <AuthProvider>
           <ToastProvider>
             <CartProvider>
-              <NavigationWrapper>
-                {children}
-              </NavigationWrapper>
+              <ReviewsProvider>
+                <NavigationWrapper>
+                  {children}
+                </NavigationWrapper>
+              </ReviewsProvider>
             </CartProvider>
           </ToastProvider>
         </AuthProvider>

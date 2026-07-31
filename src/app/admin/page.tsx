@@ -6,17 +6,20 @@ import {
   LayoutDashboard, ShoppingBag, MessageSquare, ClipboardList, Mail,
   Image as ImageIcon, Users, LogOut, Home, Loader2, Eye, ExternalLink,
   UserCheck, Upload, X, Check, ChevronRight, Search, Plus, Trash2, Sparkles,
+  Star, Package,
 } from "lucide-react";
-import { getVentifyProducts } from "@/lib/ventify";
+import { getVentifyProducts, getAllVentifyProducts, getInactiveProductIds } from "@/lib/ventify";
 
-type Tab = "dashboard" | "inicio" | "pedidos" | "mensajes" | "reclamaciones" | "personalizados" | "heroes" | "suscriptores" | "usuarios" | "eventos";
+type Tab = "dashboard" | "inicio" | "pedidos" | "mensajes" | "reclamaciones" | "personalizados" | "heroes" | "suscriptores" | "usuarios" | "eventos" | "resenas" | "productos";
 
 const menuItems: { id: Tab; label: string; icon: any }[] = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "inicio", label: "Inicio", icon: Home },
   { id: "pedidos", label: "Pedidos", icon: ShoppingBag },
+  { id: "productos", label: "Productos", icon: Package },
   { id: "personalizados", label: "Personalizados", icon: Mail },
   { id: "eventos", label: "Eventos", icon: Sparkles },
+  { id: "resenas", label: "Reseñas", icon: Star },
   { id: "mensajes", label: "Mensajes", icon: MessageSquare },
   { id: "reclamaciones", label: "Reclamaciones", icon: ClipboardList },
   { id: "heroes", label: "Heroes", icon: ImageIcon },
@@ -69,6 +72,88 @@ function getColumns(data: any[]): string[] {
   return Object.keys(data[0]).filter((k) => k !== "id");
 }
 
+// ===== Filtros de productos (mismo orden/agrupación que la web) =====
+
+const CATALOGO_FILTERS: { key: string; label: string }[] = [
+  { key: "cat-ramos", label: "Ramos" },
+  { key: "cat-amigurumis", label: "Amigurumis" },
+  { key: "cat-cajas", label: "Cajas" },
+  { key: "cat-hotwheels", label: "HotWheels" },
+  { key: "ver-todo", label: "Ver Todo" },
+];
+
+const EVENTO_FILTERS: { key: string; label: string }[] = [
+  { key: "evento-dia-de-la-novia", label: "Día de la Novia" },
+  { key: "evento-dia-de-la-mujer", label: "Día de la Mujer" },
+  { key: "evento-san-valentin", label: "San Valentín" },
+  { key: "evento-dia-de-la-madre", label: "Día de la Madre" },
+  { key: "evento-flores-amarillas", label: "Flores Amarillas" },
+  { key: "evento-personalizados", label: "Personalizados" },
+];
+
+function filterByEventSlug(products: any[], slug: string): any[] {
+  switch (slug) {
+    case "dia-de-la-mujer":
+      return products.filter((p) =>
+        p.sku?.startsWith("Mujer-") || p.nombre?.toLowerCase().includes("mujer") || p.sku?.startsWith("Ramos-")
+      );
+    case "san-valentin":
+      return products.filter((p) =>
+        (p.sku?.startsWith("Ramos-") || ["Caja-001", "Caja-002", "Caja-003"].includes(p.sku)) && p.stock > 0
+      ).sort((a, b) => b.stock - a.stock);
+    case "dia-de-la-novia":
+      return products.filter((p) =>
+        p.sku?.startsWith("Ramos-") || ["Caja-001", "Caja-002", "Caja-003"].includes(p.sku)
+      ).sort((a, b) => b.stock - a.stock);
+    case "dia-de-la-madre":
+      return products.filter((p) => p.sku?.startsWith("Madre-") || p.sku?.startsWith("Ramos-"));
+    case "flores-amarillas":
+      return products.filter((p) =>
+        p.categoriaOriginal?.toLowerCase().includes("flores amarillas") ||
+        p.nombre?.toLowerCase().includes("flores amarillas") || p.sku?.startsWith("Flores-")
+      );
+    case "personalizados":
+      return products.filter((p) => p.sku?.startsWith("Amigu-"));
+    case "hotwheels":
+      return products.filter((p) =>
+        p.sku?.startsWith("Cua-") || p.sku?.startsWith("Carr-") || ["Caja-004", "Caja-005"].includes(p.sku)
+      );
+    default:
+      return [...products];
+  }
+}
+
+function filterProductos(products: any[], filter: string): any[] {
+  switch (filter) {
+    case "cat-ramos":
+      return products.filter((p) => p.sku?.startsWith("Ramos-") && p.stock > 0).sort((a, b) => b.stock - a.stock);
+    case "cat-amigurumis":
+      return products.filter((p) => p.sku?.startsWith("Amigu-"));
+    case "cat-cajas":
+      return products.filter((p) => ["Caja-001", "Caja-002", "Caja-003", "Caja-004", "Caja-005"].includes(p.sku));
+    case "cat-hotwheels":
+      return products.filter((p) =>
+        p.sku?.startsWith("Cua-") || p.sku?.startsWith("Carr-") || ["Caja-004", "Caja-005"].includes(p.sku)
+      );
+    case "evento-dia-de-la-mujer":
+      return filterByEventSlug(products, "dia-de-la-mujer");
+    case "evento-san-valentin":
+      return filterByEventSlug(products, "san-valentin");
+    case "evento-dia-de-la-novia":
+      return filterByEventSlug(products, "dia-de-la-novia");
+    case "evento-dia-de-la-madre":
+      return filterByEventSlug(products, "dia-de-la-madre");
+    case "evento-flores-amarillas":
+      return filterByEventSlug(products, "flores-amarillas");
+    case "evento-personalizados":
+      return filterByEventSlug(products, "personalizados");
+    case "page-personalizados":
+      return products.filter((p) => p.sku?.startsWith("Amigu-") || p.sku?.startsWith("Carr-"));
+    default:
+      return [...products];
+  }
+}
+
 export default function AdminPage() {
   const router = useRouter();
   const [authorized, setAuthorized] = useState(false);
@@ -94,6 +179,11 @@ export default function AdminPage() {
   const [productSearch, setProductSearch] = useState("");
   const [showProductPicker, setShowProductPicker] = useState(false);
   const [pickingProductFor, setPickingProductFor] = useState<number | null>(null);
+  const [rawProducts, setRawProducts] = useState<any[]>([]);
+  const [inactiveIds, setInactiveIds] = useState<Set<string>>(new Set());
+  const [productosSearch, setProductosSearch] = useState("");
+  const [productosFilter, setProductosFilter] = useState("ver-todo");
+  const [eventos, setEventos] = useState<any[]>([]);
   const tempFileRef = useRef<HTMLInputElement | null>(null);
   const tempFileRefMobile = useRef<HTMLInputElement | null>(null);
   const sectionImgRef = useRef<HTMLInputElement | null>(null);
@@ -106,6 +196,13 @@ export default function AdminPage() {
   const [editEventoDescripcion, setEditEventoDescripcion] = useState("");
   const [editEventoImagen, setEditEventoImagen] = useState("");
   const [isNewEvento, setIsNewEvento] = useState(false);
+
+  const [showResenaForm, setShowResenaForm] = useState(false);
+  const [resenaSearch, setResenaSearch] = useState("");
+  const [resenaProducto, setResenaProducto] = useState<any | null>(null);
+  const [resenaNombre, setResenaNombre] = useState("");
+  const [resenaCalificacion, setResenaCalificacion] = useState(0);
+  const [resenaComentario, setResenaComentario] = useState("");
 
   const [editingSection, setEditingSection] = useState<any | null>(null);
   const [sectionTitulo, setSectionTitulo] = useState("");
@@ -258,10 +355,24 @@ export default function AdminPage() {
   useEffect(() => { fetchData(); }, [fetchData]);
 
   useEffect(() => {
-    if (tab === "heroes" && allProducts.length === 0) {
+    if ((tab === "heroes" || tab === "resenas") && allProducts.length === 0) {
       getVentifyProducts().then(setAllProducts).catch(() => {});
     }
   }, [tab, allProducts.length]);
+
+  useEffect(() => {
+    if (tab === "productos") {
+      if (rawProducts.length === 0) {
+        getAllVentifyProducts().then(setRawProducts).catch(() => {});
+      }
+      if (inactiveIds.size === 0) {
+        getInactiveProductIds().then((ids) => setInactiveIds(new Set(ids))).catch(() => {});
+      }
+      if (eventos.length === 0) {
+        fetch("/api/eventos").then((r) => r.json()).then(setEventos).catch(() => {});
+      }
+    }
+  }, [tab, rawProducts.length, inactiveIds.size, eventos.length]);
 
   useEffect(() => {
     if (editingHero) {
@@ -360,6 +471,62 @@ export default function AdminPage() {
   const handlePersonalizadoEstado = async (id: number, estado: string) => {
     const ok = await apiPatch({ action: "personalizado-estado", id, estado });
     if (ok) fetchData();
+  };
+
+  const handleAprobarResena = async (id: number, aprobado: boolean) => {
+    const ok = await apiPatch({ action: "aprobar-resena", id, aprobado });
+    if (ok) setData((prev) => prev.map((item: any) => item.id === id ? { ...item, aprobado } : item));
+  };
+
+  const handleEliminarResena = async (id: number) => {
+    const ok = await apiPatch({ action: "eliminar-resena", id });
+    if (ok) setData((prev) => prev.filter((item: any) => item.id !== id));
+  };
+
+  const handleToggleProducto = async (producto: any, activo: boolean) => {
+    const ok = await apiPatch({ action: "set-producto-activo", producto_id: producto.id, activo });
+    if (ok) {
+      setInactiveIds((prev) => {
+        const next = new Set(prev);
+        if (activo) next.delete(producto.id);
+        else next.add(producto.id);
+        return next;
+      });
+    }
+  };
+
+  const handleCrearResenaManual = async () => {
+    if (!resenaProducto) {
+      alert("Selecciona un producto para la reseña");
+      return;
+    }
+    if (resenaCalificacion < 1 || resenaCalificacion > 5) {
+      alert("La calificación debe estar entre 1 y 5 estrellas");
+      return;
+    }
+    const res = await fetch("/api/admin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        resena: {
+          producto_id: resenaProducto.id,
+          producto_sku: resenaProducto.sku,
+          producto_nombre: resenaProducto.nombre,
+          nombre_cliente: resenaNombre.trim() || "Equipo Entre Hilos",
+          calificacion: resenaCalificacion,
+          comentario: resenaComentario.trim() || null,
+        },
+      }),
+    });
+    if (res.ok) {
+      setShowResenaForm(false);
+      setResenaProducto(null);
+      setResenaNombre("");
+      setResenaCalificacion(0);
+      setResenaComentario("");
+      setResenaSearch("");
+      fetchData();
+    }
   };
 
   async function handleSignOut() {
@@ -483,7 +650,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        {tab !== "dashboard" && !loading && data.length === 0 && (
+        {tab !== "dashboard" && tab !== "resenas" && tab !== "productos" && !loading && data.length === 0 && (
           <div className="text-center py-20 bg-white rounded-2xl border border-[#FDE8EF]">
             <p className="font-quicksand text-gray-400">No hay datos</p>
           </div>
@@ -1564,7 +1731,395 @@ export default function AdminPage() {
           </div>
         )}
 
-        {tab !== "dashboard" && tab !== "heroes" && tab !== "inicio" && tab !== "eventos" && !loading && data.length > 0 && (
+        {tab === "productos" && (() => {
+          const featuredEvent = eventos.find((e: any) => e.featured);
+          const featuredEventSlug = featuredEvent?.slug;
+          const productosFiltrados = productosFilter === "evento-destacado"
+            ? (featuredEventSlug ? filterByEventSlug(rawProducts, featuredEventSlug) : [])
+            : filterProductos(rawProducts, productosFilter);
+          const productosVisibles = productosFiltrados.filter((p: any) =>
+            !productosSearch ||
+            p.nombre?.toLowerCase().includes(productosSearch.toLowerCase()) ||
+            p.sku?.toLowerCase().includes(productosSearch.toLowerCase())
+          );
+          const filterLabel =
+            productosFilter === "evento-destacado" && featuredEvent
+              ? featuredEvent.nombre
+              : productosFilter === "ver-todo"
+                ? "todo el catálogo"
+                : [...CATALOGO_FILTERS, ...EVENTO_FILTERS, { key: "page-personalizados", label: "Personalizados" }]
+                    .find((f) => f.key === productosFilter)?.label || "todo el catálogo";
+
+          return (
+          <div>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
+              <div>
+                <h2 className="font-fredoka text-xl font-bold text-[#C04267]">Productos</h2>
+                {rawProducts.length > 0 && (
+                  <p className="font-quicksand text-xs text-gray-400 mt-1">
+                    {productosFiltrados.length} producto{productosFiltrados.length !== 1 ? "s" : ""} en {filterLabel} · {inactiveIds.size} oculto{inactiveIds.size !== 1 ? "s" : ""} de la web
+                  </p>
+                )}
+              </div>
+              <div className="relative w-full sm:w-80">
+                <input
+                  value={productosSearch}
+                  onChange={(e) => setProductosSearch(e.target.value)}
+                  placeholder="Buscar producto por nombre o SKU..."
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] pr-10"
+                />
+                <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300" />
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-[#FDE8EF] shadow-sm p-4 mb-6">
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <span className="font-quicksand text-[10px] font-bold uppercase tracking-wider text-gray-400 mr-1 min-w-[64px]">Catálogo</span>
+                {CATALOGO_FILTERS.map((f) => (
+                  <button
+                    key={f.key}
+                    onClick={() => setProductosFilter(f.key)}
+                    className={`font-quicksand text-xs font-semibold px-3 py-1.5 rounded-full transition-all ${
+                      productosFilter === f.key ? "bg-[#EE6B8D] text-white shadow-sm" : "bg-gray-100 text-gray-600 hover:bg-[#FDE8EF] hover:text-[#C04267]"
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <span className="font-quicksand text-[10px] font-bold uppercase tracking-wider text-gray-400 mr-1 min-w-[64px]">Eventos</span>
+                {EVENTO_FILTERS.map((f) => (
+                  <button
+                    key={f.key}
+                    onClick={() => setProductosFilter(f.key)}
+                    className={`font-quicksand text-xs font-semibold px-3 py-1.5 rounded-full transition-all ${
+                      productosFilter === f.key ? "bg-[#EE6B8D] text-white shadow-sm" : "bg-gray-100 text-gray-600 hover:bg-[#FDE8EF] hover:text-[#C04267]"
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-quicksand text-[10px] font-bold uppercase tracking-wider text-gray-400 mr-1 min-w-[64px]">Páginas</span>
+                <button
+                  onClick={() => setProductosFilter("page-personalizados")}
+                  className={`font-quicksand text-xs font-semibold px-3 py-1.5 rounded-full transition-all ${
+                    productosFilter === "page-personalizados" ? "bg-[#EE6B8D] text-white shadow-sm" : "bg-gray-100 text-gray-600 hover:bg-[#FDE8EF] hover:text-[#C04267]"
+                  }`}
+                >
+                  Personalizados
+                </button>
+                {featuredEvent && (
+                  <button
+                    onClick={() => setProductosFilter("evento-destacado")}
+                    className={`font-quicksand text-xs font-semibold px-3 py-1.5 rounded-full transition-all ${
+                      productosFilter === "evento-destacado" ? "bg-[#C04267] text-white shadow-sm" : "bg-[#FDE8EF] text-[#C04267] hover:bg-[#F3D5E0]"
+                    }`}
+                  >
+                    <Star size={12} className="inline mr-1 -mt-0.5" fill="currentColor" />
+                    Destacado: {featuredEvent.nombre}
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {rawProducts.length === 0 ? (
+              <div className="flex items-center justify-center py-20 bg-white rounded-2xl border border-[#FDE8EF]">
+                <div className="flex flex-col items-center gap-2">
+                  <Loader2 size={24} className="animate-spin text-[#EE6B8D]" />
+                  <p className="font-quicksand text-xs text-gray-400">Cargando productos...</p>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl border border-[#FDE8EF] shadow-sm overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-[#FDE8EF] bg-gray-50/50">
+                      <th className="px-3 py-3 font-quicksand text-xs text-gray-500 uppercase tracking-wider whitespace-nowrap">Producto</th>
+                      <th className="px-3 py-3 font-quicksand text-xs text-gray-500 uppercase tracking-wider whitespace-nowrap">SKU</th>
+                      <th className="px-3 py-3 font-quicksand text-xs text-gray-500 uppercase tracking-wider whitespace-nowrap">Categoría</th>
+                      <th className="px-3 py-3 font-quicksand text-xs text-gray-500 uppercase tracking-wider whitespace-nowrap">Precio</th>
+                      <th className="px-3 py-3 font-quicksand text-xs text-gray-500 uppercase tracking-wider whitespace-nowrap">Stock</th>
+                      <th className="px-3 py-3 font-quicksand text-xs text-gray-500 uppercase tracking-wider whitespace-nowrap">Estado</th>
+                      <th className="px-3 py-3 font-quicksand text-xs text-gray-500 uppercase tracking-wider whitespace-nowrap text-right">Visible en web</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {productosVisibles.map((p: any) => {
+                      const isActive = !inactiveIds.has(p.id);
+                      return (
+                        <tr
+                          key={p.id}
+                          className={`border-b border-gray-50 transition-colors ${
+                            isActive ? "hover:bg-[#FDF4F7]/50" : "bg-gray-50/50 hover:bg-gray-100/60"
+                          }`}
+                        >
+                          <td className="px-3 py-3">
+                            <div className="flex items-center gap-3">
+                              {p.imagen && <img src={p.imagen} alt="" className="w-10 h-10 rounded-lg object-cover bg-gray-100 flex-shrink-0" />}
+                              <p className="font-quicksand text-xs font-semibold text-gray-800 max-w-[220px] truncate" title={p.nombre}>{p.nombre}</p>
+                            </div>
+                          </td>
+                          <td className="px-3 py-3 font-quicksand text-[11px] text-gray-500">{p.sku}</td>
+                          <td className="px-3 py-3 font-quicksand text-xs text-gray-500">{p.categoria}</td>
+                          <td className="px-3 py-3 font-quicksand text-xs text-gray-700 whitespace-nowrap">S/ {p.precio?.toFixed(2)}</td>
+                          <td className="px-3 py-3">
+                            <span className={`font-quicksand text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                              p.stock === 0 ? "bg-gray-100 text-gray-500" : p.stock <= 5 ? "bg-amber-100 text-amber-700" : "bg-green-100 text-green-700"
+                            }`}>
+                              {p.stock === 0 ? "A pedido" : `${p.stock} uds`}
+                            </span>
+                          </td>
+                          <td className="px-3 py-3">
+                            <span className={`font-quicksand text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                              isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"
+                            }`}>
+                              {isActive ? "Activo" : "Oculto"}
+                            </span>
+                          </td>
+                          <td className="px-3 py-3 text-right">
+                            <button
+                              onClick={() => handleToggleProducto(p, !isActive)}
+                              title={isActive ? "Ocultar de la web" : "Mostrar en la web"}
+                              className={`relative inline-flex w-11 h-6 rounded-full transition-colors ${isActive ? "bg-green-400" : "bg-gray-300"}`}
+                            >
+                              <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${isActive ? "translate-x-5" : ""}`} />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {productosVisibles.length === 0 && (
+                      <tr>
+                        <td colSpan={7} className="px-3 py-10 text-center font-quicksand text-xs text-gray-400">
+                          {productosSearch
+                            ? `No se encontraron productos con "${productosSearch}"`
+                            : productosFiltrados.length === 0
+                              ? `No hay productos en este filtro.`
+                              : "Cargando productos..."}
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+          );
+        })()}
+
+        {tab === "resenas" && !loading && (
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-fredoka text-xl font-bold text-[#C04267]">Reseñas</h2>
+              <button onClick={() => {
+                setShowResenaForm(!showResenaForm);
+                if (!allProducts.length) getVentifyProducts().then(setAllProducts).catch(() => {});
+              }}
+                className="flex items-center gap-2 text-xs text-white bg-[#EE6B8D] hover:bg-[#C04267] px-4 py-2.5 rounded-lg font-quicksand font-semibold transition-colors shadow-sm"
+              >
+                <Plus size={14} />
+                Agregar reseña manual
+              </button>
+            </div>
+
+            {showResenaForm && (
+              <div className="bg-white rounded-2xl border border-[#FDE8EF] shadow-sm p-5 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2">
+                    <label className="font-quicksand text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 block">
+                      Producto
+                    </label>
+                    <div className="relative">
+                      <input
+                        value={resenaSearch}
+                        onChange={(e) => setResenaSearch(e.target.value)}
+                        placeholder="Buscar producto por nombre o SKU..."
+                        className="w-full px-3 py-2.5 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] pr-10"
+                      />
+                      <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300" />
+                    </div>
+                    {resenaSearch && (
+                      <div className="mt-2 border border-gray-200 rounded-xl overflow-hidden max-h-52 overflow-y-auto">
+                        {allProducts
+                          .filter((p: any) =>
+                            !resenaSearch || p.nombre?.toLowerCase().includes(resenaSearch.toLowerCase()) || p.sku?.toLowerCase().includes(resenaSearch.toLowerCase())
+                          )
+                          .slice(0, 20)
+                          .map((p: any) => (
+                            <button
+                              key={p.id}
+                              onClick={() => { setResenaProducto(p); setResenaSearch(""); }}
+                              className={`w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-[#FDF4F7] transition-colors ${resenaProducto?.id === p.id ? 'bg-[#FDF4F7] border-l-4 border-[#EE6B8D]' : ''}`}
+                            >
+                              {p.imagen && <img src={p.imagen} alt="" className="w-10 h-10 rounded-lg object-cover bg-gray-100 flex-shrink-0" />}
+                              <div className="min-w-0 flex-1">
+                                <p className="font-quicksand text-xs font-semibold text-gray-800 truncate">{p.nombre}</p>
+                                <p className="font-quicksand text-[10px] text-gray-400">{p.sku} · S/ {p.precio?.toFixed(2)}</p>
+                              </div>
+                              {resenaProducto?.id === p.id && <Check size={16} className="text-[#EE6B8D] flex-shrink-0" />}
+                            </button>
+                          ))}
+                        {allProducts.length === 0 && (
+                          <p className="p-4 text-center font-quicksand text-xs text-gray-400">Cargando productos...</p>
+                        )}
+                      </div>
+                    )}
+                    {resenaProducto && (
+                      <div className="bg-[#FDE8EF] rounded-xl p-3 flex items-center gap-3 mt-2">
+                        <Check size={18} className="text-[#C04267] flex-shrink-0" />
+                        <p className="font-quicksand text-xs text-gray-700">
+                          Producto: <strong>{resenaProducto.nombre}</strong> · {resenaProducto.sku}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="font-quicksand text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 block">Nombre del cliente</label>
+                    <input
+                      value={resenaNombre}
+                      onChange={(e) => setResenaNombre(e.target.value)}
+                      placeholder="Ej: María G."
+                      className="w-full px-3 py-2.5 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-quicksand text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 block">Calificación</label>
+                    <div className="flex items-center gap-1 py-2">
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <button key={i} onClick={() => setResenaCalificacion(i)} className="p-0.5">
+                          <Star size={22} className={i <= resenaCalificacion ? "text-[#F5A623]" : "text-gray-200"} fill={i <= resenaCalificacion ? "#F5A623" : "none"} />
+                        </button>
+                      ))}
+                      {resenaCalificacion > 0 && (
+                        <span className="font-quicksand text-xs text-gray-500 ml-2">{resenaCalificacion}/5</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="font-quicksand text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 block">Comentario (opcional)</label>
+                    <textarea
+                      value={resenaComentario}
+                      onChange={(e) => setResenaComentario(e.target.value)}
+                      rows={2}
+                      placeholder="Ej: Hermoso trabajo, calidad excelente"
+                      className="w-full px-3 py-2.5 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] resize-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2 mt-4">
+                  <button onClick={() => setShowResenaForm(false)}
+                    className="px-4 py-2.5 rounded-lg font-quicksand text-xs font-semibold text-gray-500 bg-gray-100 hover:bg-gray-200 transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button onClick={handleCrearResenaManual}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-quicksand text-xs font-semibold text-white bg-[#EE6B8D] hover:bg-[#C04267] transition-colors"
+                  >
+                    <Check size={14} />
+                    Publicar reseña
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {data.length === 0 && (
+              <div className="text-center py-16 bg-white rounded-2xl border border-[#FDE8EF]">
+                <Star size={28} className="mx-auto text-gray-200 mb-2" />
+                <p className="font-quicksand text-gray-400">No hay reseñas todavía.</p>
+                <p className="font-quicksand text-xs text-gray-400 mt-1">
+                  Cuando un cliente califique, aparecerá aquí para que la apruebes o elimines.
+                </p>
+              </div>
+            )}
+
+            {data.length > 0 && (
+              <div className="bg-white rounded-2xl border border-[#FDE8EF] shadow-sm overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-[#FDE8EF] bg-gray-50/50">
+                      <th className="px-3 py-3 font-quicksand text-xs text-gray-500 uppercase tracking-wider whitespace-nowrap">Producto</th>
+                      <th className="px-3 py-3 font-quicksand text-xs text-gray-500 uppercase tracking-wider whitespace-nowrap">Cliente</th>
+                      <th className="px-3 py-3 font-quicksand text-xs text-gray-500 uppercase tracking-wider whitespace-nowrap">Calificación</th>
+                      <th className="px-3 py-3 font-quicksand text-xs text-gray-500 uppercase tracking-wider whitespace-nowrap">Comentario</th>
+                      <th className="px-3 py-3 font-quicksand text-xs text-gray-500 uppercase tracking-wider whitespace-nowrap">Estado</th>
+                      <th className="px-3 py-3 font-quicksand text-xs text-gray-500 uppercase tracking-wider whitespace-nowrap">Fecha</th>
+                      <th className="px-3 py-3 font-quicksand text-xs text-gray-500 uppercase tracking-wider whitespace-nowrap">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.map((row: any) => (
+                      <tr key={row.id} className="border-b border-gray-50 hover:bg-[#FDF4F7]/50 transition-colors">
+                        <td className="px-3 py-3">
+                          <p className="font-quicksand text-xs font-semibold text-gray-800 max-w-[220px] truncate" title={row.producto_nombre || ""}>
+                            {row.producto_nombre || "—"}
+                          </p>
+                          <p className="font-quicksand text-[10px] text-gray-400">{row.producto_sku || ""}</p>
+                        </td>
+                        <td className="px-3 py-3 font-quicksand text-xs text-gray-700">{row.nombre_cliente}</td>
+                        <td className="px-3 py-3">
+                          <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-0.5">
+                              {[1, 2, 3, 4, 5].map((i) => (
+                                <Star key={i} size={12} className={i <= row.calificacion ? "text-[#F5A623]" : "text-gray-200"} fill={i <= row.calificacion ? "#F5A623" : "none"} />
+                              ))}
+                            </div>
+                            <span className="font-quicksand text-xs text-gray-500 ml-1">{row.calificacion}</span>
+                          </div>
+                        </td>
+                        <td className="px-3 py-3 font-quicksand text-xs text-gray-500 max-w-[260px]">
+                          <p className="truncate" title={row.comentario || ""}>{row.comentario || "—"}</p>
+                          {row.es_manual && (
+                            <span className="text-[10px] uppercase tracking-wider text-purple-500 bg-purple-50 px-2 py-0.5 rounded-full">Manual</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-3">
+                          <span className={`font-quicksand text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                            row.aprobado ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"
+                          }`}>
+                            {row.aprobado ? "Aprobada" : "Pendiente"}
+                          </span>
+                        </td>
+                        <td className="px-3 py-3 font-quicksand text-xs text-gray-500 whitespace-nowrap">{formatDate(row.created_at)}</td>
+                        <td className="px-3 py-3">
+                          <div className="flex flex-wrap gap-1.5">
+                            {!row.aprobado && (
+                              <button onClick={() => handleAprobarResena(row.id, true)}
+                                className="flex items-center gap-1 text-xs text-[#EE6B8D] hover:text-[#C04267] font-quicksand font-medium"
+                              >
+                                <Check size={14} /> Aprobar
+                              </button>
+                            )}
+                            {row.aprobado && (
+                              <button onClick={() => handleAprobarResena(row.id, false)}
+                                className="flex items-center gap-1 text-xs text-amber-600 hover:text-amber-700 font-quicksand font-medium"
+                              >
+                                <Eye size={14} /> Ocultar
+                              </button>
+                            )}
+                            <button onClick={() => handleEliminarResena(row.id)}
+                              className="flex items-center gap-1 text-xs text-red-400 hover:text-red-600 font-quicksand font-medium"
+                            >
+                              <Trash2 size={14} /> Eliminar
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {tab !== "dashboard" && tab !== "heroes" && tab !== "inicio" && tab !== "eventos" && tab !== "resenas" && tab !== "productos" && !loading && data.length > 0 && (
           <div>
             <h2 className="font-fredoka text-xl font-bold text-[#C04267] mb-6 capitalize">
               {menuItems.find(m => m.id === tab)?.label || tab}

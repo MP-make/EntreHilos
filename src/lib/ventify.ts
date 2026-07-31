@@ -1,5 +1,7 @@
 // Servicio de integración con Ventify API - Documentación Oficial
 
+import { createClient } from '@supabase/supabase-js';
+
 // ==================== INTERFACES ====================
 
 /**
@@ -102,11 +104,39 @@ function adaptVentifyProduct(ventifyProduct: VentifyProduct): Product {
 
 // ==================== FUNCIONES PRINCIPALES ====================
 
+let inactiveIdsCache: string[] | null = null;
+let inactiveIdsFetchedAt = 0;
+const INACTIVE_CACHE_TTL = 30_000;
+
 /**
- * Obtiene la lista de productos activos desde Ventify
+ * Obtiene los IDs de productos de Ventify desactivados desde Supabase.
+ * Usa la key anónima (tabla con lectura pública), funciona en cliente y servidor.
+ */
+export async function getInactiveProductIds(): Promise<string[]> {
+  const now = Date.now();
+  if (inactiveIdsCache && now - inactiveIdsFetchedAt < INACTIVE_CACHE_TTL) {
+    return inactiveIdsCache;
+  }
+  try {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+    if (!url || !anon) return [];
+    const supabase = createClient(url, anon);
+    const { data } = await supabase.from('productos_inactivos').select('producto_id');
+    inactiveIdsCache = (data || []).map((r) => r.producto_id);
+    inactiveIdsFetchedAt = Date.now();
+    return inactiveIdsCache;
+  } catch (e) {
+    console.error('Error cargando productos inactivos:', e);
+    return [];
+  }
+}
+
+/**
+ * Obtiene TODOS los productos de Ventify (incluidos los desactivados).
  * Endpoint oficial: GET /api/public/stores/{accountId}/products?active=true
  */
-export async function getVentifyProducts(): Promise<Product[]> {
+export async function getAllVentifyProducts(): Promise<Product[]> {
   try {
     // Validar variables de entorno
     if (!config.apiUrl || !config.accountId || !config.apiKey) {
@@ -162,6 +192,17 @@ export async function getVentifyProducts(): Promise<Product[]> {
     console.error(' Error al obtener productos:', error);
     return [];
   }
+}
+
+/**
+ * Obtiene los productos de Ventify que están ACTIVOS en la web
+ * (filtra los que fueron desactivados desde el panel admin)
+ */
+export async function getVentifyProducts(): Promise<Product[]> {
+  const [all, inactiveIds] = await Promise.all([getAllVentifyProducts(), getInactiveProductIds()]);
+  if (inactiveIds.length === 0) return all;
+  const inactiveSet = new Set(inactiveIds);
+  return all.filter((p) => !inactiveSet.has(p.id));
 }
 
 /**

@@ -1,10 +1,13 @@
 'use client';
 
 import Image from "next/image";
-import { X, Plus, Minus, ChevronRight, Sparkles, Ruler, Calendar } from "lucide-react";
+import { X, Plus, Minus, ChevronRight, Sparkles, Ruler, Calendar, Star } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Product } from "@/lib/ventify";
 import { useCart } from "@/context/CartContext";
+import { useReviews } from "@/context/ReviewsContext";
+import RatingStars from "@/components/RatingStars";
+import { useToast } from "@/components/Toast";
 
 const TAMANOS = [
   { valor: "pequeno", label: "Pequeño", desc: "10–15 cm" },
@@ -47,8 +50,16 @@ export default function QuickViewDrawer({ product, onClose }: QuickViewDrawerPro
   const [localExtras, setLocalExtras] = useState<LocalExtra[]>([]);
   const [tamano, setTamano] = useState("mediano");
   const [fechaEntrega, setFechaEntrega] = useState("");
+  const [rateValue, setRateValue] = useState(0);
+  const [rateName, setRateName] = useState("");
+  const [rateComment, setRateComment] = useState("");
   const drawerRef = useRef<HTMLDivElement>(null);
   const { addToCart, removeFromCart, addExtraToItem } = useCart();
+  const { ratings, ratedByMe, refresh, submitRating } = useReviews();
+  const { showToast } = useToast();
+
+  const rating = product ? ratings[product.id] : undefined;
+  const alreadyRated = product ? ratedByMe[product.id] : undefined;
 
   const fechaMinima = (() => {
     const d = new Date();
@@ -62,6 +73,9 @@ export default function QuickViewDrawer({ product, onClose }: QuickViewDrawerPro
     setTamano("mediano");
     setFechaEntrega("");
     setLocalExtras([]);
+    setRateValue(0);
+    setRateName("");
+    setRateComment("");
     (async () => {
       const { loadExtras } = await import("@/lib/extras-cache");
       loadExtras(setAvailableExtras);
@@ -122,6 +136,27 @@ export default function QuickViewDrawer({ product, onClose }: QuickViewDrawerPro
       }
     });
     handleClose();
+  };
+
+  const handleSubmitRating = async () => {
+    if (rateValue === 0) {
+      showToast("Selecciona la cantidad de estrellas", "warning");
+      return;
+    }
+    const res = await submitRating({
+      producto_id: product.id,
+      producto_sku: product.sku,
+      producto_nombre: product.nombre,
+      nombre_cliente: rateName.trim() || "Cliente",
+      calificacion: rateValue,
+      comentario: rateComment.trim() || undefined,
+    });
+    if (res.ok) {
+      showToast("¡Gracias por tu calificación! Se publicará tras revisión.", "success");
+      refresh();
+    } else {
+      showToast(res.error || "Error al enviar la calificación", "error");
+    }
   };
 
   const extrasLucesGlobos = availableExtras.filter(e =>
@@ -320,6 +355,73 @@ export default function QuickViewDrawer({ product, onClose }: QuickViewDrawerPro
                   <span className="font-lato text-sm font-medium" style={{ color: BRAND.clay }}>
                     A pedido (1-2 semanas)
                   </span>
+                )}
+              </div>
+
+              {/* ===== CALIFICACIONES ===== */}
+              {rating && rating.count > 0 && (
+                <div className="mb-4">
+                  <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full shadow-sm" style={{ backgroundColor: BRAND.goldSoft }}>
+                    <RatingStars value={rating.average} size={14} />
+                    <span className="font-lato text-base font-bold leading-none" style={{ color: BRAND.gold }}>
+                      {rating.average.toFixed(1)}
+                    </span>
+                    <span className="font-lato text-xs leading-none" style={{ color: BRAND.inkSoft }}>
+                      · {rating.count} reseña{rating.count !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* ===== CALIFICAR PRODUCTO ===== */}
+              <div className="bg-[#FDF4F7] rounded-xl p-4 mb-1 border border-[#FDE8EF]">
+                <div className="flex items-center gap-2 mb-3">
+                  <Star size={16} style={{ color: BRAND.gold }} />
+                  <span className="font-lato text-sm font-semibold" style={{ color: BRAND.ink }}>
+                    ¿Recibiste tu pedido? Califícalo
+                  </span>
+                </div>
+
+                {alreadyRated ? (
+                  <div className="flex items-center gap-2">
+                    <RatingStars value={alreadyRated} size={18} />
+                    <p className="font-lato text-xs font-semibold" style={{ color: BRAND.roseDark }}>
+                      Ya calificaste este producto con {alreadyRated} estrella{alreadyRated !== 1 ? 's' : ''}.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="font-lato text-xs font-bold uppercase tracking-wider mb-1.5 block" style={{ color: BRAND.ink }}>
+                        Tu calificación
+                      </label>
+                      <RatingStars value={rateValue} interactive size={28} onChange={setRateValue} />
+                    </div>
+                    <input
+                      value={rateName}
+                      onChange={(e) => setRateName(e.target.value)}
+                      placeholder="Tu nombre (opcional)"
+                      className="w-full rounded-xl border bg-white px-3.5 py-2.5 font-lato text-sm outline-none focus:ring-2 transition-shadow"
+                      style={{ borderColor: BRAND.line }}
+                    />
+                    <textarea
+                      value={rateComment}
+                      onChange={(e) => setRateComment(e.target.value)}
+                      placeholder="¿Qué te pareció el producto? (opcional)"
+                      rows={2}
+                      className="w-full rounded-xl border bg-white px-3.5 py-2.5 font-lato text-sm outline-none resize-none focus:ring-2 transition-shadow"
+                      style={{ borderColor: BRAND.line }}
+                    />
+                    <button
+                      onClick={handleSubmitRating}
+                      className="w-full py-2.5 rounded-full font-lato text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 shadow-sm"
+                      style={{ backgroundColor: BRAND.rose }}
+                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = BRAND.roseDark)}
+                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = BRAND.rose)}
+                    >
+                      Enviar calificación
+                    </button>
+                  </div>
                 )}
               </div>
             </div>

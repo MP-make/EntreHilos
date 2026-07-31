@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useReviews } from "@/context/ReviewsContext";
+import RatingStars from "@/components/RatingStars";
 import { useToast } from "@/components/Toast";
 import { slugify } from "@/lib/utils";
 
@@ -33,10 +35,12 @@ export default function ProductCard({
 }: ProductCardProps) {
   const { addToCart } = useCart();
   const { showToast } = useToast();
+  const { ratings } = useReviews();
 
   const soldOut = producto.stock === 0;
   const lowStock = producto.stock > 0 && producto.stock <= 5;
   const category = getCategoryBySku(producto.sku);
+  const rating = ratings[producto.id];
 
   const stockLabel = soldOut
     ? 'A pedido'
@@ -98,11 +102,23 @@ export default function ProductCard({
         </p>
 
         <h3
-          className="font-playfair text-[16px] sm:text-[17px] leading-snug font-medium mb-2 line-clamp-1"
+          className="font-playfair text-[16px] sm:text-[17px] leading-snug font-medium mb-1 line-clamp-1"
           style={{ color: '#2E2422' }}
         >
           {producto.nombre}
         </h3>
+
+        {rating && rating.count > 0 && (
+          <div className="flex items-center gap-1.5 mb-2">
+            <RatingStars value={rating.average} size={12} />
+            <span className="font-lato text-xs font-semibold" style={{ color: '#C99A3E' }}>
+              {rating.average.toFixed(1)}
+            </span>
+            <span className="font-lato text-[11px]" style={{ color: '#B8AC9F' }}>
+              ({rating.count})
+            </span>
+          </div>
+        )}
 
         <div className="flex items-center justify-between gap-2">
           <span

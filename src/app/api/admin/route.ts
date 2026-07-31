@@ -11,6 +11,8 @@ const TABLES: Record<string, string> = {
   usuarios: "profiles",
   inicio: "home_sections",
   eventos: "eventos",
+  resenas: "resenas",
+  productos: "productos_inactivos",
 };
 
 const ORDER_COLUMN: Record<string, string> = {
@@ -30,7 +32,13 @@ export async function GET(request: NextRequest) {
     .select("*")
     .order(orderCol, { ascending: false });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    if (error.message?.includes("does not exist")) {
+      console.warn(`Tabla '${table}' no existe aún.`);
+      return NextResponse.json([]);
+    }
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
   return NextResponse.json(data);
 }
 
@@ -115,12 +123,68 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ success: true });
   }
 
+  if (action === "aprobar-resena") {
+    const { error } = await supabaseAdmin
+      .from("resenas")
+      .update({ aprobado: updates.aprobado, updated_at: new Date().toISOString() })
+      .eq("id", id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ success: true });
+  }
+
+  if (action === "eliminar-resena") {
+    const { error } = await supabaseAdmin
+      .from("resenas")
+      .delete()
+      .eq("id", id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ success: true });
+  }
+
+  if (action === "set-producto-activo") {
+    const { producto_id, activo } = updates;
+    if (!producto_id) return NextResponse.json({ error: "producto_id requerido" }, { status: 400 });
+
+    if (activo) {
+      const { error } = await supabaseAdmin
+        .from("productos_inactivos")
+        .delete()
+        .eq("producto_id", producto_id);
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    } else {
+      const { error } = await supabaseAdmin
+        .from("productos_inactivos")
+        .upsert({ producto_id }, { onConflict: "producto_id" });
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ success: true });
+  }
+
   return NextResponse.json({ error: "Invalid action" }, { status: 400 });
 }
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { clave, titulo, subtitulo, descripcion, badge, precio, producto_sku, tipo, imagen_url, imagen_url_mobile, link_url, nombre, slug } = body;
+  const { clave, titulo, subtitulo, descripcion, badge, precio, producto_sku, tipo, imagen_url, imagen_url_mobile, link_url, nombre, slug, resena } = body;
+
+  if (resena) {
+    const { data, error } = await supabaseAdmin
+      .from("resenas")
+      .insert({
+        producto_id: resena.producto_id,
+        producto_sku: resena.producto_sku || null,
+        producto_nombre: resena.producto_nombre || null,
+        nombre_cliente: (resena.nombre_cliente || "Admin").toString().trim().slice(0, 60),
+        calificacion: resena.calificacion,
+        comentario: resena.comentario || null,
+        aprobado: true,
+        es_manual: true,
+      })
+      .select()
+      .single();
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(data);
+  }
 
   if (clave) {
     const { data, error } = await supabaseAdmin
