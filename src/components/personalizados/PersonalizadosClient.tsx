@@ -22,9 +22,11 @@ import AuthModal from "@/components/AuthModal";
 
 interface Props {
   productosPersonalizados: Product[];
+  heroConfig?: any;
 }
 
-export default function PersonalizadosContent({ productosPersonalizados }: Props) {
+export default function PersonalizadosContent({ productosPersonalizados, heroConfig }: Props) {
+  const items = heroConfig?.items || {};
   const { user } = useAuth();
 
   const [formModalOpen, setFormModalOpen] = useState(false);
@@ -63,21 +65,21 @@ export default function PersonalizadosContent({ productosPersonalizados }: Props
             <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#C04267] rounded-full mix-blend-multiply filter blur-[100px] opacity-20" />
           </div>
 
-          <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20 md:py-28">
+          <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-12 md:py-16">
             <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
               <div className="order-2 md:order-1">
                 <div className="inline-flex items-center gap-2 bg-white/80 border border-[#FDE8EF] text-[#C04267] px-3 sm:px-4 py-1.5 rounded-full text-[11px] sm:text-xs font-quicksand font-semibold mb-4 sm:mb-6 shadow-sm">
                   <Sparkles size={14} />
-                  Hecho 100% a mano en Perú
+                  {items.badge || "Hecho 100% a mano en Perú"}
                 </div>
 
                 <h1 className="font-fredoka text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[#C04267] leading-tight mb-3 sm:mb-4">
-                  Tú lo imaginas,<br />
-                  <span className="text-[#EE6B8D]">nosotros lo tejemos</span>
+                  {items.titulo_linea1 || "Tú lo imaginas,"}<br />
+                  <span className="text-[#EE6B8D]">{items.titulo_linea2 || "nosotros lo tejemos"}</span>
                 </h1>
 
                 <p className="font-quicksand text-sm sm:text-base md:text-lg text-[#6B6B6B] mb-6 sm:mb-8 max-w-md leading-relaxed">
-                  Convertimos tus ideas en amigurumis únicos. Personajes, mascotas o diseños personalizados tejidos a mano con algodón premium.
+                  {heroConfig?.subtitulo || "Convertimos tus ideas en amigurumis únicos. Personajes, mascotas o diseños personalizados tejidos a mano con algodón premium."}
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-3">
@@ -87,13 +89,13 @@ export default function PersonalizadosContent({ productosPersonalizados }: Props
                     className="inline-flex items-center justify-center gap-2 font-quicksand px-6 sm:px-8 py-3 sm:py-3.5 bg-[#EE6B8D] hover:bg-[#C04267] text-white font-bold text-xs sm:text-sm rounded-xl transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
                   >
                     {user ? <Wand2 size={18} /> : <LogIn size={18} />}
-                    {user ? "Personalizar" : "Iniciar sesión"}
+                    {user ? (items.boton_primario_logged || "Personalizar") : (items.boton_primario || "Iniciar sesión")}
                   </button>
                   <a
                     href="#galeria"
                     className="inline-flex items-center justify-center gap-2 font-quicksand px-6 sm:px-8 py-3 sm:py-3.5 border-2 border-[#EE6B8D] text-[#C04267] hover:bg-[#EE6B8D] hover:text-white font-semibold text-xs sm:text-sm rounded-xl transition-all"
                   >
-                    Ver trabajos
+                    {items.boton_secundario || "Ver trabajos"}
                   </a>
                 </div>
 
@@ -104,13 +106,22 @@ export default function PersonalizadosContent({ productosPersonalizados }: Props
                     ))}
                   </div>
                   <p className="font-quicksand text-[11px] sm:text-xs text-[#6B6B6B]">
-                    <span className="font-semibold text-[#C04267]">+200</span> diseños entregados
+                    <span className="font-semibold text-[#C04267]">{items.estadistica || "+200"}</span>{items.estadistica?.includes("diseños") ? "" : " diseños entregados"}
                   </p>
                 </div>
               </div>
 
               <div className="relative order-1 md:order-2">
-                {collage.length >= 3 ? (
+                {heroConfig?.imagen_url ? (
+                  <div className="relative aspect-[4/3] rounded-xl sm:rounded-2xl overflow-hidden shadow-lg border border-[#FDE8EF]">
+                    <Image
+                      src={heroConfig.imagen_url}
+                      alt="Personalizados"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                ) : collage.length >= 3 ? (
                   <div className="grid grid-cols-2 gap-2 sm:gap-3">
                     <div className="relative aspect-square rounded-xl sm:rounded-2xl overflow-hidden shadow-lg border border-[#FDE8EF]">
                       <Image
@@ -152,8 +163,8 @@ export default function PersonalizadosContent({ productosPersonalizados }: Props
                   </div>
                 )}
                 <div className="absolute -bottom-3 sm:-bottom-4 -left-3 sm:-left-4 bg-white rounded-xl shadow-lg p-3 sm:p-4 border border-[#FDE8EF]">
-                  <p className="font-quicksand text-[10px] sm:text-xs text-[#6B6B6B]">Desde</p>
-                  <p className="font-fredoka text-base sm:text-xl text-[#EE6B8D] font-bold">S/ 80</p>
+                  <p className="font-quicksand text-[10px] sm:text-xs text-[#6B6B6B]">{items.etiqueta_precio || "Desde"}</p>
+                  <p className="font-fredoka text-base sm:text-xl text-[#EE6B8D] font-bold">{items.valor_precio || "S/ 80"}</p>
                 </div>
               </div>
             </div>
@@ -172,22 +183,33 @@ export default function PersonalizadosContent({ productosPersonalizados }: Props
               </p>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-              {pasos.map((paso, i) => {
-                const Icon = paso.icon;
-                return (
-                  <div key={paso.titulo} className="text-center group">
-                    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-[#FDF4F7] rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:bg-[#EE6B8D] group-hover:scale-110 transition-all duration-300">
-                      <Icon size={24} className="sm:w-7 sm:h-7 text-[#EE6B8D] group-hover:text-white transition-colors" />
+            <div className="relative">
+              <div
+                className="hidden md:block absolute top-8 left-[12.5%] right-[12.5%] h-0 border-t-2 border-dashed"
+                style={{ borderColor: '#EE6B8D50' }}
+                aria-hidden="true"
+              />
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 relative">
+                {pasos.map((paso, i) => {
+                  const Icon = paso.icon;
+                  const rotate = i % 2 === 0 ? '-rotate-2' : 'rotate-2';
+                  return (
+                    <div key={paso.titulo} className="text-center group">
+                      <div className={`w-14 h-14 sm:w-16 sm:h-16 bg-[#FDF4F7] rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:bg-[#EE6B8D] group-hover:scale-110 transition-all duration-300 border-2 border-dashed ${rotate}`}
+                        style={{ borderColor: '#EE6B8D' }}
+                      >
+                        <Icon size={24} className="sm:w-7 sm:h-7 text-[#EE6B8D] group-hover:text-white transition-colors" />
+                      </div>
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 bg-[#EE6B8D] text-white rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 text-[11px] sm:text-sm font-fredoka font-bold -mt-2 border-2 border-dashed border-white/50">
+                        {i + 1}
+                      </div>
+                      <h3 className="font-quicksand text-xs sm:text-sm font-bold text-[#4A4A4A] mb-1">{paso.titulo}</h3>
+                      <p className="font-quicksand text-[11px] sm:text-xs text-[#6B6B6B]">{paso.desc}</p>
                     </div>
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 bg-[#EE6B8D] text-white rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3 text-[11px] sm:text-sm font-fredoka font-bold -mt-2">
-                      {i + 1}
-                    </div>
-                    <h3 className="font-quicksand text-xs sm:text-sm font-bold text-[#4A4A4A] mb-1">{paso.titulo}</h3>
-                    <p className="font-quicksand text-[11px] sm:text-xs text-[#6B6B6B]">{paso.desc}</p>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           </div>
         </section>
@@ -207,14 +229,28 @@ export default function PersonalizadosContent({ productosPersonalizados }: Props
             <p className="font-quicksand text-sm sm:text-base text-[#6B6B6B] mb-6 sm:mb-8 max-w-md mx-auto">
               Cuéntanos tu idea y te enviaremos una cotización personalizada sin compromiso
             </p>
-            <button
-              type="button"
-              onClick={handleOpenForm}
-              className="inline-flex items-center justify-center gap-2 font-quicksand px-8 sm:px-10 py-3 sm:py-4 bg-[#EE6B8D] hover:bg-[#C04267] text-white font-bold text-sm sm:text-base rounded-xl transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
-            >
-              {user ? <Wand2 size={22} /> : <LogIn size={22} />}
-              {user ? "Crear mi diseño" : "Inicia sesión para crear"}
-            </button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={handleOpenForm}
+                className="inline-flex items-center justify-center gap-2 font-quicksand px-8 sm:px-10 py-3 sm:py-4 bg-[#EE6B8D] hover:bg-[#C04267] text-white font-bold text-sm sm:text-base rounded-xl transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+              >
+                {user ? <Wand2 size={22} /> : <LogIn size={22} />}
+                {user ? "Crear mi diseño" : "Inicia sesión para crear"}
+              </button>
+              <a
+                href={`https://wa.me/51902578295?text=${encodeURIComponent("¡Hola! Quiero hacer un pedido personalizado")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 font-quicksand px-6 sm:px-8 py-3 sm:py-4 border-2 border-[#25D366] text-[#25D366] hover:bg-[#25D366] hover:text-white font-bold text-sm sm:text-base rounded-xl transition-all"
+              >
+                <MessageCircle size={22} />
+                Escribir por WhatsApp
+              </a>
+            </div>
+            <p className="font-quicksand text-xs text-gray-400 mt-4">
+              Sin registro, respuesta rápida
+            </p>
           </div>
         </section>
 

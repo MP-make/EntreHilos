@@ -3,10 +3,39 @@ import HomeClient from "@/components/HomeClient";
 
 export const dynamic = 'force-dynamic';
 
-export default async function Home() {
-  // Obtener productos reales de Ventify (Server Component)
-  const products = await getVentifyProducts();
+async function getHomeSections() {
+  try {
+    const { supabaseAdmin } = await import("@/lib/supabase/server");
+    const { data } = await supabaseAdmin
+      .from("home_sections")
+      .select("*")
+      .eq("activo", true)
+      .order("orden", { ascending: true });
+    return data || [];
+  } catch {
+    return [];
+  }
+}
 
-  // Pasar los datos al componente cliente
-  return <HomeClient products={products} />;
+async function getHeroConfig() {
+  try {
+    const { supabaseAdmin } = await import("@/lib/supabase/server");
+    const heroKeys = ['home_hero_1', 'home_hero_2', 'home_hero_3', 'home_hero_4'];
+    const { data } = await supabaseAdmin
+      .from("hero_config")
+      .select("*")
+      .in("clave", heroKeys)
+      .order("clave");
+    if (!data) return [];
+    return heroKeys.map(k => data.find((h: any) => h.clave === k)).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+export default async function Home() {
+  const products = await getVentifyProducts();
+  const sections = await getHomeSections();
+  const heroData = await getHeroConfig();
+  return <HomeClient products={products} sections={sections} heroData={heroData} />;
 }

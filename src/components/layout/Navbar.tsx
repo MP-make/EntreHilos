@@ -20,13 +20,6 @@ const categorias = [
   { href: "/catalogo/hotwheels", label: "HotWheels" },
 ];
 
-const eventos = [
-  { href: "/evento/dia-de-la-madre", label: "Día de la Madre" },
-  { href: "/evento/dia-de-la-mujer", label: "Día de la Mujer" },
-  { href: "/evento/san-valentin", label: "San Valentín" },
-  { href: "/evento/flores-amarillas", label: "Flores Amarillas" },
-];
-
 interface DropdownProps {
   label: string;
   items: { href: string; label: string }[];
@@ -82,6 +75,7 @@ export default function Navbar() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
+  const [eventos, setEventos] = useState<any[]>([]);
   const [authView, setAuthView] = useState<"login" | "register">("login");
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
@@ -98,6 +92,13 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
+    fetch("/api/eventos")
+      .then((r) => r.json())
+      .then(setEventos)
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = 'hidden';
     } else {
@@ -107,6 +108,9 @@ export default function Navbar() {
       document.body.style.overflow = 'unset';
     };
   }, [isMobileMenuOpen]);
+
+  const featuredEvent = eventos.find((e: any) => e.featured);
+  const eventosList = eventos.filter((e: any) => e.activo !== false);
 
   const [mobileExpanded, setMobileExpanded] = useState<string | null>(null);
   const [isUserOpen, setIsUserOpen] = useState(false);
@@ -124,13 +128,15 @@ export default function Navbar() {
 
   return (
     <>
-      <div className="bg-[#ec4899] text-white py-2 sm:py-2.5 px-2 sm:px-4">
-        <div className="max-w-7xl mx-auto text-center">
-          <p className="font-lato text-xs sm:text-sm md:text-base font-semibold tracking-wide">
-             ¡Campaña Día de la Novia! Reserva el regalo perfecto para el amor de tu vida 
-          </p>
+      {featuredEvent && (
+        <div className="bg-[#ec4899] text-white py-2 sm:py-2.5 px-2 sm:px-4">
+          <div className="max-w-7xl mx-auto text-center">
+            <p className="font-lato text-xs sm:text-sm md:text-base font-semibold tracking-wide">
+              ¡{featuredEvent.nombre}! {featuredEvent.descripcion || `Reserva el regalo perfecto`}
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
       <nav className="sticky top-0 z-50">
         <div className="bg-gradient-to-r from-[#EE6B8D] via-[#F48FB0] to-[#EE6B8D] text-white py-2 px-2 sm:px-4">
@@ -160,14 +166,16 @@ export default function Navbar() {
                 />
               </Link>
 
-              <div className="flex lg:hidden flex-1 justify-center px-1">
-                <Link 
-                  href="/evento/dia-de-la-novia"
-                  className="font-playfair text-base sm:text-lg font-medium text-[#C04267] border-b border-[#C04267]/30 pb-0.5 hover:text-[#EE6B8D] transition-colors whitespace-nowrap"
-                >
-                  Día de la Novia
-                </Link>
-              </div>
+              {featuredEvent && (
+                <div className="flex lg:hidden flex-1 justify-center px-1">
+                  <Link 
+                    href={`/evento/${featuredEvent.slug}`}
+                    className="font-playfair text-base sm:text-lg font-medium text-[#C04267] border-b border-[#C04267]/30 pb-0.5 hover:text-[#EE6B8D] transition-colors whitespace-nowrap"
+                  >
+                    {featuredEvent.nombre}
+                  </Link>
+                </div>
+              )}
 
               <div className="hidden lg:flex items-center gap-5 xl:gap-7">
                 <Link 
@@ -177,15 +185,14 @@ export default function Navbar() {
                   Inicio
                 </Link>
 
-                <Link 
-                  href="/evento/dia-de-la-novia"
-                  className="font-lato text-sm xl:text-base font-medium tracking-wide text-[#C04267] hover:text-[#EE6B8D] transition-colors duration-200 font-semibold"
-                >
-                  Día de la Novia
-                </Link>
-
-                <Dropdown label="Catálogo" items={categorias} />
-                <Dropdown label="Eventos" items={eventos} />
+                {featuredEvent && (
+                  <Link 
+                    href={`/evento/${featuredEvent.slug}`}
+                    className="font-lato text-sm xl:text-base font-medium tracking-wide text-[#C04267] hover:text-[#EE6B8D] transition-colors duration-200 font-semibold"
+                  >
+                    {featuredEvent.nombre}
+                  </Link>
+                )}
 
                 <Link 
                   href="/personalizados"
@@ -193,6 +200,9 @@ export default function Navbar() {
                 >
                   Personalizados
                 </Link>
+
+                <Dropdown label="Catálogo" items={categorias} />
+                <Dropdown label="Eventos" items={eventosList.map((e: any) => ({ href: `/evento/${e.slug}`, label: e.nombre }))} />
               </div>
 
               <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
@@ -324,6 +334,24 @@ export default function Navbar() {
               Inicio
             </Link>
 
+            {featuredEvent && (
+              <Link
+                href={`/evento/${featuredEvent.slug}`}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="block px-6 py-3.5 font-lato text-base text-[#E91E63] font-bold border-l-4 border-[#E91E63] bg-pink-50 hover:bg-pink-100 transition-all"
+              >
+                {featuredEvent.nombre}
+              </Link>
+            )}
+
+            <Link
+              href="/personalizados"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block px-6 py-3.5 font-lato text-base text-gray-700 border-l-4 border-transparent hover:border-[#EE6B8D] hover:bg-[#FDF4F7] hover:text-[#C04267] transition-all"
+            >
+              Personalizados
+            </Link>
+
             <div>
               <button
                 onClick={() => setMobileExpanded(mobileExpanded === 'categorias' ? null : 'categorias')}
@@ -358,35 +386,19 @@ export default function Navbar() {
               </button>
               {mobileExpanded === 'eventos' && (
                 <div className="bg-gray-50">
-                  {eventos.map((item) => (
+                  {eventosList.map((e: any) => (
                     <Link
-                      key={item.href}
-                      href={item.href}
+                      key={e.slug}
+                      href={`/evento/${e.slug}`}
                       onClick={() => setIsMobileMenuOpen(false)}
                       className="block px-10 py-3 font-lato text-sm text-gray-600 hover:text-[#EE6B8D] hover:bg-white transition-colors"
                     >
-                      {item.label}
+                      {e.nombre}
                     </Link>
                   ))}
                 </div>
               )}
             </div>
-
-            <Link
-              href="/personalizados"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="block px-6 py-3.5 font-lato text-base text-gray-700 border-l-4 border-transparent hover:border-[#EE6B8D] hover:bg-[#FDF4F7] hover:text-[#C04267] transition-all"
-            >
-              Personalizados
-            </Link>
-
-            <Link
-              href="/evento/dia-de-la-novia"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="block px-6 py-3.5 font-lato text-base text-[#E91E63] font-bold border-l-4 border-[#E91E63] bg-pink-50 hover:bg-pink-100 transition-all"
-            >
-              Día de la Novia
-            </Link>
 
             {user ? (
               <>

@@ -5,16 +5,18 @@ import Link from "next/link";
 import {
   LayoutDashboard, ShoppingBag, MessageSquare, ClipboardList, Mail,
   Image as ImageIcon, Users, LogOut, Home, Loader2, Eye, ExternalLink,
-  UserCheck, Upload, X, Check, ChevronRight, Search,
+  UserCheck, Upload, X, Check, ChevronRight, Search, Plus, Trash2, Sparkles,
 } from "lucide-react";
 import { getVentifyProducts } from "@/lib/ventify";
 
-type Tab = "dashboard" | "pedidos" | "mensajes" | "reclamaciones" | "personalizados" | "heroes" | "suscriptores" | "usuarios";
+type Tab = "dashboard" | "inicio" | "pedidos" | "mensajes" | "reclamaciones" | "personalizados" | "heroes" | "suscriptores" | "usuarios" | "eventos";
 
 const menuItems: { id: Tab; label: string; icon: any }[] = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { id: "inicio", label: "Inicio", icon: Home },
   { id: "pedidos", label: "Pedidos", icon: ShoppingBag },
   { id: "personalizados", label: "Personalizados", icon: Mail },
+  { id: "eventos", label: "Eventos", icon: Sparkles },
   { id: "mensajes", label: "Mensajes", icon: MessageSquare },
   { id: "reclamaciones", label: "Reclamaciones", icon: ClipboardList },
   { id: "heroes", label: "Heroes", icon: ImageIcon },
@@ -91,8 +93,38 @@ export default function AdminPage() {
   const [allProducts, setAllProducts] = useState<any[]>([]);
   const [productSearch, setProductSearch] = useState("");
   const [showProductPicker, setShowProductPicker] = useState(false);
+  const [pickingProductFor, setPickingProductFor] = useState<number | null>(null);
   const tempFileRef = useRef<HTMLInputElement | null>(null);
   const tempFileRefMobile = useRef<HTMLInputElement | null>(null);
+  const sectionImgRef = useRef<HTMLInputElement | null>(null);
+  const eventoImgRef = useRef<HTMLInputElement | null>(null);
+  const [eventoImgUploading, setEventoImgUploading] = useState(false);
+
+  const [editingEvento, setEditingEvento] = useState<any | null>(null);
+  const [editEventoNombre, setEditEventoNombre] = useState("");
+  const [editEventoSlug, setEditEventoSlug] = useState("");
+  const [editEventoDescripcion, setEditEventoDescripcion] = useState("");
+  const [editEventoImagen, setEditEventoImagen] = useState("");
+  const [isNewEvento, setIsNewEvento] = useState(false);
+
+  const [editingSection, setEditingSection] = useState<any | null>(null);
+  const [sectionTitulo, setSectionTitulo] = useState("");
+  const [sectionSubtitulo, setSectionSubtitulo] = useState("");
+  const [sectionDescripcion, setSectionDescripcion] = useState("");
+  const [sectionImagenUrl, setSectionImagenUrl] = useState("");
+  const [sectionLinkUrl, setSectionLinkUrl] = useState("");
+  const [sectionLinkText, setSectionLinkText] = useState("");
+  const [sectionItems, setSectionItems] = useState("");
+
+  const [persBadge, setPersBadge] = useState("");
+  const [persTituloLinea1, setPersTituloLinea1] = useState("");
+  const [persTituloLinea2, setPersTituloLinea2] = useState("");
+  const [persBotonPrimario, setPersBotonPrimario] = useState("");
+  const [persBotonPrimarioLogged, setPersBotonPrimarioLogged] = useState("");
+  const [persBotonSecundario, setPersBotonSecundario] = useState("");
+  const [persEstadistica, setPersEstadistica] = useState("");
+  const [persEtiquetaPrecio, setPersEtiquetaPrecio] = useState("");
+  const [persValorPrecio, setPersValorPrecio] = useState("");
 
   const selectedClave = editingHero?.clave ?? "";
   const existingHero = data.find((h: any) => h.clave === selectedClave);
@@ -121,6 +153,21 @@ export default function AdminPage() {
     finally { setTempUploading(false); }
   }
 
+  async function subirSectionImg(file: File) {
+    setTempUploading(true);
+    try {
+      const { getSupabaseBrowserClient } = await import("@/lib/supabase/client");
+      const supabase = getSupabaseBrowserClient();
+      const ext = file.name.split(".").pop() || "jpg";
+      const nombre = `section-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await supabase.storage.from("heroes").upload(nombre, file, { upsert: true });
+      if (error) { console.error(error); return; }
+      const { data: pub } = supabase.storage.from("heroes").getPublicUrl(nombre);
+      setSectionImagenUrl(pub.publicUrl);
+    } catch (e) { console.error(e); }
+    finally { setTempUploading(false); }
+  }
+
   async function subirHeroFileTempMobile(file: File) {
     setTempUploadingMobile(true);
     try {
@@ -134,6 +181,21 @@ export default function AdminPage() {
       setEditUrlMobile(pub.publicUrl);
     } catch (e) { console.error(e); }
     finally { setTempUploadingMobile(false); }
+  }
+
+  async function subirEventoImg(file: File) {
+    setEventoImgUploading(true);
+    try {
+      const { getSupabaseBrowserClient } = await import("@/lib/supabase/client");
+      const supabase = getSupabaseBrowserClient();
+      const ext = file.name.split(".").pop() || "jpg";
+      const nombre = `evento-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await supabase.storage.from("heroes").upload(nombre, file, { upsert: true });
+      if (error) { console.error(error); return; }
+      const { data: pub } = supabase.storage.from("heroes").getPublicUrl(nombre);
+      setEditEventoImagen(pub.publicUrl);
+    } catch (e) { console.error(e); }
+    finally { setEventoImgUploading(false); }
   }
 
   async function handleHeroSave() {
@@ -196,6 +258,12 @@ export default function AdminPage() {
   useEffect(() => { fetchData(); }, [fetchData]);
 
   useEffect(() => {
+    if (tab === "heroes" && allProducts.length === 0) {
+      getVentifyProducts().then(setAllProducts).catch(() => {});
+    }
+  }, [tab, allProducts.length]);
+
+  useEffect(() => {
     if (editingHero) {
       const hero = data.find((h: any) => h.clave === editingHero.clave);
       setEditUrl(hero?.imagen_url || "");
@@ -214,6 +282,61 @@ export default function AdminPage() {
       }
     }
   }, [editingHero, data]);
+
+  useEffect(() => {
+    if (editingSection) {
+      setSectionTitulo(editingSection.titulo || "");
+      setSectionSubtitulo(editingSection.subtitulo || "");
+      setSectionDescripcion(editingSection.descripcion || "");
+      setSectionImagenUrl(editingSection.imagen_url || "");
+      setSectionLinkUrl(editingSection.link_url || "");
+      setSectionLinkText(editingSection.link_text || "");
+      setSectionItems(editingSection.items ? JSON.stringify(editingSection.items, null, 2) : "");
+
+      const items = editingSection.items || {};
+      setPersBadge(items.badge || "");
+      setPersTituloLinea1(items.titulo_linea1 || "");
+      setPersTituloLinea2(items.titulo_linea2 || "");
+      setPersBotonPrimario(items.boton_primario || "");
+      setPersBotonPrimarioLogged(items.boton_primario_logged || "");
+      setPersBotonSecundario(items.boton_secundario || "");
+      setPersEstadistica(items.estadistica || "");
+      setPersEtiquetaPrecio(items.etiqueta_precio || "");
+      setPersValorPrecio(items.valor_precio || "");
+    }
+  }, [editingSection]);
+
+  async function handleSectionSave() {
+    if (!editingSection) return;
+    const updateData: Record<string, any> = {
+      titulo: sectionTitulo,
+      subtitulo: sectionSubtitulo || null,
+      descripcion: sectionDescripcion || null,
+      imagen_url: sectionImagenUrl || null,
+      link_url: sectionLinkUrl || null,
+      link_text: sectionLinkText || null,
+    };
+    if (editingSection.tipo === 'showcase' || editingSection.tipo === 'faq') {
+      try {
+        updateData.items = JSON.parse(sectionItems);
+      } catch { /* keep existing */ }
+    }
+    if (editingSection.tipo === 'personalizados') {
+      updateData.items = {
+        badge: persBadge,
+        titulo_linea1: persTituloLinea1,
+        titulo_linea2: persTituloLinea2,
+        boton_primario: persBotonPrimario,
+        boton_primario_logged: persBotonPrimarioLogged,
+        boton_secundario: persBotonSecundario,
+        estadistica: persEstadistica,
+        etiqueta_precio: persEtiquetaPrecio,
+        valor_precio: persValorPrecio,
+      };
+    }
+    const ok = await apiPatch({ action: "actualizar-seccion", id: editingSection.id, ...updateData });
+    if (ok) { fetchData(); setEditingSection(null); }
+  }
 
   async function apiPatch(body: Record<string, any>) {
     const res = await fetch("/api/admin", {
@@ -382,6 +505,8 @@ export default function AdminPage() {
               {ALL_HERO_KEYS.map((hk) => {
                 const hero = data.find((h: any) => h.clave === hk.clave);
                 const imgUrl = hero?.imagen_url;
+                const prodImg = hero?.producto_sku ? allProducts.find((p: any) => p.sku === hero.producto_sku)?.imagen : null;
+                const displayImg = imgUrl || prodImg;
                 return (
                   <button key={hk.clave}
                     onClick={() => setEditingHero(hk)}
@@ -389,8 +514,8 @@ export default function AdminPage() {
                       hero ? "border-transparent hover:border-[#EE6B8D]" : "border-dashed border-gray-200 hover:border-[#EE6B8D]"
                     }`}
                   >
-                    {imgUrl ? (
-                      <img src={imgUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    {displayImg ? (
+                      <img src={displayImg} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                       />
                     ) : (
@@ -414,6 +539,110 @@ export default function AdminPage() {
                   </button>
                 );
               })}
+            </div>
+          </div>
+        )}
+
+        {tab === "inicio" && !loading && (
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-fredoka text-xl font-bold text-[#C04267]">Inicio - Secciones</h2>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {data.map((section: any) => (
+                <button key={section.id}
+                  onClick={() => setEditingSection(section)}
+                  className="group relative bg-white rounded-xl border-2 border-transparent hover:border-[#EE6B8D] transition-all p-5 text-left shadow-sm hover:shadow-md"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <span className="font-quicksand text-[10px] uppercase tracking-wider text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+                      {section.section_key}
+                    </span>
+                    <span className="font-quicksand text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full" style={{
+                      backgroundColor: section.tipo === 'faq' ? '#E8F5E9' : section.tipo === 'showcase' ? '#FFF3E0' : section.tipo === 'personalizados' ? '#FCE4EC' : '#F3E5F5',
+                      color: section.tipo === 'faq' ? '#2E7D32' : section.tipo === 'showcase' ? '#E65100' : section.tipo === 'personalizados' ? '#C04267' : '#7B1FA2',
+                    }}>
+                      {section.tipo}
+                    </span>
+                  </div>
+                  <h3 className="font-quicksand text-sm font-bold text-gray-800 mb-1">{section.titulo || 'Sin título'}</h3>
+                  {section.subtitulo && (
+                    <p className="font-quicksand text-xs text-gray-500 italic">{section.subtitulo}</p>
+                  )}
+                  {section.descripcion && (
+                    <p className="font-quicksand text-xs text-gray-400 mt-2 line-clamp-2">{section.descripcion}</p>
+                  )}
+                  {section.items && (
+                    <p className="font-quicksand text-[10px] text-gray-400 mt-2">
+                      {Array.isArray(section.items) ? section.items.length : 0} ítems
+                    </p>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {tab === "eventos" && !loading && (
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-fredoka text-xl font-bold text-[#C04267]">Eventos</h2>
+              <button onClick={() => {
+                setIsNewEvento(true);
+                setEditEventoNombre("");
+                setEditEventoSlug("");
+                setEditEventoDescripcion("");
+                setEditEventoImagen("");
+                setEditingEvento({ id: null, nombre: "", slug: "", descripcion: "", imagen_url: "" });
+              }}
+                className="flex items-center gap-2 text-xs text-white bg-[#EE6B8D] hover:bg-[#C04267] px-4 py-2.5 rounded-lg font-quicksand font-semibold transition-colors shadow-sm"
+              >
+                <Plus size={14} />
+                Crear evento
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {data.map((evento: any) => (
+                <button key={evento.id}
+                  onClick={() => {
+                    setIsNewEvento(false);
+                    setEditEventoNombre(evento.nombre || "");
+                    setEditEventoSlug(evento.slug || "");
+                    setEditEventoDescripcion(evento.descripcion || "");
+                    setEditEventoImagen(evento.imagen_url || "");
+                    setEditingEvento({ ...evento, featured: evento.featured || false });
+                  }}
+                  className={`group relative bg-white rounded-xl border-2 transition-all p-5 text-left shadow-sm hover:shadow-md ${
+                    evento.featured ? "border-[#EE6B8D] ring-2 ring-[#EE6B8D]/20" : "border-transparent hover:border-[#EE6B8D]"
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <span className={`font-quicksand text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                      evento.featured
+                        ? "bg-[#EE6B8D] text-white"
+                        : evento.activo
+                          ? "bg-green-100 text-green-700"
+                          : "bg-gray-100 text-gray-400"
+                    }`}>
+                      {evento.featured ? "Destacado" : evento.activo ? "Activo" : "Inactivo"}
+                    </span>
+                    {evento.featured && (
+                      <span className="font-quicksand text-[10px] uppercase tracking-wider text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+                        En navbar
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="font-quicksand text-sm font-bold text-gray-800 mb-1">{evento.nombre}</h3>
+                  {evento.slug && (
+                    <p className="font-quicksand text-[11px] text-gray-400">/{evento.slug}</p>
+                  )}
+                  {evento.descripcion && (
+                    <p className="font-quicksand text-xs text-gray-500 mt-2 line-clamp-2">{evento.descripcion}</p>
+                  )}
+                </button>
+              ))}
             </div>
           </div>
         )}
@@ -605,7 +834,7 @@ export default function AdminPage() {
                   )}
 
                   {/* URL input */}
-                  <label className="font-quicksand text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 block">URL de imagen</label>
+                  <label className="font-quicksand text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 block">URL de imagen <span className="text-gray-400 font-normal normal-case">(1200×675px recomendado)</span></label>
                   <input
                     value={editUrl}
                     onChange={(e) => setEditUrl(e.target.value)}
@@ -685,7 +914,7 @@ export default function AdminPage() {
                     <h4 className="font-quicksand text-sm font-bold text-gray-700">Imagen Móvil (vertical)</h4>
                   </div>
 
-                  <label className="font-quicksand text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 block">URL imagen móvil</label>
+                  <label className="font-quicksand text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 block">URL imagen móvil <span className="text-gray-400 font-normal normal-case">(600×900px recomendado)</span></label>
                   <input
                     value={editUrlMobile}
                     onChange={(e) => setEditUrlMobile(e.target.value)}
@@ -771,7 +1000,571 @@ export default function AdminPage() {
           </div>
         )}
 
-        {tab !== "dashboard" && tab !== "heroes" && !loading && data.length > 0 && (
+        {/* Modal de edición de sección de inicio */}
+        {editingSection !== null && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+            onClick={() => setEditingSection(null)}
+          >
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="font-fredoka text-lg font-bold text-[#C04267]">Editar sección</h3>
+                <button onClick={() => setEditingSection(null)}
+                  className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <label className="font-quicksand text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 block">Título</label>
+              <input value={sectionTitulo} onChange={(e) => setSectionTitulo(e.target.value)}
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] mb-4"
+              />
+
+              <label className="font-quicksand text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 block">Subtítulo</label>
+              <input value={sectionSubtitulo} onChange={(e) => setSectionSubtitulo(e.target.value)}
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] mb-4"
+              />
+
+              <label className="font-quicksand text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 block">Descripción</label>
+              <textarea value={sectionDescripcion} onChange={(e) => setSectionDescripcion(e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] mb-4 resize-none"
+              />
+
+              <label className="font-quicksand text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 block">Imagen de referencia <span className="text-gray-400 font-normal normal-case">(800×600px recomendado)</span></label>
+              <input value={sectionImagenUrl} onChange={(e) => setSectionImagenUrl(e.target.value)}
+                placeholder="https://..."
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] mb-3"
+              />
+
+              <div
+                onDragOver={(e) => { e.preventDefault(); setHeroDragOver(3); }}
+                onDragLeave={() => setHeroDragOver(null)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setHeroDragOver(null);
+                  const file = e.dataTransfer.files?.[0];
+                  if (file?.type.startsWith("image/")) subirSectionImg(file);
+                  const text = e.dataTransfer.getData("text");
+                  if (text && esUrlImagen(text)) setSectionImagenUrl(text.trim());
+                }}
+                onPaste={(e) => {
+                  const items = e.clipboardData?.items;
+                  if (!items) return;
+                  for (const item of Array.from(items)) {
+                    if (item.type.startsWith("image/")) {
+                      const file = item.getAsFile();
+                      if (file) { e.preventDefault(); subirSectionImg(file); return; }
+                    }
+                    if (item.type === "text/plain") {
+                      const text = e.clipboardData.getData("text");
+                      if (esUrlImagen(text)) { e.preventDefault(); setSectionImagenUrl(text.trim()); return; }
+                    }
+                  }
+                }}
+                onClick={() => sectionImgRef.current?.click()}
+                className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all mb-4 ${
+                  heroDragOver === 3 ? "border-[#EE6B8D] bg-[#FDF4F7]" : "border-gray-200 hover:border-[#EE6B8D] hover:bg-[#FDF4F7]/50"
+                }`}
+              >
+                <input
+                  ref={sectionImgRef}
+                  type="file" accept="image/*" className="hidden"
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) subirSectionImg(f); }}
+                />
+                {tempUploading ? (
+                  <Loader2 size={24} className="mx-auto animate-spin text-[#EE6B8D]" />
+                ) : (
+                  <>
+                    <Upload size={24} className="mx-auto text-[#EE6B8D] mb-1" />
+                    <p className="font-quicksand text-xs font-semibold text-gray-700">Click, arrastra o pega (Ctrl+V)</p>
+                    <p className="font-quicksand text-[10px] text-gray-400 mt-0.5">Sube una imagen referencial</p>
+                  </>
+                )}
+              </div>
+
+              {sectionImagenUrl && (
+                <div className="relative aspect-video rounded-xl bg-gray-50 border border-gray-200 overflow-hidden mb-4 group">
+                  <img src={sectionImagenUrl} alt="" className="w-full h-full object-contain"
+                    onError={(e) => { (e.target as HTMLImageElement).src = ""; }}
+                  />
+                  <button onClick={() => setSectionImagenUrl("")}
+                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-md hover:bg-red-600"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              )}
+
+              <label className="font-quicksand text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 block">Link URL</label>
+              <input value={sectionLinkUrl} onChange={(e) => setSectionLinkUrl(e.target.value)}
+                placeholder="Ej: /catalogo/ramos"
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] mb-4"
+              />
+
+              <label className="font-quicksand text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 block">Texto del link</label>
+              <input value={sectionLinkText} onChange={(e) => setSectionLinkText(e.target.value)}
+                placeholder="Ej: Ver más"
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] mb-4"
+              />
+
+              {editingSection.tipo === 'faq' && (
+                <>
+                  <hr className="border-gray-100 my-5" />
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-2 h-4 bg-[#EE6B8D] rounded-full" />
+                    <h4 className="font-quicksand text-sm font-bold text-gray-700">Preguntas y Respuestas</h4>
+                  </div>
+                  {(() => {
+                    const items = (() => { try { return JSON.parse(sectionItems); } catch { return []; } })();
+                    return items.map((item: any, i: number) => (
+                      <div key={i} className="mb-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-quicksand text-xs font-bold text-gray-500">Pregunta {i + 1}</span>
+                          <button onClick={() => {
+                            const updated = items.filter((_: any, idx: number) => idx !== i);
+                            setSectionItems(JSON.stringify(updated, null, 2));
+                          }}
+                            className="text-red-400 hover:text-red-600 transition-colors"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                        <input value={item.pregunta || ''} onChange={(e) => {
+                          const updated = [...items];
+                          updated[i] = { ...updated[i], pregunta: e.target.value };
+                          setSectionItems(JSON.stringify(updated, null, 2));
+                        }}
+                          placeholder="Escribe la pregunta..."
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] mb-2"
+                        />
+                        <textarea value={item.respuesta || ''} onChange={(e) => {
+                          const updated = [...items];
+                          updated[i] = { ...updated[i], respuesta: e.target.value };
+                          setSectionItems(JSON.stringify(updated, null, 2));
+                        }}
+                          placeholder="Escribe la respuesta..."
+                          rows={2}
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] resize-none"
+                        />
+                      </div>
+                    ));
+                  })()}
+                  <button onClick={() => {
+                    const current = (() => { try { return JSON.parse(sectionItems); } catch { return []; } })();
+                    current.push({ pregunta: '', respuesta: '' });
+                    setSectionItems(JSON.stringify(current, null, 2));
+                  }}
+                    className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-[#EE6B8D] rounded-xl font-quicksand text-sm font-semibold text-[#EE6B8D] hover:bg-[#FDF4F7] transition-colors mb-4"
+                  >
+                    <Plus size={16} />
+                    Agregar pregunta
+                  </button>
+                </>
+              )}
+
+              {editingSection.tipo === 'showcase' && (
+                <>
+                  <hr className="border-gray-100 my-5" />
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-2 h-4 bg-[#EE6B8D] rounded-full" />
+                    <h4 className="font-quicksand text-sm font-bold text-gray-700">Items del Showcase</h4>
+                  </div>
+                  {(() => {
+                    const items = (() => { try { return JSON.parse(sectionItems); } catch { return []; } })();
+                    return items.map((item: any, i: number) => (
+                      <div key={i} className="mb-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-quicksand text-xs font-bold text-gray-500">Item {i + 1}{item.sku ? ` · ${item.sku}` : ''}</span>
+                          <button onClick={() => {
+                            const updated = items.filter((_: any, idx: number) => idx !== i);
+                            setSectionItems(JSON.stringify(updated, null, 2));
+                          }}
+                            className="text-red-400 hover:text-red-600 transition-colors"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                        <input value={item.titulo || ''} onChange={(e) => {
+                          const updated = [...items];
+                          updated[i] = { ...updated[i], titulo: e.target.value };
+                          setSectionItems(JSON.stringify(updated, null, 2));
+                        }}
+                          placeholder="Título del item"
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] mb-2"
+                        />
+                        <textarea value={item.descripcion || ''} onChange={(e) => {
+                          const updated = [...items];
+                          updated[i] = { ...updated[i], descripcion: e.target.value };
+                          setSectionItems(JSON.stringify(updated, null, 2));
+                        }}
+                          placeholder="Descripción del item"
+                          rows={2}
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] mb-2 resize-none"
+                        />
+                        <button
+                          onClick={() => {
+                            if (allProducts.length === 0) getVentifyProducts().then(setAllProducts).catch(() => {});
+                            setPickingProductFor(pickingProductFor === i ? null : i);
+                          }}
+                          className="w-full flex items-center justify-center gap-2 py-2 border-2 border-dashed border-[#EE6B8D]/50 rounded-lg font-quicksand text-xs font-semibold text-[#EE6B8D] hover:bg-[#FDF4F7] transition-colors"
+                        >
+                          <Search size={14} />
+                          {item.sku ? `Cambiar producto (${item.sku})` : 'Seleccionar producto'}
+                        </button>
+
+                        {pickingProductFor === i && (
+                          <div className="mt-2 border border-gray-200 rounded-xl overflow-hidden">
+                            <div className="p-2 bg-gray-50 border-b border-gray-200">
+                              <input
+                                value={productSearch}
+                                onChange={(e) => setProductSearch(e.target.value)}
+                                placeholder="Buscar..."
+                                className="w-full px-3 py-1.5 border border-gray-200 rounded-lg font-quicksand text-xs focus:outline-none focus:ring-2 focus:ring-[#EE6B8D]"
+                                autoFocus
+                              />
+                            </div>
+                            <div className="max-h-48 overflow-y-auto divide-y divide-gray-100">
+                              {allProducts
+                                .filter((p: any) =>
+                                  !productSearch || p.nombre?.toLowerCase().includes(productSearch.toLowerCase()) || p.sku?.toLowerCase().includes(productSearch.toLowerCase())
+                                )
+                                .slice(0, 30)
+                                .map((p: any) => (
+                                  <button
+                                    key={p.id}
+                                    onClick={() => {
+                                      const updated = [...items];
+                                      updated[i] = { ...updated[i], titulo: p.nombre, descripcion: p.descripcion || updated[i].descripcion, imagen: p.imagen || null, sku: p.sku };
+                                      setSectionItems(JSON.stringify(updated, null, 2));
+                                      setPickingProductFor(null);
+                                    }}
+                                    className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-[#FDF4F7] transition-colors"
+                                  >
+                                    {p.imagen && <img src={p.imagen} alt="" className="w-8 h-8 rounded-lg object-cover bg-gray-100 flex-shrink-0" />}
+                                    <div className="min-w-0 flex-1">
+                                      <p className="font-quicksand text-[11px] font-semibold text-gray-800 truncate">{p.nombre}</p>
+                                      <p className="font-quicksand text-[9px] text-gray-400">{p.sku}</p>
+                                    </div>
+                                  </button>
+                                ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {item.sku && (
+                          <div className="bg-[#FDE8EF] rounded-lg px-3 py-2 flex items-center gap-2 mt-2">
+                            <Check size={14} className="text-[#C04267] flex-shrink-0" />
+                            <span className="font-quicksand text-[11px] text-gray-600">Producto: <strong>{item.sku}</strong></span>
+                          </div>
+                        )}
+                      </div>
+                    ));
+                  })()}
+                  <button
+                    onClick={() => {
+                      if (allProducts.length === 0) getVentifyProducts().then(setAllProducts).catch(() => {});
+                      setShowProductPicker(!showProductPicker);
+                    }}
+                    className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-[#EE6B8D] rounded-xl font-quicksand text-sm font-semibold text-[#EE6B8D] hover:bg-[#FDF4F7] transition-colors mb-4"
+                  >
+                    <Plus size={16} />
+                    {showProductPicker ? 'Ocultar' : 'Agregar item vacío'}
+                  </button>
+
+                  {showProductPicker && (
+                    <div className="mb-4 border border-gray-200 rounded-xl overflow-hidden">
+                      <div className="p-3 bg-gray-50 border-b border-gray-200">
+                        <input
+                          value={productSearch}
+                          onChange={(e) => setProductSearch(e.target.value)}
+                          placeholder="Buscar producto..."
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D]"
+                          autoFocus
+                        />
+                      </div>
+                      <div className="max-h-60 overflow-y-auto divide-y divide-gray-100">
+                        {allProducts
+                          .filter((p: any) =>
+                            !productSearch || p.nombre?.toLowerCase().includes(productSearch.toLowerCase()) || p.sku?.toLowerCase().includes(productSearch.toLowerCase())
+                          )
+                          .slice(0, 50)
+                          .map((p: any) => (
+                            <button
+                              key={p.id}
+                              onClick={() => {
+                                const current = (() => { try { return JSON.parse(sectionItems); } catch { return []; } })();
+                                const exists = current.some((i: any) => i.sku === p.sku);
+                                if (!exists) {
+                                  current.push({ titulo: p.nombre, descripcion: p.descripcion || 'Producto artesanal tejido a mano', imagen: p.imagen || null, sku: p.sku });
+                                  setSectionItems(JSON.stringify(current, null, 2));
+                                }
+                                setShowProductPicker(false);
+                              }}
+                              className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-[#FDF4F7] transition-colors"
+                            >
+                              {p.imagen && <img src={p.imagen} alt="" className="w-10 h-10 rounded-lg object-cover bg-gray-100 flex-shrink-0" />}
+                              <div className="min-w-0 flex-1">
+                                <p className="font-quicksand text-xs font-semibold text-gray-800 truncate">{p.nombre}</p>
+                                <p className="font-quicksand text-[10px] text-gray-400">{p.sku}</p>
+                              </div>
+                            </button>
+                          ))}
+                        {allProducts.length === 0 && (
+                          <p className="p-4 text-center font-quicksand text-xs text-gray-400">Cargando productos...</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {editingSection.tipo === 'personalizados' && (
+                <>
+                  <hr className="border-gray-100 my-5" />
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-2 h-4 bg-[#C04267] rounded-full" />
+                    <h4 className="font-quicksand text-sm font-bold text-gray-700">Hero de Personalizados</h4>
+                  </div>
+
+                  <label className="font-quicksand text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 block">Badge</label>
+                  <input value={persBadge} onChange={(e) => setPersBadge(e.target.value)}
+                    className="w-full px-3 py-2.5 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] mb-3"
+                  />
+
+                  <label className="font-quicksand text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 block">Línea 1 del título</label>
+                  <input value={persTituloLinea1} onChange={(e) => setPersTituloLinea1(e.target.value)}
+                    className="w-full px-3 py-2.5 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] mb-3"
+                  />
+
+                  <label className="font-quicksand text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 block">Línea 2 del título (color rosa)</label>
+                  <input value={persTituloLinea2} onChange={(e) => setPersTituloLinea2(e.target.value)}
+                    className="w-full px-3 py-2.5 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] mb-3"
+                  />
+
+                  <label className="font-quicksand text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 block">Texto botón primario (sin sesión)</label>
+                  <input value={persBotonPrimario} onChange={(e) => setPersBotonPrimario(e.target.value)}
+                    className="w-full px-3 py-2.5 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] mb-3"
+                  />
+
+                  <label className="font-quicksand text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 block">Texto botón primario (con sesión)</label>
+                  <input value={persBotonPrimarioLogged} onChange={(e) => setPersBotonPrimarioLogged(e.target.value)}
+                    className="w-full px-3 py-2.5 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] mb-3"
+                  />
+
+                  <label className="font-quicksand text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 block">Texto botón secundario</label>
+                  <input value={persBotonSecundario} onChange={(e) => setPersBotonSecundario(e.target.value)}
+                    className="w-full px-3 py-2.5 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] mb-3"
+                  />
+
+                  <label className="font-quicksand text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 block">Estadística</label>
+                  <input value={persEstadistica} onChange={(e) => setPersEstadistica(e.target.value)}
+                    className="w-full px-3 py-2.5 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] mb-3"
+                  />
+
+                  <label className="font-quicksand text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 block">Etiqueta del precio</label>
+                  <input value={persEtiquetaPrecio} onChange={(e) => setPersEtiquetaPrecio(e.target.value)}
+                    className="w-full px-3 py-2.5 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] mb-3"
+                  />
+
+                  <label className="font-quicksand text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 block">Valor del precio</label>
+                  <input value={persValorPrecio} onChange={(e) => setPersValorPrecio(e.target.value)}
+                    className="w-full px-3 py-2.5 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] mb-4"
+                  />
+                </>
+              )}
+
+              <div className="flex gap-3">
+                <button onClick={() => setEditingSection(null)}
+                  className="flex-1 py-2.5 border border-gray-200 rounded-lg font-quicksand text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button onClick={handleSectionSave}
+                  className="flex-1 py-2.5 bg-[#EE6B8D] hover:bg-[#C04267] text-white rounded-lg font-quicksand text-sm font-semibold transition-colors"
+                >
+                  Guardar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de edición de evento */}
+        {editingEvento !== null && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+            onClick={() => setEditingEvento(null)}
+          >
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="font-fredoka text-lg font-bold text-[#C04267]">
+                  {isNewEvento ? "Crear evento" : "Editar evento"}
+                </h3>
+                <button onClick={() => setEditingEvento(null)}
+                  className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <label className="font-quicksand text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 block">Nombre</label>
+              <input value={editEventoNombre} onChange={(e) => {
+                setEditEventoNombre(e.target.value);
+                if (isNewEvento) setEditEventoSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''));
+              }}
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] mb-4"
+              />
+
+              <label className="font-quicksand text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 block">Slug (URL)</label>
+              <input value={editEventoSlug} onChange={(e) => setEditEventoSlug(e.target.value)}
+                placeholder="ej: mi-evento"
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] mb-4"
+              />
+              <p className="font-quicksand text-[10px] text-gray-400 -mt-3 mb-4">Se generará como /evento/{editEventoSlug || "mi-evento"}</p>
+
+              <label className="font-quicksand text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 block">Descripción</label>
+              <textarea value={editEventoDescripcion} onChange={(e) => setEditEventoDescripcion(e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] mb-4 resize-none"
+              />
+
+              <label className="font-quicksand text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 block">Imagen del evento <span className="text-gray-400 font-normal normal-case">(1200×675px recomendado)</span></label>
+              <input value={editEventoImagen} onChange={(e) => setEditEventoImagen(e.target.value)}
+                placeholder="https://..."
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] mb-3"
+              />
+
+              <div
+                onDragOver={(e) => { e.preventDefault(); setHeroDragOver(4); }}
+                onDragLeave={() => setHeroDragOver(null)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setHeroDragOver(null);
+                  const file = e.dataTransfer.files?.[0];
+                  if (file?.type.startsWith("image/")) subirEventoImg(file);
+                  const text = e.dataTransfer.getData("text");
+                  if (text && esUrlImagen(text)) setEditEventoImagen(text.trim());
+                }}
+                onPaste={(e) => {
+                  const items = e.clipboardData?.items;
+                  if (!items) return;
+                  for (const item of Array.from(items)) {
+                    if (item.type.startsWith("image/")) {
+                      const file = item.getAsFile();
+                      if (file) { e.preventDefault(); subirEventoImg(file); return; }
+                    }
+                    if (item.type === "text/plain") {
+                      const text = e.clipboardData.getData("text");
+                      if (esUrlImagen(text)) { e.preventDefault(); setEditEventoImagen(text.trim()); return; }
+                    }
+                  }
+                }}
+                onClick={() => eventoImgRef.current?.click()}
+                className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all mb-4 ${
+                  heroDragOver === 4 ? "border-[#EE6B8D] bg-[#FDF4F7]" : "border-gray-200 hover:border-[#EE6B8D] hover:bg-[#FDF4F7]/50"
+                }`}
+              >
+                <input
+                  ref={eventoImgRef}
+                  type="file" accept="image/*" className="hidden"
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) subirEventoImg(f); }}
+                />
+                {eventoImgUploading ? (
+                  <Loader2 size={24} className="mx-auto animate-spin text-[#EE6B8D]" />
+                ) : (
+                  <>
+                    <Upload size={24} className="mx-auto text-[#EE6B8D] mb-1" />
+                    <p className="font-quicksand text-xs font-semibold text-gray-700">Click, arrastra o pega (Ctrl+V)</p>
+                    <p className="font-quicksand text-[10px] text-gray-400 mt-0.5">Sube una imagen para el evento</p>
+                  </>
+                )}
+              </div>
+
+              {editEventoImagen && (
+                <div className="relative aspect-video rounded-xl bg-gray-50 border border-gray-200 overflow-hidden mb-4 group">
+                  <img src={editEventoImagen} alt="" className="w-full h-full object-contain"
+                    onError={(e) => { (e.target as HTMLImageElement).src = ""; }}
+                  />
+                  <button onClick={() => setEditEventoImagen("")}
+                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-md hover:bg-red-600"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              )}
+
+              <div className="flex items-center gap-4 border-t border-gray-100 pt-4">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="evento-destacado"
+                    checked={editingEvento.featured || false}
+                    onChange={(e) => setEditingEvento({ ...editingEvento, featured: e.target.checked })}
+                    className="w-4 h-4 accent-[#EE6B8D]"
+                  />
+                  <label htmlFor="evento-destacado" className="font-quicksand text-xs font-semibold text-gray-600">Destacar en navbar</label>
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                {!isNewEvento && (
+                  <button onClick={async () => {
+                    if (!confirm("¿Eliminar este evento?")) return;
+                    const ok = await apiPatch({ action: "eliminar-evento", id: editingEvento.id });
+                    if (ok) { fetchData(); setEditingEvento(null); }
+                  }}
+                    className="px-4 py-2.5 border border-red-200 rounded-lg font-quicksand text-xs font-semibold text-red-500 hover:bg-red-50 transition-colors"
+                  >
+                    <Trash2 size={14} className="inline mr-1" />
+                    Eliminar
+                  </button>
+                )}
+                <div className="flex-1" />
+                <button onClick={() => setEditingEvento(null)}
+                  className="px-4 py-2.5 border border-gray-200 rounded-lg font-quicksand text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button onClick={async () => {
+                  if (isNewEvento) {
+                    const res = await fetch("/api/admin", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ nombre: editEventoNombre, slug: editEventoSlug, descripcion: editEventoDescripcion, imagen_url: editEventoImagen }),
+                    });
+                    if (res.ok) { fetchData(); setEditingEvento(null); }
+                  } else {
+                    const updateData: Record<string, any> = {
+                      nombre: editEventoNombre,
+                      slug: editEventoSlug,
+                      descripcion: editEventoDescripcion || null,
+                      imagen_url: editEventoImagen || null,
+                    };
+                    if (editingEvento.featured) {
+                      await apiPatch({ action: "destacar-evento", id: editingEvento.id });
+                    } else {
+                      updateData.featured = false;
+                    }
+                    const ok = await apiPatch({ action: "actualizar-evento", id: editingEvento.id, ...updateData });
+                    if (ok) { fetchData(); setEditingEvento(null); }
+                  }
+                }}
+                  className="px-6 py-2.5 bg-[#EE6B8D] hover:bg-[#C04267] text-white rounded-lg font-quicksand text-xs font-semibold transition-colors"
+                >
+                  {isNewEvento ? "Crear" : "Guardar"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {tab !== "dashboard" && tab !== "heroes" && tab !== "inicio" && tab !== "eventos" && !loading && data.length > 0 && (
           <div>
             <h2 className="font-fredoka text-xl font-bold text-[#C04267] mb-6 capitalize">
               {menuItems.find(m => m.id === tab)?.label || tab}
@@ -789,7 +1582,7 @@ export default function AdminPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.map((row: any) => {
+                  {data.map((row: any, rowIdx: number) => {
                     const cols = getColumns(data);
                     return (
                       <tr key={row.id} className="border-b border-gray-50 hover:bg-[#FDF4F7]/50 transition-colors">
@@ -827,6 +1620,14 @@ export default function AdminPage() {
                                   <option value="entregado">Entregado</option>
                                   <option value="cancelado">Cancelado</option>
                                 </select>
+                              </td>
+                            );
+                          }
+
+                          if (key === "usuario_id" && tab === "pedidos") {
+                            return (
+                              <td key={key} className="px-3 py-3 font-quicksand text-xs text-gray-700">
+                                {rowIdx + 1}
                               </td>
                             );
                           }
