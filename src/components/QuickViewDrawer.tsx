@@ -81,8 +81,7 @@ export default function QuickViewDrawer({ product, onClose }: QuickViewDrawerPro
   };
 
   const isSoldOut = product.stock === 0;
-  const isAmigurumiOrCaja = product.sku.startsWith('Amigu-') || product.sku.startsWith('Caja-');
-  const canAdd = !isSoldOut || isAmigurumiOrCaja;
+  const canAdd = true;
 
   const extrasTotal = localExtras.reduce((sum, e) => sum + (e.producto.precio * e.cantidad), 0);
   const totalConExtras = (product.precio * quantity) + extrasTotal;
@@ -254,9 +253,9 @@ export default function QuickViewDrawer({ product, onClose }: QuickViewDrawerPro
             </span>
           )}
 
-          {product.stock === 0 && isAmigurumiOrCaja && (
+          {product.stock === 0 && (
             <span className="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-lato font-medium bg-white/90 backdrop-blur-sm shadow-sm" style={{ color: BRAND.clay }}>
-              A pedido
+              A pedido (1-2 semanas)
             </span>
           )}
         </div>
@@ -289,9 +288,9 @@ export default function QuickViewDrawer({ product, onClose }: QuickViewDrawerPro
                 </span>
               )}
 
-              {product.stock === 0 && isAmigurumiOrCaja && (
+              {product.stock === 0 && (
                 <span className="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-lato font-medium bg-white/90 backdrop-blur-sm shadow-sm" style={{ color: BRAND.clay }}>
-                  A pedido
+                  A pedido (1-2 semanas)
                 </span>
               )}
             </div>
@@ -317,7 +316,7 @@ export default function QuickViewDrawer({ product, onClose }: QuickViewDrawerPro
                 <span className="font-playfair text-2xl font-bold" style={{ color: BRAND.rose }}>
                   S/ {product.precio.toFixed(2)}
                 </span>
-                {isSoldOut && isAmigurumiOrCaja && (
+                {isSoldOut && (
                   <span className="font-lato text-sm font-medium" style={{ color: BRAND.clay }}>
                     A pedido (1-2 semanas)
                   </span>
@@ -460,11 +459,9 @@ export default function QuickViewDrawer({ product, onClose }: QuickViewDrawerPro
                 onMouseEnter={(e) => { if (canAdd) e.currentTarget.style.backgroundColor = '#C04267'; }}
                 onMouseLeave={(e) => { if (canAdd) e.currentTarget.style.backgroundColor = '#EE6B8D'; }}
               >
-                {isSoldOut && !isAmigurumiOrCaja
-                  ? 'Agotado'
-                  : isSoldOut && isAmigurumiOrCaja
-                    ? 'Solicitar a pedido'
-                    : `Agregar — S/ ${totalConExtras.toFixed(2)}`}
+                {isSoldOut
+                  ? 'Solicitar a pedido'
+                  : `Agregar — S/ ${totalConExtras.toFixed(2)}`}
                 {canAdd && !isSoldOut && <ChevronRight size={18} />}
               </button>
             </div>

@@ -34,29 +34,25 @@ export default function ProductCard({
   const { addToCart } = useCart();
   const { showToast } = useToast();
 
-  const isAmigurumiOrCaja = producto.sku.startsWith('Amigu-') || producto.sku.startsWith('Caja-');
   const soldOut = producto.stock === 0;
   const lowStock = producto.stock > 0 && producto.stock <= 5;
   const category = getCategoryBySku(producto.sku);
 
   const stockLabel = soldOut
-    ? (isAmigurumiOrCaja ? 'A pedido' : 'Agotado')
+    ? 'A pedido'
     : lowStock
       ? `Últimas ${producto.stock} unidades`
       : null;
 
-  const disabled = soldOut && !isAmigurumiOrCaja;
-
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
 
-    if (soldOut && isAmigurumiOrCaja) {
+    if (soldOut) {
       if (onQuickView) {
         onQuickView(producto);
       }
       return;
     }
-    if (soldOut) return;
 
     addToCart(producto);
     showToast("Agregado al carrito!", "success");
@@ -70,7 +66,7 @@ export default function ProductCard({
 
   const cardContent = (
     <>
-      <div className={`relative aspect-[4/5] rounded-xl overflow-hidden bg-[#F3EFE9] ${disabled ? 'opacity-50' : ''}`}>
+      <div className={`relative aspect-[4/5] rounded-xl overflow-hidden bg-[#F3EFE9]`}>
         <Image
           src={producto.imagen}
           alt={producto.nombre}
@@ -103,7 +99,7 @@ export default function ProductCard({
 
         <h3
           className="font-playfair text-[16px] sm:text-[17px] leading-snug font-medium mb-2 line-clamp-1"
-          style={{ color: disabled ? '#6B5D54' : '#2E2422' }}
+          style={{ color: '#2E2422' }}
         >
           {producto.nombre}
         </h3>
@@ -111,25 +107,24 @@ export default function ProductCard({
         <div className="flex items-center justify-between gap-2">
           <span
             className="font-lato text-base font-semibold whitespace-nowrap"
-            style={{ color: disabled ? '#6B5D54' : priceColor }}
+            style={{ color: priceColor }}
           >
             S/ {producto.precio.toFixed(2)}
           </span>
 
           <button
             onClick={handleAddToCart}
-            disabled={disabled}
             className="flex items-center gap-1 font-lato text-xs font-semibold pl-2.5 pr-3 py-1.5 rounded-full transition-colors shrink-0"
             style={{
-              backgroundColor: disabled ? '#F1EAE2' : accentColor,
-              color: disabled ? '#B8AC9F' : 'white',
-              cursor: disabled ? 'not-allowed' : 'pointer',
+              backgroundColor: accentColor,
+              color: 'white',
+              cursor: 'pointer',
             }}
-            onMouseEnter={(e) => { if (!disabled) e.currentTarget.style.backgroundColor = accentHover; }}
-            onMouseLeave={(e) => { if (!disabled) e.currentTarget.style.backgroundColor = accentColor; }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = accentHover; }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = accentColor; }}
           >
-            {!disabled && <Plus size={13} strokeWidth={2.5} />}
-            {disabled ? 'Agotado' : soldOut ? 'Pedir' : 'Agregar'}
+            {!soldOut && <Plus size={13} strokeWidth={2.5} />}
+            {soldOut ? 'Pedir' : 'Agregar'}
           </button>
         </div>
       </div>

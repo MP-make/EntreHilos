@@ -221,6 +221,11 @@ export default function CartPage() {
                             <p className="font-quicksand text-xs text-gray-400 mt-0.5">
                               S/ {item.precio.toFixed(2)} c/u
                             </p>
+                            {item.stock === 0 && (
+                              <p className="font-quicksand text-[11px] mt-1 font-semibold text-[#C04267]">
+                                A pedido (1-2 semanas)
+                              </p>
+                            )}
                           </div>
                           <button
                             onClick={() => removeFromCart(item.id)}
@@ -244,7 +249,7 @@ export default function CartPage() {
                             </span>
                             <button
                               onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                              disabled={!item.sku.startsWith("Amigu-") && !item.sku.startsWith("Caja-") && item.quantity >= item.stock}
+                              disabled={item.stock > 0 && item.quantity >= item.stock}
                               className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-gray-500 hover:text-[#2A2A2A] disabled:opacity-30"
                             >
                               <Plus size={13} />

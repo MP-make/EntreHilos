@@ -229,6 +229,11 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                           <p className="font-lato text-xs mt-0.5" style={{ color: BRAND.inkSoft }}>
                             S/ {item.precio.toFixed(2)} c/u
                           </p>
+                          {item.stock === 0 && (
+                            <p className="font-lato text-[11px] mt-1 font-semibold" style={{ color: BRAND.clay }}>
+                              A pedido (1-2 semanas)
+                            </p>
+                          )}
 
                           {/* Quantity controls */}
                           <div className="flex items-center justify-between mt-2">
@@ -241,7 +246,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                 {item.quantity}
                               </span>
                               <button onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                disabled={!item.sku.startsWith('Amigu-') && !item.sku.startsWith('Caja-') && item.quantity >= item.stock}
+                                disabled={item.stock > 0 && item.quantity >= item.stock}
                                 className="w-7 h-7 flex items-center justify-center text-gray-500 hover:text-gray-800 disabled:opacity-30">
                                 <Plus size={12} />
                               </button>

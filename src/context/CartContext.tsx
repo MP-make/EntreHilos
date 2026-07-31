@@ -63,13 +63,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [items, isClient]);
 
   const addToCart = (product: Product) => {
-    const isAmigurumiOrCaja = product.sku.startsWith('Amigu-') || product.sku.startsWith('Caja-');
-    
+    const isSoldOut = product.stock === 0;
+
     setItems((prevItems) => {
       const existingItem = prevItems.find((item) => item.id === product.id);
 
       if (existingItem) {
-        if (!isAmigurumiOrCaja && existingItem.quantity >= product.stock) {
+        if (!isSoldOut && existingItem.quantity >= product.stock) {
           showToast(`Solo hay ${product.stock} unidades disponibles de ${product.nombre}`, "warning");
           return prevItems;
         }
@@ -77,10 +77,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
           item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
         );
       } else {
-        if (product.stock === 0 && !isAmigurumiOrCaja) {
-          showToast("Producto sin stock", "error");
-          return prevItems;
-        }
         return [...prevItems, { ...product, quantity: 1, extras: [] }];
       }
     });
@@ -96,10 +92,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((prevItems) =>
       prevItems.map((item) => {
         if (item.id === id) {
-          const isAmigurumiOrCaja = item.sku.startsWith('Amigu-') || item.sku.startsWith('Caja-');
-          const newQuantity = isAmigurumiOrCaja ? quantity : Math.min(quantity, item.stock);
+          const isSoldOut = item.stock === 0;
+          const newQuantity = isSoldOut ? quantity : Math.min(quantity, item.stock);
           
-          if (!isAmigurumiOrCaja && newQuantity < quantity) {
+          if (!isSoldOut && newQuantity < quantity) {
             showToast(`Solo hay ${item.stock} unidades disponibles de ${item.nombre}`, "warning");
           }
           return { ...item, quantity: newQuantity };
@@ -201,6 +197,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       message += `*${index + 1}. ${item.nombre}*\n`;
       message += `   - Cantidad: ${item.quantity}\n`;
       message += `   - Precio: S/ ${(item.precio * item.quantity).toFixed(2)}\n`;
+      if (item.stock === 0) {
+        message += `   - A PEDIDO (1-2 semanas)\n`;
+      }
       
       if (item.extras && item.extras.length > 0) {
         message += `    *Extras agregados a este producto:*\n`;

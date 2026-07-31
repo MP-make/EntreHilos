@@ -45,7 +45,7 @@ export default function NosotrosPage() {
       {/* ===== NUESTRA HISTORIA ===== */}
       <section className="max-w-6xl mx-auto px-4 py-16 sm:py-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 sm:gap-14 items-center">
-          <div className="order-2 lg:order-1">
+          <div className="order-1 lg:order-1">
             <span className="font-lato text-xs tracking-[0.2em] uppercase mb-3 block" style={{ color: BRAND.clay }}>
               Nuestra Historia
             </span>
@@ -68,7 +68,7 @@ export default function NosotrosPage() {
               </p>
             </div>
           </div>
-          <div className="order-1 lg:order-2">
+          <div className="order-2 lg:order-2">
             <div className="relative p-3 rounded-[2rem] border-2 border-dashed" style={{ borderColor: BRAND.rose + '55' }}>
               <div className="relative h-64 sm:h-80 rounded-2xl overflow-hidden shadow-lg" style={{ backgroundColor: '#F3EFE9' }}>
                 <Image

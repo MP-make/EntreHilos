@@ -131,7 +131,7 @@ function HeroCarousel({ products, heroData: initialHeroData }: { products: any[]
             ) : (
               <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-16 md:py-16 relative z-10">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-12 items-center">
-                  <div className="relative order-1 lg:order-2">
+                  <div className="relative order-2 lg:order-2">
                     <div className="relative p-2 rounded-[2rem] border-2 border-dashed" style={{ borderColor: BRAND.rose + '55' }}>
                       <div className="relative h-[320px] sm:h-[340px] md:h-[480px] rounded-[1.5rem] overflow-hidden shadow-xl bg-gray-100">
                         <Image
@@ -153,7 +153,7 @@ function HeroCarousel({ products, heroData: initialHeroData }: { products: any[]
                     </div>
                   </div>
 
-                  <div className="text-center lg:text-left space-y-3 md:space-y-6 order-2 lg:order-1">
+                  <div className="text-center lg:text-left space-y-3 md:space-y-6 order-1 lg:order-1">
                     <div
                       className="hidden lg:inline-flex items-center gap-2 px-4 py-1.5 md:px-5 md:py-2 rounded-full border border-dashed"
                       style={{ backgroundColor: BRAND.roseSoft, color: BRAND.roseDark, borderColor: BRAND.rose }}
@@ -247,7 +247,7 @@ function ContentSection({ section, imagePosition = 'right' }: { section: any; im
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16 items-center">
           {section.imagen_url && imagePosition === 'left' && (
-            <div className="relative">
+            <div className="relative order-2 lg:order-1">
               <div className="relative p-2 rounded-[2rem] border-2 border-dashed" style={{ borderColor: BRAND.rose + '55' }}>
                 <div className="relative h-[280px] sm:h-[360px] md:h-[440px] rounded-[1.5rem] overflow-hidden shadow-lg bg-gray-100">
                   <Image
@@ -261,7 +261,7 @@ function ContentSection({ section, imagePosition = 'right' }: { section: any; im
               </div>
             </div>
           )}
-          <div className={`text-center lg:text-left ${!section.imagen_url ? 'lg:col-span-2' : ''}`}>
+          <div className={`order-1 ${imagePosition === 'left' ? 'lg:order-2' : 'lg:order-1'} text-center lg:text-left ${!section.imagen_url ? 'lg:col-span-2' : ''}`}>
             {section.subtitulo && (
               <span className="font-lato text-xs tracking-[0.2em] uppercase" style={{ color: BRAND.clay }}>
                 {section.subtitulo}
@@ -290,7 +290,7 @@ function ContentSection({ section, imagePosition = 'right' }: { section: any; im
             )}
           </div>
           {section.imagen_url && imagePosition === 'right' && (
-            <div className="relative">
+            <div className="relative order-2 lg:order-2">
               <div className="relative p-2 rounded-[2rem] border-2 border-dashed" style={{ borderColor: BRAND.rose + '55' }}>
                 <div className="relative h-[280px] sm:h-[360px] md:h-[440px] rounded-[1.5rem] overflow-hidden shadow-lg bg-gray-100">
                   <Image
@@ -520,7 +520,7 @@ export default function HomeClient({ products, sections, heroData }: HomeClientP
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-4">
             <span className="font-lato text-xs tracking-[0.2em] uppercase" style={{ color: BRAND.clay }}>
-              Nuestro oficio
+              Nuestro trabajo
             </span>
           </div>
           <h2 className="font-playfair text-2xl sm:text-3xl md:text-4xl font-semibold text-center mb-10 sm:mb-14" style={{ color: BRAND.roseDark }}>
