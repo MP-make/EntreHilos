@@ -13,6 +13,7 @@ const TABLES: Record<string, string> = {
   eventos: "eventos",
   resenas: "resenas",
   productos: "productos_inactivos",
+  precios: "precios_tamanos",
 };
 
 const ORDER_COLUMN: Record<string, string> = {
@@ -157,6 +158,26 @@ export async function PATCH(request: NextRequest) {
         .upsert({ producto_id }, { onConflict: "producto_id" });
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     }
+    return NextResponse.json({ success: true });
+  }
+
+  if (action === "actualizar-precios-tamanos") {
+    const { sku, precio_pequeno, precio_mediano, precio_grande } = updates;
+    if (!sku) return NextResponse.json({ error: "sku requerido" }, { status: 400 });
+
+    const { error } = await supabaseAdmin
+      .from("precios_tamanos")
+      .upsert(
+        {
+          sku,
+          precio_pequeno: precio_pequeno ?? null,
+          precio_mediano: precio_mediano ?? null,
+          precio_grande: precio_grande ?? null,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "sku" }
+      );
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ success: true });
   }
 

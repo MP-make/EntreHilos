@@ -1,13 +1,13 @@
 'use client';
 
 import Image from "next/image";
-import { X, Plus, Minus, ChevronRight, Sparkles, Ruler, Calendar, Star } from "lucide-react";
+import { X, Plus, Minus, ChevronRight, Sparkles, Ruler, Calendar } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Product } from "@/lib/ventify";
 import { useCart } from "@/context/CartContext";
 import { useReviews } from "@/context/ReviewsContext";
+import { getPreciosTamanos, PrecioTamanos } from "@/lib/precios-tamanos";
 import RatingStars from "@/components/RatingStars";
-import { useToast } from "@/components/Toast";
 
 const TAMANOS = [
   { valor: "pequeno", label: "Pequeño", desc: "10–15 cm" },
@@ -50,16 +50,12 @@ export default function QuickViewDrawer({ product, onClose }: QuickViewDrawerPro
   const [localExtras, setLocalExtras] = useState<LocalExtra[]>([]);
   const [tamano, setTamano] = useState("mediano");
   const [fechaEntrega, setFechaEntrega] = useState("");
-  const [rateValue, setRateValue] = useState(0);
-  const [rateName, setRateName] = useState("");
-  const [rateComment, setRateComment] = useState("");
+  const [preciosTamanos, setPreciosTamanos] = useState<Record<string, PrecioTamanos>>({});
   const drawerRef = useRef<HTMLDivElement>(null);
   const { addToCart, removeFromCart, addExtraToItem } = useCart();
-  const { ratings, ratedByMe, refresh, submitRating } = useReviews();
-  const { showToast } = useToast();
+  const { ratings } = useReviews();
 
   const rating = product ? ratings[product.id] : undefined;
-  const alreadyRated = product ? ratedByMe[product.id] : undefined;
 
   const fechaMinima = (() => {
     const d = new Date();
@@ -73,12 +69,15 @@ export default function QuickViewDrawer({ product, onClose }: QuickViewDrawerPro
     setTamano("mediano");
     setFechaEntrega("");
     setLocalExtras([]);
-    setRateValue(0);
-    setRateName("");
-    setRateComment("");
     (async () => {
       const { loadExtras } = await import("@/lib/extras-cache");
       loadExtras(setAvailableExtras);
+    })();
+    (async () => {
+      const precios = await getPreciosTamanos();
+      const map: Record<string, PrecioTamanos> = {};
+      precios.forEach((p) => { map[p.sku] = p; });
+      setPreciosTamanos(map);
     })();
   }, [product]);
 
@@ -97,8 +96,18 @@ export default function QuickViewDrawer({ product, onClose }: QuickViewDrawerPro
   const isSoldOut = product.stock === 0;
   const canAdd = true;
 
+  const preciosDeSku = preciosTamanos[product.sku];
+  const precioUnitario = (() => {
+    if (product.sku.startsWith('Amigu-') && preciosDeSku) {
+      if (tamano === 'pequeno' && preciosDeSku.precio_pequeno != null) return preciosDeSku.precio_pequeno;
+      if (tamano === 'grande' && preciosDeSku.precio_grande != null) return preciosDeSku.precio_grande;
+      if (preciosDeSku.precio_mediano != null) return preciosDeSku.precio_mediano;
+    }
+    return product.precio;
+  })();
+
   const extrasTotal = localExtras.reduce((sum, e) => sum + (e.producto.precio * e.cantidad), 0);
-  const totalConExtras = (product.precio * quantity) + extrasTotal;
+  const totalConExtras = (precioUnitario * quantity) + extrasTotal;
 
   const handleAddExtra = (extraProduct: Product) => {
     setLocalExtras(prev => {
@@ -128,7 +137,7 @@ export default function QuickViewDrawer({ product, onClose }: QuickViewDrawerPro
   const handleAdd = () => {
     removeFromCart(product.id);
     for (let i = 0; i < quantity; i++) {
-      addToCart(product);
+      addToCart(product, precioUnitario);
     }
     localExtras.forEach(extra => {
       for (let i = 0; i < extra.cantidad; i++) {
@@ -136,27 +145,6 @@ export default function QuickViewDrawer({ product, onClose }: QuickViewDrawerPro
       }
     });
     handleClose();
-  };
-
-  const handleSubmitRating = async () => {
-    if (rateValue === 0) {
-      showToast("Selecciona la cantidad de estrellas", "warning");
-      return;
-    }
-    const res = await submitRating({
-      producto_id: product.id,
-      producto_sku: product.sku,
-      producto_nombre: product.nombre,
-      nombre_cliente: rateName.trim() || "Cliente",
-      calificacion: rateValue,
-      comentario: rateComment.trim() || undefined,
-    });
-    if (res.ok) {
-      showToast("¡Gracias por tu calificación! Se publicará tras revisión.", "success");
-      refresh();
-    } else {
-      showToast(res.error || "Error al enviar la calificación", "error");
-    }
   };
 
   const extrasLucesGlobos = availableExtras.filter(e =>
@@ -349,7 +337,7 @@ export default function QuickViewDrawer({ product, onClose }: QuickViewDrawerPro
 
               <div className="flex items-baseline gap-3 mb-4">
                 <span className="font-playfair text-2xl font-bold" style={{ color: BRAND.rose }}>
-                  S/ {product.precio.toFixed(2)}
+                  S/ {precioUnitario.toFixed(2)}
                 </span>
                 {isSoldOut && (
                   <span className="font-lato text-sm font-medium" style={{ color: BRAND.clay }}>
@@ -372,58 +360,6 @@ export default function QuickViewDrawer({ product, onClose }: QuickViewDrawerPro
                   </div>
                 </div>
               )}
-
-              {/* ===== CALIFICAR PRODUCTO ===== */}
-              <div className="bg-[#FDF4F7] rounded-xl p-4 mb-1 border border-[#FDE8EF]">
-                <div className="flex items-center gap-2 mb-3">
-                  <Star size={16} style={{ color: BRAND.gold }} />
-                  <span className="font-lato text-sm font-semibold" style={{ color: BRAND.ink }}>
-                    ¿Recibiste tu pedido? Califícalo
-                  </span>
-                </div>
-
-                {alreadyRated ? (
-                  <div className="flex items-center gap-2">
-                    <RatingStars value={alreadyRated} size={18} />
-                    <p className="font-lato text-xs font-semibold" style={{ color: BRAND.roseDark }}>
-                      Ya calificaste este producto con {alreadyRated} estrella{alreadyRated !== 1 ? 's' : ''}.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <div>
-                      <label className="font-lato text-xs font-bold uppercase tracking-wider mb-1.5 block" style={{ color: BRAND.ink }}>
-                        Tu calificación
-                      </label>
-                      <RatingStars value={rateValue} interactive size={28} onChange={setRateValue} />
-                    </div>
-                    <input
-                      value={rateName}
-                      onChange={(e) => setRateName(e.target.value)}
-                      placeholder="Tu nombre (opcional)"
-                      className="w-full rounded-xl border bg-white px-3.5 py-2.5 font-lato text-sm outline-none focus:ring-2 transition-shadow"
-                      style={{ borderColor: BRAND.line }}
-                    />
-                    <textarea
-                      value={rateComment}
-                      onChange={(e) => setRateComment(e.target.value)}
-                      placeholder="¿Qué te pareció el producto? (opcional)"
-                      rows={2}
-                      className="w-full rounded-xl border bg-white px-3.5 py-2.5 font-lato text-sm outline-none resize-none focus:ring-2 transition-shadow"
-                      style={{ borderColor: BRAND.line }}
-                    />
-                    <button
-                      onClick={handleSubmitRating}
-                      className="w-full py-2.5 rounded-full font-lato text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 shadow-sm"
-                      style={{ backgroundColor: BRAND.rose }}
-                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = BRAND.roseDark)}
-                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = BRAND.rose)}
-                    >
-                      Enviar calificación
-                    </button>
-                  </div>
-                )}
-              </div>
             </div>
 
             {/* Personalización para Amigurumis */}
@@ -444,21 +380,34 @@ export default function QuickViewDrawer({ product, onClose }: QuickViewDrawerPro
                       Tamaño
                     </label>
                     <div className="grid grid-cols-3 gap-2">
-                      {TAMANOS.map((t) => (
-                        <button
-                          type="button"
-                          key={t.valor}
-                          onClick={() => setTamano(t.valor)}
-                          className={`rounded-xl border-2 px-3 py-2.5 text-center transition-all ${
-                            tamano === t.valor
-                              ? "border-[#EE6B8D] bg-[#FDF4F7] shadow-sm"
-                              : "border-gray-100 bg-white hover:border-gray-200"
-                          }`}
-                        >
-                          <p className="font-quicksand text-sm font-bold text-[#4A4A4A]">{t.label}</p>
-                          <p className="font-quicksand text-[11px] text-gray-400 mt-0.5">{t.desc}</p>
-                        </button>
-                      ))}
+                      {TAMANOS.map((t) => {
+                        const precioTamano = (() => {
+                          if (!preciosDeSku) return null;
+                          if (t.valor === "pequeno") return preciosDeSku.precio_pequeno;
+                          if (t.valor === "grande") return preciosDeSku.precio_grande;
+                          return preciosDeSku.precio_mediano;
+                        })();
+                        return (
+                          <button
+                            type="button"
+                            key={t.valor}
+                            onClick={() => setTamano(t.valor)}
+                            className={`rounded-xl border-2 px-3 py-2.5 text-center transition-all ${
+                              tamano === t.valor
+                                ? "border-[#EE6B8D] bg-[#FDF4F7] shadow-sm"
+                                : "border-gray-100 bg-white hover:border-gray-200"
+                            }`}
+                          >
+                            <p className="font-quicksand text-sm font-bold text-[#4A4A4A]">{t.label}</p>
+                            <p className="font-quicksand text-[11px] text-gray-400 mt-0.5">{t.desc}</p>
+                            {precioTamano != null && (
+                              <p className="font-quicksand text-[11px] font-bold mt-0.5" style={{ color: BRAND.rose }}>
+                                S/ {precioTamano.toFixed(2)}
+                              </p>
+                            )}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 

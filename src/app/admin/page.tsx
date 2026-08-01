@@ -6,17 +6,18 @@ import {
   LayoutDashboard, ShoppingBag, MessageSquare, ClipboardList, Mail,
   Image as ImageIcon, Users, LogOut, Home, Loader2, Eye, ExternalLink,
   UserCheck, Upload, X, Check, ChevronRight, Search, Plus, Trash2, Sparkles,
-  Star, Package,
+  Star, Package, Tag, Save,
 } from "lucide-react";
 import { getVentifyProducts, getAllVentifyProducts, getInactiveProductIds } from "@/lib/ventify";
 
-type Tab = "dashboard" | "inicio" | "pedidos" | "mensajes" | "reclamaciones" | "personalizados" | "heroes" | "suscriptores" | "usuarios" | "eventos" | "resenas" | "productos";
+type Tab = "dashboard" | "inicio" | "pedidos" | "mensajes" | "reclamaciones" | "personalizados" | "heroes" | "suscriptores" | "usuarios" | "eventos" | "resenas" | "productos" | "precios";
 
 const menuItems: { id: Tab; label: string; icon: any }[] = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "inicio", label: "Inicio", icon: Home },
   { id: "pedidos", label: "Pedidos", icon: ShoppingBag },
   { id: "productos", label: "Productos", icon: Package },
+  { id: "precios", label: "Precios", icon: Tag },
   { id: "personalizados", label: "Personalizados", icon: Mail },
   { id: "eventos", label: "Eventos", icon: Sparkles },
   { id: "resenas", label: "Reseñas", icon: Star },
@@ -184,6 +185,10 @@ export default function AdminPage() {
   const [productosSearch, setProductosSearch] = useState("");
   const [productosFilter, setProductosFilter] = useState("ver-todo");
   const [eventos, setEventos] = useState<any[]>([]);
+  const [amiguProducts, setAmiguProducts] = useState<any[]>([]);
+  const [preciosRows, setPreciosRows] = useState<Record<string, any>>({});
+  const [preciosDraft, setPreciosDraft] = useState<Record<string, { pequeno: string; mediano: string; grande: string }>>({});
+  const [preciosSaving, setPreciosSaving] = useState<string | null>(null);
   const tempFileRef = useRef<HTMLInputElement | null>(null);
   const tempFileRefMobile = useRef<HTMLInputElement | null>(null);
   const sectionImgRef = useRef<HTMLInputElement | null>(null);
@@ -373,6 +378,61 @@ export default function AdminPage() {
       }
     }
   }, [tab, rawProducts.length, inactiveIds.size, eventos.length]);
+
+  useEffect(() => {
+    if (tab === "precios") {
+      if (amiguProducts.length === 0) {
+        getAllVentifyProducts()
+          .then((all) => setAmiguProducts(all.filter((p) => p.sku?.startsWith("Amigu-"))))
+          .catch(() => {});
+      }
+    }
+  }, [tab, amiguProducts.length]);
+
+  useEffect(() => {
+    if (tab !== "precios") return;
+    const map: Record<string, any> = {};
+    (Array.isArray(data) ? data : []).forEach((r: any) => { if (r.sku) map[r.sku] = r; });
+    setPreciosRows(map);
+    setPreciosDraft((prev) => {
+      const next = { ...prev };
+      (Array.isArray(data) ? data : []).forEach((r: any) => {
+        if (!r.sku) return;
+        const current = next[r.sku] || { pequeno: "", mediano: "", grande: "" };
+        next[r.sku] = {
+          pequeno: current.pequeno !== "" ? current.pequeno : (r.precio_pequeno != null ? String(r.precio_pequeno) : ""),
+          mediano: current.mediano !== "" ? current.mediano : (r.precio_mediano != null ? String(r.precio_mediano) : ""),
+          grande: current.grande !== "" ? current.grande : (r.precio_grande != null ? String(r.precio_grande) : ""),
+        };
+      });
+      amiguProducts.forEach((p: any) => {
+        if (!next[p.sku]) {
+          next[p.sku] = {
+            pequeno: "",
+            mediano: p.precio != null ? String(p.precio) : "",
+            grande: "",
+          };
+        }
+      });
+      return next;
+    });
+  }, [tab, data, amiguProducts.length]);
+
+  async function handleGuardarPrecios(sku: string) {
+    const draft = preciosDraft[sku];
+    if (!draft) return;
+    setPreciosSaving(sku);
+    const body = {
+      action: "actualizar-precios-tamanos",
+      sku,
+      precio_pequeno: draft.pequeno.trim() !== "" ? parseFloat(draft.pequeno) : null,
+      precio_mediano: draft.mediano.trim() !== "" ? parseFloat(draft.mediano) : null,
+      precio_grande: draft.grande.trim() !== "" ? parseFloat(draft.grande) : null,
+    };
+    const ok = await apiPatch(body);
+    if (ok) setPreciosRows((prev) => ({ ...prev, [sku]: { sku, precio_pequeno: body.precio_pequeno, precio_mediano: body.precio_mediano, precio_grande: body.precio_grande } }));
+    setPreciosSaving(null);
+  }
 
   useEffect(() => {
     if (editingHero) {
@@ -650,7 +710,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        {tab !== "dashboard" && tab !== "resenas" && tab !== "productos" && !loading && data.length === 0 && (
+        {tab !== "dashboard" && tab !== "resenas" && tab !== "productos" && tab !== "precios" && !loading && data.length === 0 && (
           <div className="text-center py-20 bg-white rounded-2xl border border-[#FDE8EF]">
             <p className="font-quicksand text-gray-400">No hay datos</p>
           </div>
@@ -1910,6 +1970,118 @@ export default function AdminPage() {
           );
         })()}
 
+        {tab === "precios" && (
+          <div>
+            <div className="mb-6">
+              <h2 className="font-fredoka text-xl font-bold text-[#C04267]">Precios por tamaño</h2>
+              <p className="font-quicksand text-xs text-gray-400 mt-1">
+                Precio que se mostrará en el detalle del producto según el tamaño que elija el cliente.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              <span className="font-quicksand text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#FDE8EF] text-[#C04267]">Pequeño = Costo</span>
+              <span className="font-quicksand text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#FDE8EF] text-[#C04267]">Mediano = Sugerido</span>
+              <span className="font-quicksand text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#FDE8EF] text-[#C04267]">Grande = Mínimo</span>
+            </div>
+
+            {amiguProducts.length === 0 ? (
+              <div className="flex items-center justify-center py-20 bg-white rounded-2xl border border-[#FDE8EF]">
+                <div className="flex flex-col items-center gap-2">
+                  <Loader2 size={24} className="animate-spin text-[#EE6B8D]" />
+                  <p className="font-quicksand text-xs text-gray-400">Cargando productos personalizados...</p>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl border border-[#FDE8EF] shadow-sm overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-[#FDE8EF] bg-gray-50/50">
+                      <th className="px-3 py-3 font-quicksand text-xs text-gray-500 uppercase tracking-wider whitespace-nowrap">Producto</th>
+                      <th className="px-3 py-3 font-quicksand text-xs text-gray-500 uppercase tracking-wider whitespace-nowrap">SKU</th>
+                      <th className="px-3 py-3 font-quicksand text-xs text-gray-500 uppercase tracking-wider whitespace-nowrap">Precio Ventify</th>
+                      <th className="px-3 py-3 font-quicksand text-xs text-gray-500 uppercase tracking-wider whitespace-nowrap">Pequeño (10–15 cm)</th>
+                      <th className="px-3 py-3 font-quicksand text-xs text-gray-500 uppercase tracking-wider whitespace-nowrap">Mediano (16–25 cm)</th>
+                      <th className="px-3 py-3 font-quicksand text-xs text-gray-500 uppercase tracking-wider whitespace-nowrap">Grande (26 cm a más)</th>
+                      <th className="px-3 py-3 font-quicksand text-xs text-gray-500 uppercase tracking-wider whitespace-nowrap text-right">Guardar</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {amiguProducts.map((p) => {
+                      const draft = preciosDraft[p.sku];
+                      const saved = preciosRows[p.sku];
+                      const hasChanges = (() => {
+                        if (!saved) return false;
+                        const eq = (a: any, b: string) => {
+                          if (b.trim() === "") return a == null;
+                          return Number(a) === parseFloat(b);
+                        };
+                        return !(
+                          eq(saved.precio_pequeno, draft?.pequeno || "") &&
+                          eq(saved.precio_mediano, draft?.mediano || "") &&
+                          eq(saved.precio_grande, draft?.grande || "")
+                        );
+                      })();
+                      return (
+                        <tr key={p.id} className="border-b border-gray-50 hover:bg-[#FDF4F7]/50 transition-colors">
+                          <td className="px-3 py-3">
+                            <div className="flex items-center gap-3">
+                              {p.imagen && <img src={p.imagen} alt="" className="w-10 h-10 rounded-lg object-cover bg-gray-100 flex-shrink-0" />}
+                              <p className="font-quicksand text-xs font-semibold text-gray-800 max-w-[200px] truncate" title={p.nombre}>{p.nombre}</p>
+                            </div>
+                          </td>
+                          <td className="px-3 py-3 font-quicksand text-[11px] text-gray-500">{p.sku}</td>
+                          <td className="px-3 py-3 font-quicksand text-xs text-gray-500 whitespace-nowrap">S/ {p.precio?.toFixed(2)}</td>
+                          {(["pequeno", "mediano", "grande"] as const).map((key) => (
+                            <td key={key} className="px-3 py-3">
+                              <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={draft?.[key] ?? ""}
+                                onChange={(e) => {
+                                  const v = e.target.value;
+                                  setPreciosDraft((prev) => {
+                                    const current = prev[p.sku] || { pequeno: "", mediano: "", grande: "" };
+                                    return { ...prev, [p.sku]: { ...current, [key]: v } };
+                                  });
+                                }}
+                                placeholder="—"
+                                className="w-24 px-2.5 py-2 border border-gray-200 rounded-lg font-quicksand text-xs focus:outline-none focus:ring-2 focus:ring-[#EE6B8D]"
+                              />
+                            </td>
+                          ))}
+                          <td className="px-3 py-3 text-right">
+                            <button
+                              onClick={() => handleGuardarPrecios(p.sku)}
+                              disabled={preciosSaving === p.sku}
+                              className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg font-quicksand text-xs font-semibold transition-colors ${
+                                preciosSaving === p.sku
+                                  ? "bg-gray-100 text-gray-400"
+                                  : "bg-[#EE6B8D] hover:bg-[#C04267] text-white shadow-sm"
+                              }`}
+                            >
+                              {preciosSaving === p.sku ? (
+                                <Loader2 size={14} className="animate-spin" />
+                              ) : saved ? (
+                                <Save size={14} />
+                              ) : null}
+                              {preciosSaving === p.sku ? "Guardando..." : saved ? "Guardado" : "Guardar"}
+                            </button>
+                            {saved && hasChanges && (
+                              <p className="font-quicksand text-[10px] text-amber-600 mt-1">Sin guardar</p>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
         {tab === "resenas" && !loading && (
           <div>
             <div className="flex items-center justify-between mb-6">
@@ -2119,7 +2291,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        {tab !== "dashboard" && tab !== "heroes" && tab !== "inicio" && tab !== "eventos" && tab !== "resenas" && tab !== "productos" && !loading && data.length > 0 && (
+        {tab !== "dashboard" && tab !== "heroes" && tab !== "inicio" && tab !== "eventos" && tab !== "resenas" && tab !== "productos" && tab !== "precios" && !loading && data.length > 0 && (
           <div>
             <h2 className="font-fredoka text-xl font-bold text-[#C04267] mb-6 capitalize">
               {menuItems.find(m => m.id === tab)?.label || tab}

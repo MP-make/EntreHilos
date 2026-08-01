@@ -20,7 +20,7 @@ export interface CartItem extends Product {
 
 interface CartContextType {
   items: CartItem[];
-  addToCart: (product: Product) => void;
+  addToCart: (product: Product, precioOverride?: number) => void;
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   addExtraToItem: (productId: string, extraProduct: Product) => void;
@@ -62,7 +62,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [items, isClient]);
 
-  const addToCart = (product: Product) => {
+  const addToCart = (product: Product, precioOverride?: number) => {
     const isSoldOut = product.stock === 0;
 
     setItems((prevItems) => {
@@ -77,7 +77,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
         );
       } else {
-        return [...prevItems, { ...product, quantity: 1, extras: [] }];
+        return [...prevItems, { ...product, precio: precioOverride ?? product.precio, quantity: 1, extras: [] }];
       }
     });
   };

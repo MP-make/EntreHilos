@@ -4,10 +4,13 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import { useReviews } from "@/context/ReviewsContext";
+import { useToast } from "@/components/Toast";
+import RatingStars from "@/components/RatingStars";
 import {
   UserCircle, Package, Bell, LogOut, Home,
   Clock, CheckCircle2, XCircle, Loader2, ChevronRight,
-  Mail, Phone, Calendar, Ruler, MapPin
+  Mail, Phone, Calendar, Ruler, MapPin, Star
 } from "lucide-react";
 
 interface ProfileData {
@@ -52,6 +55,79 @@ const estados: Record<string, { label: string; color: string; icon: any }> = {
   entregado: { label: "Entregado", color: "text-green-600 bg-green-50", icon: CheckCircle2 },
   cancelado: { label: "Cancelado", color: "text-red-600 bg-red-50", icon: XCircle },
 };
+
+function CalificarProducto({ item, nombreCliente }: { item: any; nombreCliente: string }) {
+  const { ratedByMe, submitRating, refresh } = useReviews();
+  const { showToast } = useToast();
+  const [estrellas, setEstrellas] = useState(0);
+  const [comentario, setComentario] = useState("");
+  const [enviando, setEnviando] = useState(false);
+  const yaCalificado = ratedByMe[item?.id];
+
+  const handleEnviar = async () => {
+    if (!item?.id || !item?.nombre) return;
+    if (estrellas === 0) {
+      showToast("Selecciona la cantidad de estrellas", "warning");
+      return;
+    }
+    setEnviando(true);
+    const res = await submitRating({
+      producto_id: item.id,
+      producto_sku: undefined,
+      producto_nombre: item.nombre,
+      nombre_cliente: nombreCliente || "Cliente",
+      calificacion: estrellas,
+      comentario: comentario.trim() || undefined,
+    });
+    setEnviando(false);
+    if (res.ok) {
+      showToast("¡Gracias por tu calificación! Se publicará tras revisión.", "success");
+      refresh();
+    } else {
+      showToast(res.error || "Error al enviar la calificación", "error");
+    }
+  };
+
+  if (yaCalificado) {
+    return (
+      <div className="flex items-center gap-2 mt-2">
+        <RatingStars value={yaCalificado} size={16} />
+        <p className="font-quicksand text-xs font-semibold text-[#C04267]">
+          Ya calificaste este producto con {yaCalificado} estrella{yaCalificado !== 1 ? "s" : ""}.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-3 border-t border-[#FDE8EF] pt-3">
+      <p className="font-quicksand text-xs font-bold uppercase tracking-wider text-[#C04267] mb-2">
+        ¿Recibiste tu pedido? Califícalo
+      </p>
+      <div className="flex items-center gap-3">
+        <RatingStars value={estrellas} interactive size={24} onChange={setEstrellas} />
+        {estrellas > 0 && (
+          <span className="font-quicksand text-xs text-gray-500">{estrellas}/5</span>
+        )}
+      </div>
+      <textarea
+        value={comentario}
+        onChange={(e) => setComentario(e.target.value)}
+        placeholder="¿Qué te pareció el producto? (opcional)"
+        rows={2}
+        className="w-full mt-2 rounded-xl border border-[#EDE4D9] bg-white px-3.5 py-2.5 font-quicksand text-sm outline-none focus:ring-2 focus:ring-[#EE6B8D] resize-none"
+      />
+      <button
+        onClick={handleEnviar}
+        disabled={enviando}
+        className="mt-2 flex items-center gap-2 px-4 py-2 rounded-full font-quicksand text-xs font-semibold text-white bg-[#EE6B8D] hover:bg-[#C04267] transition-colors"
+      >
+        {enviando ? <Loader2 size={14} className="animate-spin" /> : <Star size={14} />}
+        Enviar calificación
+      </button>
+    </div>
+  );
+}
 
 export default function PerfilPage() {
   const { user, loading, signOut } = useAuth();
@@ -336,6 +412,12 @@ export default function PerfilPage() {
                   })}
                   {pedidos.map((p) => {
                     const EstadoIcon = estados[p.estado]?.icon || Clock;
+                    let itemsPedido: any[] = [];
+                    if (Array.isArray(p.items)) {
+                      itemsPedido = p.items;
+                    } else if (typeof p.items === "string") {
+                      try { itemsPedido = JSON.parse(p.items); } catch { itemsPedido = []; }
+                    }
                     return (
                       <div key={`pd-${p.id}`} className="bg-white rounded-xl border border-[#FDE8EF] p-4 hover:border-[#EE6B8D] transition-colors">
                         <div className="flex items-start justify-between gap-4">
@@ -353,6 +435,24 @@ export default function PerfilPage() {
                             {estados[p.estado]?.label || p.estado}
                           </span>
                         </div>
+
+                        {itemsPedido.length > 0 && (
+                          <div className="mt-3 space-y-2">
+                            {itemsPedido.map((item, index) => (
+                              <div key={item.id || `${p.id}-${index}`} className="rounded-xl bg-[#FDF4F7] p-3">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div className="min-w-0">
+                                    <p className="font-quicksand text-sm font-semibold text-gray-800 truncate">{item.nombre}</p>
+                                    <p className="font-quicksand text-xs text-gray-400">
+                                      {item.cantidad || 1}x · S/ {((item.precio || 0) * (item.cantidad || 1)).toFixed(2)}
+                                    </p>
+                                  </div>
+                                </div>
+                                <CalificarProducto item={item} nombreCliente={nombre} />
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
