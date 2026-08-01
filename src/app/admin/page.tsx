@@ -613,9 +613,18 @@ export default function AdminPage() {
 
   const sidebarContent = (
     <div className="flex flex-col h-full">
-      <div className="p-5 border-b border-[#FDE8EF]">
-        <h1 className="font-fredoka text-lg font-bold text-[#C04267]">Admin</h1>
-        <p className="font-quicksand text-xs text-gray-400">Entre Hilos</p>
+      <div className="p-5 border-b border-[#FDE8EF] flex items-start justify-between">
+        <div>
+          <h1 className="font-fredoka text-lg font-bold text-[#C04267]">Admin</h1>
+          <p className="font-quicksand text-xs text-gray-400">Entre Hilos</p>
+        </div>
+        <button
+          onClick={() => setSidebarOpen(false)}
+          className="lg:hidden w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center -mr-1"
+          aria-label="Cerrar menú"
+        >
+          <X size={18} className="text-gray-500" />
+        </button>
       </div>
 
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
@@ -660,12 +669,12 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-[#FDF4F7] flex">
       {sidebarOpen && (
-        <div className="fixed inset-0 z-40 bg-black/30 sm:hidden" onClick={() => setSidebarOpen(false)} />
+        <div className="fixed inset-0 z-40 bg-black/30 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
       <aside
-        className={`fixed sm:sticky top-0 left-0 z-50 h-screen w-64 bg-white shadow-lg border-r border-[#FDE8EF] transform transition-transform duration-300 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full sm:translate-x-0"
+        className={`fixed lg:sticky top-0 left-0 z-50 h-screen w-64 bg-white shadow-lg border-r border-[#FDE8EF] transform transition-transform duration-300 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
         {sidebarContent}
@@ -673,7 +682,8 @@ export default function AdminPage() {
 
       <button
         onClick={() => setSidebarOpen(true)}
-        className="fixed top-4 left-4 z-30 sm:hidden w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center"
+        className="fixed top-4 left-4 z-30 lg:hidden w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-gray-50"
+        aria-label="Abrir menú"
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4A4A4A" strokeWidth="2" strokeLinecap="round">
           <line x1="4" y1="6" x2="20" y2="6" />
@@ -682,7 +692,7 @@ export default function AdminPage() {
         </svg>
       </button>
 
-      <main className="flex-1 min-w-0 p-4 sm:p-8 pt-20 sm:pt-8">
+      <main className="flex-1 min-w-0 p-4 pt-20 sm:p-8 sm:pt-20 lg:pt-8">
         {tab === "dashboard" && (
           <div>
             <h2 className="font-fredoka text-xl font-bold text-[#C04267] mb-6">Dashboard</h2>
