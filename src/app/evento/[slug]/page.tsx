@@ -7,7 +7,7 @@ import { loadExtras } from "@/lib/extras-cache";
 import ProductCard from "@/components/ProductCard";
 import QuickViewDrawer from "@/components/QuickViewDrawer";
 
-const eventSlugs = ['dia-de-la-novia', 'dia-de-la-mujer', 'san-valentin', 'dia-de-la-madre', 'flores-amarillas', 'personalizados'];
+const eventSlugs = ['dia-de-la-novia', 'dia-de-la-mujer', 'san-valentin', 'dia-de-la-madre', 'flores-amarillas', 'personalizados', 'hotwheels'];
 
 const slugToHeroClave: Record<string, string> = {
   'dia-de-la-novia': 'evento_dia_de_la_novia',
@@ -16,6 +16,7 @@ const slugToHeroClave: Record<string, string> = {
   'dia-de-la-madre': 'evento_dia_de_la_madre',
   'flores-amarillas': 'evento_flores_amarillas',
   'personalizados': 'evento_personalizados',
+  'hotwheels': 'evento_hotwheels',
 };
 
 const eventTitles: Record<string, string> = {
@@ -25,6 +26,7 @@ const eventTitles: Record<string, string> = {
   'dia-de-la-madre': 'Día de la Madre',
   'flores-amarillas': 'Flores Amarillas',
   'personalizados': 'Personalizados',
+  'hotwheels': 'HotWheels',
 };
 
 const eventDescriptions: Record<string, string> = {
@@ -34,6 +36,7 @@ const eventDescriptions: Record<string, string> = {
   'dia-de-la-madre': 'Detalles eternos para mamá',
   'flores-amarillas': 'Flores amarillas eternas que nunca se marchitan',
   'personalizados': 'Diseños únicos hechos a tu medida',
+  'hotwheels': 'Para los coleccionistas más apasionados',
 };
 
 export default function EventoPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -41,8 +44,10 @@ export default function EventoPage({ params }: { params: Promise<{ slug: string 
   const [currentSlug, setCurrentSlug] = useState('');
   const [loading, setLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+  const [evento, setEvento] = useState<any | null>(null);
   const [heroImg, setHeroImg] = useState("");
   const [heroImgMobile, setHeroImgMobile] = useState("");
+  const [isExpired, setIsExpired] = useState(false);
 
   useEffect(() => {
     loadExtras(() => {});
@@ -53,28 +58,57 @@ export default function EventoPage({ params }: { params: Promise<{ slug: string 
   useEffect(() => {
     const fetchData = async () => {
       const { slug } = await params;
-      if (!eventSlugs.includes(slug)) {
+      setCurrentSlug(slug);
+
+      let dbEvento: any = null;
+      try {
+        const { getSupabaseBrowserClient } = await import("@/lib/supabase/client");
+        const supabase = getSupabaseBrowserClient();
+        const { data } = await supabase
+          .from("eventos")
+          .select("*")
+          .eq("slug", slug)
+          .maybeSingle();
+        dbEvento = data;
+      } catch (e) { console.error(e); }
+
+      if (!dbEvento && !eventSlugs.includes(slug)) {
         notFound();
         return;
       }
-      setCurrentSlug(slug);
 
-      const heroClave = slugToHeroClave[slug];
-      if (heroClave) {
-        try {
-          const { getSupabaseBrowserClient } = await import("@/lib/supabase/client");
-          const supabase = getSupabaseBrowserClient();
-          const { data: hero } = await supabase
-            .from("hero_config")
-            .select("imagen_url, imagen_url_mobile")
-            .eq("clave", heroClave)
-            .maybeSingle();
-          if (hero) {
-            setHeroImg(hero.imagen_url || "");
-            setHeroImgMobile(hero.imagen_url_mobile || "");
-          }
-        } catch (e) { console.error(e); }
+      setEvento(dbEvento);
+
+      if (dbEvento?.fecha_fin && new Date(dbEvento.fecha_fin) < new Date()) {
+        setIsExpired(true);
       }
+
+      if (dbEvento?.imagen_url) {
+        setHeroImg(dbEvento.imagen_url);
+      }
+      if (dbEvento?.imagen_url_mobile) {
+        setHeroImgMobile(dbEvento.imagen_url_mobile);
+      }
+
+      if (!dbEvento?.imagen_url) {
+        const heroClave = slugToHeroClave[slug];
+        if (heroClave) {
+          try {
+            const { getSupabaseBrowserClient } = await import("@/lib/supabase/client");
+            const supabase = getSupabaseBrowserClient();
+            const { data: hero } = await supabase
+              .from("hero_config")
+              .select("imagen_url, imagen_url_mobile")
+              .eq("clave", heroClave)
+              .maybeSingle();
+            if (hero) {
+              setHeroImg(hero.imagen_url || "");
+              setHeroImgMobile(hero.imagen_url_mobile || "");
+            }
+          } catch (e) { console.error(e); }
+        }
+      }
+
       const allProducts = await getVentifyProducts();
       let filtered: any[];
       switch (slug) {
@@ -105,8 +139,21 @@ export default function EventoPage({ params }: { params: Promise<{ slug: string 
         case 'personalizados':
           filtered = allProducts.filter(p => p.sku.startsWith('Amigu-'));
           break;
-        default:
-          filtered = [];
+        case 'hotwheels':
+          filtered = allProducts.filter(p =>
+            p.categoriaOriginal?.toLowerCase().includes('hotwheels') ||
+            p.nombre?.toLowerCase().includes('hotwheels') ||
+            p.sku.startsWith('HW-')
+          );
+          break;
+        default: {
+          const searchKeywords = (dbEvento?.nombre || slug).toLowerCase().split(/[\s-]+/).filter((w: string) => w.length > 2);
+          filtered = allProducts.filter(p => {
+            const str = `${p.nombre || ''} ${p.categoriaOriginal || ''} ${p.sku || ''}`.toLowerCase();
+            return searchKeywords.some((kw: string) => str.includes(kw));
+          });
+          if (filtered.length === 0) filtered = allProducts;
+        }
       }
       setProducts(filtered);
       setLoading(false);
@@ -122,32 +169,43 @@ export default function EventoPage({ params }: { params: Promise<{ slug: string 
     );
   }
 
+  const pageTitle = evento?.nombre || eventTitles[currentSlug] || 'Evento Especial';
+  const pageDesc = evento?.descripcion || eventDescriptions[currentSlug] || '';
+
   return (
     <div className="min-h-screen bg-[#FDF4F7]">
+      {isExpired && (
+        <div className="bg-amber-50 border-b border-amber-200 text-amber-800 text-xs sm:text-sm py-2.5 px-4 text-center font-quicksand font-medium">
+          Este evento ha finalizado. Puedes ver nuestros productos o consultar modelos personalizados por WhatsApp.
+        </div>
+      )}
+
       <section className="relative w-full h-[220px] sm:h-[300px] md:h-[380px] overflow-hidden">
         {heroImg && (
           <img
             src={heroImg}
-            alt={eventTitles[currentSlug] || 'Evento'}
+            alt={pageTitle}
             className="object-cover object-center w-full h-full hidden lg:block"
           />
         )}
         {heroImgMobile && (
           <img
             src={heroImgMobile}
-            alt={`${eventTitles[currentSlug] || 'Evento'} Móvil`}
+            alt={`${pageTitle} Móvil`}
             className="object-cover object-center w-full h-full block lg:hidden"
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-[#C04267]/60 to-transparent flex flex-col items-center justify-end pb-6 md:pb-8 px-4">
           <h1 className="font-playfair text-2xl md:text-4xl lg:text-5xl font-bold text-white text-center mb-2 drop-shadow-lg">
-            {eventTitles[currentSlug] || ''}
+            {pageTitle}
           </h1>
-          <p className="font-lato text-sm md:text-base text-white/90 text-center mb-4 md:mb-5 max-w-xl">
-            {eventDescriptions[currentSlug] || ''}
-          </p>
+          {pageDesc && (
+            <p className="font-lato text-sm md:text-base text-white/90 text-center mb-4 md:mb-5 max-w-xl">
+              {pageDesc}
+            </p>
+          )}
           <a
-            href={`https://wa.me/51902578295?text=${encodeURIComponent(`Hola, quiero más información sobre ${eventTitles[currentSlug] || 'este evento'}`)}`}
+            href={`https://wa.me/51902578295?text=${encodeURIComponent(`Hola, quiero más información sobre ${pageTitle}`)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="font-lato px-6 py-2.5 bg-white text-[#C04267] font-semibold text-sm rounded-full flex items-center gap-2 hover:bg-[#EE6B8D] hover:text-white transition-all shadow-lg"

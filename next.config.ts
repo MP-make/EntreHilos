@@ -24,6 +24,14 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: "/category/:slug*",
+        destination: "/catalogo/:slug*",
+      },
+    ];
+  },
 };
 
 export default nextConfig;

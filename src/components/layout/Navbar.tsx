@@ -68,6 +68,16 @@ function Dropdown({ label, items }: DropdownProps) {
   );
 }
 
+const DEFAULT_EVENTOS = [
+  { id: -1, nombre: "Flores Amarillas", slug: "flores-amarillas", featured: true, activo: true },
+  { id: -2, nombre: "Día de la Madre", slug: "dia-de-la-madre", featured: false, activo: true },
+  { id: -3, nombre: "Día de la Mujer", slug: "dia-de-la-mujer", featured: false, activo: true },
+  { id: -4, nombre: "Día de la Novia", slug: "dia-de-la-novia", featured: false, activo: true },
+  { id: -5, nombre: "HotWheels", slug: "hotwheels", featured: false, activo: true },
+  { id: -6, nombre: "Personalizados", slug: "personalizados", featured: false, activo: true },
+  { id: -7, nombre: "San Valentín", slug: "san-valentin", featured: false, activo: true },
+];
+
 export default function Navbar() {
   const { totalItems } = useCart();
   const { user, signOut } = useAuth();
@@ -75,7 +85,7 @@ export default function Navbar() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
-  const [eventos, setEventos] = useState<any[]>([]);
+  const [eventos, setEventos] = useState<any[]>(DEFAULT_EVENTOS);
   const [authView, setAuthView] = useState<"login" | "register">("login");
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
@@ -94,7 +104,11 @@ export default function Navbar() {
   useEffect(() => {
     fetch("/api/eventos")
       .then((r) => r.json())
-      .then(setEventos)
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setEventos(data);
+        }
+      })
       .catch(() => {});
   }, []);
 

@@ -5,8 +5,8 @@ import Link from "next/link";
 import {
   LayoutDashboard, ShoppingBag, MessageSquare, ClipboardList, Mail,
   Image as ImageIcon, Users, LogOut, Home, Loader2, Eye, ExternalLink,
-  UserCheck, Upload, X, Check, ChevronRight, Search, Plus, Trash2, Sparkles,
-  Star, Package, Tag, Save,
+  UserCheck, Upload, X, Check, ChevronRight, Search, Plus, Trash2, Sparkles, Camera,
+  Star, Package, Tag, Save, Calendar, Clock, CalendarCheck, AlertCircle, CheckCircle2,
 } from "lucide-react";
 
 type MainTab = "dashboard" | "pedidos" | "catalogo" | "diseno" | "eventos" | "resenas" | "atencion" | "clientes";
@@ -237,7 +237,22 @@ export default function AdminPage() {
   const [editEventoSlug, setEditEventoSlug] = useState("");
   const [editEventoDescripcion, setEditEventoDescripcion] = useState("");
   const [editEventoImagen, setEditEventoImagen] = useState("");
+  const [editEventoImagenMobile, setEditEventoImagenMobile] = useState("");
+  const [editEventoDiaInicio, setEditEventoDiaInicio] = useState("");
+  const [editEventoMesInicio, setEditEventoMesInicio] = useState("");
+  const [editEventoDiaFin, setEditEventoDiaFin] = useState("");
+  const [editEventoMesFin, setEditEventoMesFin] = useState("");
+  const [editEventoMostrarEnHero, setEditEventoMostrarEnHero] = useState(true);
+  const [editEventoActivo, setEditEventoActivo] = useState(true);
+  const [editEventoFeatured, setEditEventoFeatured] = useState(false);
+  const [editEventoModoInicio, setEditEventoModoInicio] = useState<"auto" | "manual">("auto");
+  const [selectedPrevEventoId, setSelectedPrevEventoId] = useState<string | number | null>(null);
   const [isNewEvento, setIsNewEvento] = useState(false);
+  const eventoImgMobileRef = useRef<HTMLInputElement | null>(null);
+  const [eventoImgMobileUploading, setEventoImgMobileUploading] = useState(false);
+  const [editEventoFotosCampana, setEditEventoFotosCampana] = useState<any[]>([]);
+  const [uploadingCampanaIdx, setUploadingCampanaIdx] = useState<number | null>(null);
+  const [uploadingCollageEventoId, setUploadingCollageEventoId] = useState<string | number | null>(null);
 
   const [showResenaForm, setShowResenaForm] = useState(false);
   const [resenaSearch, setResenaSearch] = useState("");
@@ -335,6 +350,264 @@ export default function AdminPage() {
       setEditEventoImagen(pub.publicUrl);
     } catch (e) { console.error(e); }
     finally { setEventoImgUploading(false); }
+  }
+
+  async function subirEventoImgMobile(file: File) {
+    setEventoImgMobileUploading(true);
+    try {
+      const { getSupabaseBrowserClient } = await import("@/lib/supabase/client");
+      const supabase = getSupabaseBrowserClient();
+      const ext = file.name.split(".").pop() || "jpg";
+      const nombre = `evento-mobile-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await supabase.storage.from("heroes").upload(nombre, file, { upsert: true });
+      if (error) { console.error(error); return; }
+      const { data: pub } = supabase.storage.from("heroes").getPublicUrl(nombre);
+      setEditEventoImagenMobile(pub.publicUrl);
+    } catch (e) { console.error(e); }
+    finally { setEventoImgMobileUploading(false); }
+  }
+
+  async function subirFotoCampana(file: File, index: number) {
+    setUploadingCampanaIdx(index);
+    try {
+      const { getSupabaseBrowserClient } = await import("@/lib/supabase/client");
+      const supabase = getSupabaseBrowserClient();
+      const ext = file.name.split(".").pop() || "jpg";
+      const nombre = `campana-${Date.now()}-${index}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await supabase.storage.from("heroes").upload(nombre, file, { upsert: true });
+      if (error) { console.error(error); return; }
+      const { data: pub } = supabase.storage.from("heroes").getPublicUrl(nombre);
+      setEditEventoFotosCampana((prev) => {
+        const arr = [...(prev || [])];
+        while (arr.length <= index) arr.push({ url: "", titulo: "", etiqueta: "" });
+        const current = typeof arr[index] === "string" ? { url: arr[index] } : { ...arr[index] };
+        arr[index] = { ...current, url: pub.publicUrl };
+        return arr;
+      });
+    } catch (e) { console.error(e); }
+    finally { setUploadingCampanaIdx(null); }
+  }
+
+  function updateFotoCampana(index: number, patch: Record<string, any>) {
+    setEditEventoFotosCampana((prev) => {
+      const arr = [...(prev || [])];
+      while (arr.length <= index) arr.push({ url: "", titulo: "", etiqueta: "" });
+      const current = typeof arr[index] === "string" ? { url: arr[index] } : { ...arr[index] };
+      arr[index] = { ...current, ...patch };
+      return arr;
+    });
+  }
+
+  function removeFotoCampana(index: number) {
+    setEditEventoFotosCampana((prev) => {
+      const arr = [...(prev || [])];
+      if (index < arr.length) {
+        arr[index] = { url: "", titulo: "", etiqueta: "" };
+      }
+      return arr;
+    });
+  }
+
+  async function subirCollageSimultaneo(eventoId: string | number, files: File[]) {
+    if (!files || files.length === 0) return;
+    setUploadingCollageEventoId(eventoId);
+    try {
+      const { getSupabaseBrowserClient } = await import("@/lib/supabase/client");
+      const supabase = getSupabaseBrowserClient();
+
+      const uploadPromises = files.map(async (file, idx) => {
+        const ext = file.name.split(".").pop() || "jpg";
+        const nombre = `campana-${eventoId}-${Date.now()}-${idx}-${Math.random().toString(36).slice(2)}.${ext}`;
+        const { error } = await supabase.storage.from("heroes").upload(nombre, file, { upsert: true });
+        if (error) {
+          console.error("Error subiendo foto:", error);
+          return null;
+        }
+        const { data: pub } = supabase.storage.from("heroes").getPublicUrl(nombre);
+        return {
+          url: pub.publicUrl,
+          titulo: "Momento especial",
+          etiqueta: "Campaña",
+        };
+      });
+
+      const results = await Promise.all(uploadPromises);
+      const validFotos = results.filter(Boolean);
+
+      if (validFotos.length > 0) {
+        const currentEvento = data.find((e: any) => e.id === eventoId);
+        const existingFotos = Array.isArray(currentEvento?.fotos_campana) ? currentEvento.fotos_campana : [];
+        const mergedFotos = [...existingFotos, ...validFotos];
+
+        const ok = await apiPatch({
+          action: "actualizar-evento",
+          id: eventoId,
+          fotos_campana: mergedFotos,
+        });
+        if (ok) {
+          await fetchData();
+        }
+      }
+    } catch (err) {
+      console.error("Error en subirCollageSimultaneo:", err);
+      alert("Hubo un error al subir las fotos. Intenta nuevamente.");
+    } finally {
+      setUploadingCollageEventoId(null);
+    }
+  }
+
+  async function eliminarCollageEvento(eventoId: string | number) {
+    if (!confirm("¿Eliminar las fotos de campaña de este evento?")) return;
+    const ok = await apiPatch({
+      action: "actualizar-evento",
+      id: eventoId,
+      fotos_campana: [],
+    });
+    if (ok) {
+      await fetchData();
+    }
+  }
+
+  function openEditEvento(evento: any) {
+    setIsNewEvento(false);
+    setEditEventoNombre(evento.nombre || "");
+    setEditEventoSlug(evento.slug || "");
+    setEditEventoDescripcion(evento.descripcion || "");
+    setEditEventoImagen(evento.imagen_url || "");
+    setEditEventoImagenMobile(evento.imagen_url_mobile || "");
+
+    let diaIni = "";
+    let mesIni = "";
+    if (evento.fecha_inicio) {
+      const di = new Date(evento.fecha_inicio);
+      diaIni = String(di.getDate());
+      mesIni = String(di.getMonth() + 1);
+    }
+    setEditEventoDiaInicio(diaIni);
+    setEditEventoMesInicio(mesIni);
+
+    let diaF = "";
+    let mesF = "";
+    if (evento.fecha_fin) {
+      const df = new Date(evento.fecha_fin);
+      diaF = String(df.getDate());
+      mesF = String(df.getMonth() + 1);
+    }
+    setEditEventoDiaFin(diaF);
+    setEditEventoMesFin(mesF);
+
+    const prec = getPrecedingEvents(evento.id, data);
+    const matched = prec.find((p: any) => {
+      const pf = new Date(p.fecha_fin);
+      return String(pf.getDate()) === diaIni && String(pf.getMonth() + 1) === mesIni;
+    });
+
+    if (matched) {
+      setEditEventoModoInicio("auto");
+      setSelectedPrevEventoId(matched.id);
+    } else if (!diaIni && prec.length > 0) {
+      const closest = getClosestPrecedingEvent(evento.id, mesF, diaF, data);
+      if (closest && closest.fecha_fin) {
+        const cdf = new Date(closest.fecha_fin);
+        setEditEventoDiaInicio(String(cdf.getDate()));
+        setEditEventoMesInicio(String(cdf.getMonth() + 1));
+        setSelectedPrevEventoId(closest.id);
+        setEditEventoModoInicio("auto");
+      } else {
+        setEditEventoModoInicio("manual");
+        setSelectedPrevEventoId(null);
+      }
+    } else {
+      setEditEventoModoInicio(prec.length > 0 && !diaIni ? "auto" : "manual");
+      setSelectedPrevEventoId(matched ? matched.id : null);
+    }
+
+    setEditEventoMostrarEnHero(evento.mostrar_en_hero !== false);
+    setEditEventoActivo(evento.activo !== false);
+    setEditEventoFeatured(evento.featured || false);
+    const fotos = Array.isArray(evento.fotos_campana)
+      ? evento.fotos_campana.map((f: any) => typeof f === "string" ? { url: f } : f)
+      : [];
+    setEditEventoFotosCampana(fotos);
+    setEditingEvento(evento);
+  }
+
+  const MESES = [
+    { val: "1", name: "Enero" },
+    { val: "2", name: "Febrero" },
+    { val: "3", name: "Marzo" },
+    { val: "4", name: "Abril" },
+    { val: "5", name: "Mayo" },
+    { val: "6", name: "Junio" },
+    { val: "7", name: "Julio" },
+    { val: "8", name: "Agosto" },
+    { val: "9", name: "Septiembre" },
+    { val: "10", name: "Octubre" },
+    { val: "11", name: "Noviembre" },
+    { val: "12", name: "Diciembre" },
+  ];
+
+  function formatEventoFecha(dateStr?: string | null): string {
+    if (!dateStr) return "Sin definir";
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return "Inválida";
+    return d.toLocaleDateString("es-PE", {
+      day: "numeric",
+      month: "short",
+    });
+  }
+
+  function getPrecedingEvents(currentId: any, eventsList: any[]) {
+    const currentYear = new Date().getFullYear();
+    return (eventsList || [])
+      .filter((e: any) => e.id !== currentId && e.fecha_fin)
+      .sort((a: any, b: any) => {
+        const aDate = new Date(a.fecha_fin);
+        const bDate = new Date(b.fecha_fin);
+        const aVal = new Date(currentYear, aDate.getMonth(), aDate.getDate(), 23, 59, 59).getTime();
+        const bVal = new Date(currentYear, bDate.getMonth(), bDate.getDate(), 23, 59, 59).getTime();
+        return aVal - bVal;
+      });
+  }
+
+  function getClosestPrecedingEvent(
+    currentId: any,
+    targetMesFin: string | number | null,
+    targetDiaFin: string | number | null,
+    eventsList: any[]
+  ) {
+    const preceding = getPrecedingEvents(currentId, eventsList);
+    if (preceding.length === 0) return null;
+
+    const currentYear = new Date().getFullYear();
+
+    if (targetMesFin && targetDiaFin) {
+      const thisFin = new Date(currentYear, Number(targetMesFin) - 1, Number(targetDiaFin), 23, 59, 59).getTime();
+      const beforeThis = preceding.filter((e: any) => {
+        const d = new Date(e.fecha_fin);
+        const eFin = new Date(currentYear, d.getMonth(), d.getDate(), 23, 59, 59).getTime();
+        return eFin <= thisFin;
+      });
+      if (beforeThis.length > 0) {
+        return beforeThis[beforeThis.length - 1];
+      }
+    }
+
+    return preceding[preceding.length - 1];
+  }
+
+  function getEventoStatus(evento: { activo?: boolean; fecha_inicio?: string | null; fecha_fin?: string | null }) {
+    if (evento.activo === false) {
+      return { status: "inactivo", label: "Inactivo", color: "bg-gray-100 text-gray-500 border-gray-200" };
+    }
+    const now = new Date();
+    if (evento.fecha_inicio && new Date(evento.fecha_inicio) > now) {
+      return { status: "programado", label: "Programado", color: "bg-blue-50 text-blue-700 border-blue-200" };
+    }
+    if (evento.fecha_fin && new Date(evento.fecha_fin) < now) {
+      return { status: "finalizado", label: "Finalizado / Expirado", color: "bg-rose-50 text-rose-600 border-rose-200" };
+    }
+    return { status: "activo", label: "Activo ahora", color: "bg-emerald-50 text-emerald-700 border-emerald-200" };
   }
 
   async function handleHeroSave() {
@@ -524,10 +797,14 @@ export default function AdminPage() {
       link_url: sectionLinkUrl || null,
       link_text: sectionLinkText || null,
     };
-    if (editingSection.tipo === 'showcase' || editingSection.tipo === 'faq') {
+    if (editingSection.tipo === 'showcase' || editingSection.tipo === 'faq' || editingSection.section_key === 'campana_rotonda') {
       try {
         updateData.items = JSON.parse(sectionItems);
       } catch { /* keep existing */ }
+      if (editingSection.section_key === 'campana_rotonda') {
+        updateData.section_key = 'campana_rotonda';
+        updateData.tipo = 'content';
+      }
     }
     if (editingSection.tipo === 'personalizados') {
       updateData.items = {
@@ -889,10 +1166,10 @@ export default function AdminPage() {
                       {section.section_key}
                     </span>
                     <span className="font-quicksand text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full" style={{
-                      backgroundColor: section.tipo === 'faq' ? '#E8F5E9' : section.tipo === 'showcase' ? '#FFF3E0' : section.tipo === 'personalizados' ? '#FCE4EC' : '#F3E5F5',
-                      color: section.tipo === 'faq' ? '#2E7D32' : section.tipo === 'showcase' ? '#E65100' : section.tipo === 'personalizados' ? '#C04267' : '#7B1FA2',
+                      backgroundColor: section.section_key === 'campana_rotonda' ? '#FCE4EC' : section.tipo === 'faq' ? '#E8F5E9' : section.tipo === 'showcase' ? '#FFF3E0' : section.tipo === 'personalizados' ? '#FCE4EC' : '#F3E5F5',
+                      color: section.section_key === 'campana_rotonda' ? '#C04267' : section.tipo === 'faq' ? '#2E7D32' : section.tipo === 'showcase' ? '#E65100' : section.tipo === 'personalizados' ? '#C04267' : '#7B1FA2',
                     }}>
-                      {section.tipo}
+                      {section.section_key === 'campana_rotonda' ? 'Rotonda 3D' : section.tipo}
                     </span>
                   </div>
                   <h3 className="font-quicksand text-sm font-bold text-gray-800 mb-1">{section.titulo || 'Sin título'}</h3>
@@ -915,63 +1192,247 @@ export default function AdminPage() {
 
         {subTab === "eventos" && !loading && (
           <div>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="font-fredoka text-xl font-bold text-[#C04267]">Eventos</h2>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+              <div>
+                <h2 className="font-fredoka text-xl font-bold text-[#C04267]">Eventos y Campañas</h2>
+                <p className="font-quicksand text-xs text-gray-500 mt-1">
+                  Define fechas de inicio y término para activar automáticamente los banners en el Hero principal y la tienda.
+                </p>
+              </div>
               <button onClick={() => {
                 setIsNewEvento(true);
                 setEditEventoNombre("");
                 setEditEventoSlug("");
                 setEditEventoDescripcion("");
                 setEditEventoImagen("");
-                setEditingEvento({ id: null, nombre: "", slug: "", descripcion: "", imagen_url: "" });
+                setEditEventoImagenMobile("");
+                setEditEventoDiaFin("");
+                setEditEventoMesFin("");
+
+                const closest = getClosestPrecedingEvent(null, null, null, data);
+                if (closest && closest.fecha_fin) {
+                  const df = new Date(closest.fecha_fin);
+                  setEditEventoDiaInicio(String(df.getDate()));
+                  setEditEventoMesInicio(String(df.getMonth() + 1));
+                  setSelectedPrevEventoId(closest.id);
+                  setEditEventoModoInicio("auto");
+                } else {
+                  setEditEventoDiaInicio("");
+                  setEditEventoMesInicio("");
+                  setSelectedPrevEventoId(null);
+                  setEditEventoModoInicio("manual");
+                }
+
+                setEditEventoMostrarEnHero(true);
+                setEditEventoActivo(true);
+                setEditEventoFeatured(false);
+                setEditEventoFotosCampana([]);
+                setEditingEvento({ id: null, nombre: "", slug: "", descripcion: "", imagen_url: "", imagen_url_mobile: "" });
               }}
-                className="flex items-center gap-2 text-xs text-white bg-[#EE6B8D] hover:bg-[#C04267] px-4 py-2.5 rounded-lg font-quicksand font-semibold transition-colors shadow-sm"
+                className="flex items-center gap-2 text-xs text-white bg-[#EE6B8D] hover:bg-[#C04267] px-4 py-2.5 rounded-lg font-quicksand font-semibold transition-colors shadow-sm self-start sm:self-auto"
               >
                 <Plus size={14} />
                 Crear evento
               </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {data.map((evento: any) => (
-                <button key={evento.id}
-                  onClick={() => {
-                    setIsNewEvento(false);
-                    setEditEventoNombre(evento.nombre || "");
-                    setEditEventoSlug(evento.slug || "");
-                    setEditEventoDescripcion(evento.descripcion || "");
-                    setEditEventoImagen(evento.imagen_url || "");
-                    setEditingEvento({ ...evento, featured: evento.featured || false });
-                  }}
-                  className={`group relative bg-white rounded-xl border-2 transition-all p-5 text-left shadow-sm hover:shadow-md ${
-                    evento.featured ? "border-[#EE6B8D] ring-2 ring-[#EE6B8D]/20" : "border-transparent hover:border-[#EE6B8D]"
-                  }`}
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <span className={`font-quicksand text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                      evento.featured
-                        ? "bg-[#EE6B8D] text-white"
-                        : evento.activo
-                          ? "bg-green-100 text-green-700"
-                          : "bg-gray-100 text-gray-400"
-                    }`}>
-                      {evento.featured ? "Destacado" : evento.activo ? "Activo" : "Inactivo"}
-                    </span>
-                    {evento.featured && (
-                      <span className="font-quicksand text-[10px] uppercase tracking-wider text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
-                        En navbar
-                      </span>
-                    )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {data.map((evento: any) => {
+                const statusInfo = getEventoStatus(evento);
+                const enHero = statusInfo.status === "activo" && evento.mostrar_en_hero !== false && (evento.imagen_url || evento.imagen_url_mobile);
+
+                return (
+                  <div key={evento.id}
+                    className={`group relative bg-white rounded-2xl border-2 transition-all overflow-hidden text-left shadow-sm hover:shadow-md flex flex-col justify-between ${
+                      enHero
+                        ? "border-[#EE6B8D] ring-2 ring-[#EE6B8D]/20"
+                        : "border-gray-100 hover:border-[#EE6B8D]/50"
+                    }`}
+                  >
+                    <div>
+                      {/* Miniatura del banner y click para editar */}
+                      <div
+                        onClick={() => openEditEvento(evento)}
+                        className="relative aspect-[21/9] bg-gray-50 border-b border-gray-100 overflow-hidden cursor-pointer"
+                      >
+                        {evento.imagen_url || evento.imagen_url_mobile ? (
+                          <img
+                            src={evento.imagen_url || evento.imagen_url_mobile}
+                            alt=""
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            onError={(e) => { (e.target as HTMLImageElement).src = "/logo.png"; }}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center text-gray-300">
+                            <ImageIcon size={28} />
+                            <span className="font-quicksand text-[11px] text-gray-400 mt-1">Sin banner (click para configurar)</span>
+                          </div>
+                        )}
+
+                        {/* Badges superiores sobre la imagen */}
+                        <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-1.5 flex-wrap">
+                          <span className={`font-quicksand text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border shadow-sm ${statusInfo.color}`}>
+                            {statusInfo.label}
+                          </span>
+
+                          <div className="flex items-center gap-1">
+                            {enHero && (
+                              <span className="font-quicksand text-[10px] font-bold text-white bg-gradient-to-r from-[#EE6B8D] to-[#C04267] px-2 py-0.5 rounded-full shadow-sm flex items-center gap-1">
+                                <Sparkles size={10} />
+                                En Hero Principal
+                              </span>
+                            )}
+                            {evento.featured && (
+                              <span className="font-quicksand text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                                Navbar
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="p-4">
+                        <div
+                          onClick={() => openEditEvento(evento)}
+                          className="cursor-pointer"
+                        >
+                          <h3 className="font-quicksand text-sm font-bold text-gray-800 line-clamp-1 hover:text-[#EE6B8D] transition-colors">
+                            {evento.nombre}
+                          </h3>
+                          {evento.slug && (
+                            <p className="font-quicksand text-[11px] text-gray-400 mb-1 font-mono">/evento/{evento.slug}</p>
+                          )}
+                          {evento.descripcion && (
+                            <p className="font-quicksand text-xs text-gray-500 mb-3 line-clamp-2">{evento.descripcion}</p>
+                          )}
+                        </div>
+
+                        {/* Fechas de vigencia */}
+                        <div className="bg-[#FAF7F5] rounded-xl p-2.5 space-y-1 text-[11px] font-quicksand border border-gray-100">
+                          <div className="flex items-center justify-between text-gray-600">
+                            <span className="flex items-center gap-1 text-gray-400">
+                              <Calendar size={12} className="text-[#C04267]" />
+                              Inicio:
+                            </span>
+                            <span className="font-semibold text-gray-700">
+                              {evento.fecha_inicio ? formatEventoFecha(evento.fecha_inicio) : "Inmediato"}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between text-gray-600">
+                            <span className="flex items-center gap-1 text-gray-400">
+                              <Clock size={12} className="text-[#EE6B8D]" />
+                              Fin:
+                            </span>
+                            <span className="font-semibold text-gray-700">
+                              {evento.fecha_fin ? formatEventoFecha(evento.fecha_fin) : "Permanente"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* SECCIÓN DIRECTA: SUBIR COLLAGE DE FOTOS PARA LA ROTONDA DE INICIO */}
+                        <div className="mt-3 pt-3 border-t border-gray-100">
+                          {Array.isArray(evento.fotos_campana) && evento.fotos_campana.length > 0 ? (
+                            <div>
+                              <div className="flex items-center justify-between mb-1.5">
+                                <span className="font-quicksand font-bold text-[11px] text-[#C04267] flex items-center gap-1">
+                                  <Camera size={12} className="text-[#EE6B8D]" />
+                                  Fotos de Campaña ({evento.fotos_campana.length} {evento.fotos_campana.length === 1 ? "foto" : "fotos"})
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    eliminarCollageEvento(evento.id);
+                                  }}
+                                  className="text-gray-400 hover:text-red-500 font-quicksand text-[10px] font-semibold transition-colors"
+                                >
+                                  Quitar todas
+                                </button>
+                              </div>
+
+                              {/* Miniaturas de todas las fotos con scroll horizontal si son muchas */}
+                              <div className="flex items-center gap-1.5 mb-2 overflow-x-auto py-1 scrollbar-thin">
+                                {evento.fotos_campana.map((f: any, idx: number) => {
+                                  const src = typeof f === "string" ? f : f.url;
+                                  return (
+                                    <div key={idx} className="relative w-12 h-16 shrink-0 rounded-lg overflow-hidden bg-gray-100 border border-pink-100 shadow-xs">
+                                      <img src={src} alt="" className="w-full h-full object-cover" />
+                                    </div>
+                                  );
+                                })}
+                              </div>
+
+                              <label className="w-full flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-pink-50 hover:bg-pink-100 text-[#C04267] font-quicksand font-bold text-[11px] cursor-pointer transition-colors border border-pink-200">
+                                <input
+                                  type="file"
+                                  multiple
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={(e) => {
+                                    const files = Array.from(e.target.files || []);
+                                    if (files.length > 0) subirCollageSimultaneo(evento.id, files);
+                                  }}
+                                />
+                                {uploadingCollageEventoId === evento.id ? (
+                                  <Loader2 size={12} className="animate-spin text-[#EE6B8D]" />
+                                ) : (
+                                  <Upload size={12} />
+                                )}
+                                <span>Agregar más fotos</span>
+                              </label>
+                            </div>
+                          ) : (
+                            <label
+                              className={`w-full flex flex-col items-center justify-center p-3 rounded-xl border-2 border-dashed transition-all cursor-pointer text-center ${
+                                uploadingCollageEventoId === evento.id
+                                  ? "border-[#EE6B8D] bg-pink-50"
+                                  : "border-[#EE6B8D]/40 bg-[#FDF4F7]/60 hover:bg-[#FDF4F7] hover:border-[#EE6B8D]"
+                              }`}
+                            >
+                              <input
+                                type="file"
+                                multiple
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) => {
+                                  const files = Array.from(e.target.files || []);
+                                  if (files.length > 0) subirCollageSimultaneo(evento.id, files);
+                                }}
+                              />
+                              {uploadingCollageEventoId === evento.id ? (
+                                <div className="flex items-center gap-2 text-[#C04267] font-quicksand font-bold text-xs py-1">
+                                  <Loader2 size={15} className="animate-spin text-[#EE6B8D]" />
+                                  <span>Subiendo fotos a la vez...</span>
+                                </div>
+                              ) : (
+                                <>
+                                  <div className="flex items-center gap-1.5 text-[#C04267] font-quicksand font-bold text-xs">
+                                    <Camera size={14} className="text-[#EE6B8D]" />
+                                    <span>Subir fotos de campaña</span>
+                                  </div>
+                                  <span className="font-quicksand text-[10px] text-gray-500 mt-0.5">
+                                    Elige todas las fotos que quieras para el collage
+                                  </span>
+                                </>
+                              )}
+                            </label>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-4 pt-0">
+                      <button
+                        type="button"
+                        onClick={() => openEditEvento(evento)}
+                        className="w-full py-2 px-3 rounded-xl border border-gray-200 hover:border-[#EE6B8D] hover:bg-[#FDF4F7]/50 text-gray-700 font-quicksand font-semibold text-xs transition-colors flex items-center justify-center gap-1.5"
+                      >
+                        Editar fechas y detalles
+                      </button>
+                    </div>
                   </div>
-                  <h3 className="font-quicksand text-sm font-bold text-gray-800 mb-1">{evento.nombre}</h3>
-                  {evento.slug && (
-                    <p className="font-quicksand text-[11px] text-gray-400">/{evento.slug}</p>
-                  )}
-                  {evento.descripcion && (
-                    <p className="font-quicksand text-xs text-gray-500 mt-2 line-clamp-2">{evento.descripcion}</p>
-                  )}
-                </button>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -1651,6 +2112,141 @@ export default function AdminPage() {
                 </>
               )}
 
+              {editingSection.section_key === 'campana_rotonda' && (
+                <>
+                  <hr className="border-gray-100 my-5" />
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-2 h-4 bg-[#EE6B8D] rounded-full" />
+                    <h4 className="font-quicksand text-sm font-bold text-gray-700">Fotos de la Rotonda (Campañas y Clientes)</h4>
+                  </div>
+                  <p className="font-quicksand text-xs text-gray-500 mb-4 leading-relaxed">
+                    Configura las 4 imágenes que giran en la rotonda 3D para mostrar cómo se vivió la campaña anterior o actual (fotos de clientes recibiendo pedidos, flores amarillas, entregas especiales, etc.).
+                  </p>
+
+                  {(() => {
+                    const items = (() => {
+                      try {
+                        const parsed = JSON.parse(sectionItems);
+                        return Array.isArray(parsed) && parsed.length > 0 ? parsed : [];
+                      } catch {
+                        return [];
+                      }
+                    })();
+
+                    const slots = Array.from({ length: 4 }, (_, idx) => items[idx] || {
+                      imagen: "",
+                      etiqueta: `Campaña ${idx + 1}`,
+                      titulo: "",
+                      descripcion: "",
+                    });
+
+                    const updateSlot = (idx: number, patch: any) => {
+                      const updated = [...slots];
+                      updated[idx] = { ...updated[idx], ...patch };
+                      setSectionItems(JSON.stringify(updated, null, 2));
+                    };
+
+                    return (
+                      <div className="space-y-4">
+                        {slots.map((item: any, i: number) => (
+                          <div key={i} className="p-4 bg-gray-50 rounded-2xl border border-gray-200">
+                            <div className="flex items-center justify-between mb-3">
+                              <span className="font-quicksand text-xs font-bold text-[#C04267] uppercase tracking-wider flex items-center gap-1.5">
+                                <Sparkles size={13} className="text-[#EE6B8D]" />
+                                Foto {i + 1} de la Rotonda
+                              </span>
+                              {item.imagen && (
+                                <span className="font-quicksand text-[10px] text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full font-semibold">
+                                  ✓ Imagen cargada
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                              <div>
+                                <label className="font-quicksand text-[11px] font-bold text-gray-600 block mb-1">
+                                  Etiqueta de Campaña (Badge)
+                                </label>
+                                <input
+                                  value={item.etiqueta || ""}
+                                  onChange={(e) => updateSlot(i, { etiqueta: e.target.value })}
+                                  placeholder="Ej: Flores Amarillas, San Valentín..."
+                                  className="w-full px-3 py-1.5 border border-gray-200 rounded-lg font-quicksand text-xs focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] bg-white"
+                                />
+                              </div>
+                              <div>
+                                <label className="font-quicksand text-[11px] font-bold text-gray-600 block mb-1">
+                                  Título
+                                </label>
+                                <input
+                                  value={item.titulo || ""}
+                                  onChange={(e) => updateSlot(i, { titulo: e.target.value })}
+                                  placeholder="Ej: Así se vivió en Pisco..."
+                                  className="w-full px-3 py-1.5 border border-gray-200 rounded-lg font-quicksand text-xs focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] bg-white"
+                                />
+                              </div>
+                            </div>
+
+                            <label className="font-quicksand text-[11px] font-bold text-gray-600 block mb-1">
+                              Descripción / Comentario
+                            </label>
+                            <input
+                              value={item.descripcion || ""}
+                              onChange={(e) => updateSlot(i, { descripcion: e.target.value })}
+                              placeholder="Ej: Fotos de clientes felices recibiendo sus ramos..."
+                              className="w-full px-3 py-1.5 border border-gray-200 rounded-lg font-quicksand text-xs focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] bg-white mb-3"
+                            />
+
+                            <label className="font-quicksand text-[11px] font-bold text-gray-600 block mb-1">
+                              URL de la Imagen o subir archivo
+                            </label>
+                            <div className="flex gap-2 items-center">
+                              <input
+                                value={item.imagen || ""}
+                                onChange={(e) => updateSlot(i, { imagen: e.target.value })}
+                                placeholder="https://..."
+                                className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg font-quicksand text-xs focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] bg-white"
+                              />
+                              <label className="px-3 py-1.5 bg-[#EE6B8D]/10 hover:bg-[#EE6B8D]/20 text-[#C04267] rounded-lg font-quicksand text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1.5 flex-shrink-0">
+                                <Upload size={13} />
+                                <span>Subir</span>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    try {
+                                      const { getSupabaseBrowserClient } = await import("@/lib/supabase/client");
+                                      const supabase = getSupabaseBrowserClient();
+                                      const ext = file.name.split(".").pop() || "jpg";
+                                      const nombre = `rotonda-${Date.now()}-${i}.${ext}`;
+                                      const { error } = await supabase.storage.from("heroes").upload(nombre, file, { upsert: true });
+                                      if (error) { console.error(error); return; }
+                                      const { data: pub } = supabase.storage.from("heroes").getPublicUrl(nombre);
+                                      updateSlot(i, { imagen: pub.publicUrl });
+                                    } catch (err) {
+                                      console.error(err);
+                                    }
+                                  }}
+                                />
+                              </label>
+                            </div>
+
+                            {item.imagen && (
+                              <div className="mt-2.5 relative aspect-video max-w-[200px] rounded-lg overflow-hidden border border-gray-200 bg-white">
+                                <img src={item.imagen} alt="" className="w-full h-full object-cover" />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </>
+              )}
+
               {editingSection.tipo === 'personalizados' && (
                 <>
                   <hr className="border-gray-100 my-5" />
@@ -1763,7 +2359,214 @@ export default function AdminPage() {
                 className="w-full px-3 py-2.5 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] mb-4 resize-none"
               />
 
-              <label className="font-quicksand text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 block">Imagen del evento <span className="text-gray-400 font-normal normal-case">(1200×675px recomendado)</span></label>
+              {/* Vigencia y Fechas del Evento (Día y Mes) */}
+              {(() => {
+                const precedingList = getPrecedingEvents(editingEvento?.id, data);
+                const currentPrevEvent =
+                  precedingList.find((p: any) => String(p.id) === String(selectedPrevEventoId)) ||
+                  getClosestPrecedingEvent(editingEvento?.id, editEventoMesFin, editEventoDiaFin, data);
+
+                const handleFechaFinChange = (newDia: string, newMes: string) => {
+                  setEditEventoDiaFin(newDia);
+                  setEditEventoMesFin(newMes);
+
+                  if (editEventoModoInicio === "auto") {
+                    const closest = getClosestPrecedingEvent(editingEvento?.id, newMes, newDia, data);
+                    if (closest && closest.fecha_fin) {
+                      const df = new Date(closest.fecha_fin);
+                      setEditEventoDiaInicio(String(df.getDate()));
+                      setEditEventoMesInicio(String(df.getMonth() + 1));
+                      setSelectedPrevEventoId(closest.id);
+                    }
+                  }
+                };
+
+                return (
+                  <div className="bg-[#FFF8FA] border border-[#EE6B8D]/25 rounded-2xl p-4 mb-5 shadow-xs">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Calendar className="text-[#C04267]" size={16} />
+                      <h4 className="font-quicksand text-xs font-bold text-[#C04267] uppercase tracking-wider">
+                        Vigencia del Evento (Día y Mes)
+                      </h4>
+                    </div>
+                    <p className="font-quicksand text-xs text-gray-500 mb-3 leading-relaxed">
+                      Elige solo el día y mes. El año actual ({new Date().getFullYear()}) se toma automáticamente. El evento toma como inicio el término del evento más cercano.
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
+                      {/* Fecha de inicio */}
+                      {editEventoModoInicio === "auto" && currentPrevEvent ? (
+                        <div className="bg-[#FFF0F5] p-3.5 rounded-xl border border-[#EE6B8D]/30 shadow-xs flex flex-col justify-between">
+                          <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                              <label className="font-quicksand text-[11px] font-bold text-[#C04267] flex items-center gap-1">
+                                <CheckCircle2 size={13} className="text-[#EE6B8D]" />
+                                Fecha de inicio (Automática)
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => setEditEventoModoInicio("manual")}
+                                className="font-quicksand text-[10px] font-semibold text-gray-500 hover:text-[#EE6B8D] underline"
+                              >
+                                Manual
+                              </button>
+                            </div>
+                            <p className="font-quicksand text-xs font-bold text-[#C04267] mt-0.5">
+                              {editEventoDiaInicio} de {MESES.find((m) => m.val === editEventoMesInicio)?.name || "Mes"}
+                            </p>
+                            <p className="font-quicksand text-[10px] text-gray-600 mt-1 leading-tight">
+                              Toma el día de fin de <strong>"{currentPrevEvent.nombre}"</strong> ({formatEventoFecha(currentPrevEvent.fecha_fin)}).
+                            </p>
+                          </div>
+
+                          {precedingList.length > 1 && (
+                            <div className="mt-2 pt-2 border-t border-[#EE6B8D]/15">
+                              <span className="font-quicksand text-[9px] text-gray-400 block mb-0.5">Cambiar evento del que inicia:</span>
+                              <select
+                                value={selectedPrevEventoId || currentPrevEvent.id}
+                                onChange={(e) => {
+                                  const selId = e.target.value;
+                                  setSelectedPrevEventoId(selId);
+                                  const ev = precedingList.find((p: any) => String(p.id) === String(selId));
+                                  if (ev && ev.fecha_fin) {
+                                    const df = new Date(ev.fecha_fin);
+                                    setEditEventoDiaInicio(String(df.getDate()));
+                                    setEditEventoMesInicio(String(df.getMonth() + 1));
+                                  }
+                                }}
+                                className="w-full px-2 py-1 text-[11px] border border-gray-200 rounded font-quicksand bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#EE6B8D]"
+                              >
+                                {precedingList.map((p: any) => (
+                                  <option key={p.id} value={p.id}>
+                                    {p.nombre} (fin: {formatEventoFecha(p.fecha_fin)})
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-xs">
+                          <div className="flex items-center justify-between mb-2">
+                            <label className="font-quicksand text-[11px] font-bold text-gray-700 block">
+                              Fecha de inicio
+                            </label>
+                            {precedingList.length > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditEventoModoInicio("auto");
+                                  const closest = getClosestPrecedingEvent(editingEvento?.id, editEventoMesFin, editEventoDiaFin, data);
+                                  if (closest && closest.fecha_fin) {
+                                    const df = new Date(closest.fecha_fin);
+                                    setEditEventoDiaInicio(String(df.getDate()));
+                                    setEditEventoMesInicio(String(df.getMonth() + 1));
+                                    setSelectedPrevEventoId(closest.id);
+                                  }
+                                }}
+                                className="font-quicksand text-[10px] text-[#EE6B8D] font-semibold hover:underline"
+                              >
+                                Vincular a evento previo
+                              </button>
+                            )}
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <span className="font-quicksand text-[10px] text-gray-400 block mb-1">Día</span>
+                              <select
+                                value={editEventoDiaInicio}
+                                onChange={(e) => setEditEventoDiaInicio(e.target.value)}
+                                className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg font-quicksand text-xs focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] bg-gray-50"
+                              >
+                                <option value="">- Día -</option>
+                                {Array.from({ length: 31 }, (_, i) => String(i + 1)).map((d) => (
+                                  <option key={d} value={d}>{d}</option>
+                                ))}
+                              </select>
+                            </div>
+                            <div>
+                              <span className="font-quicksand text-[10px] text-gray-400 block mb-1">Mes</span>
+                              <select
+                                value={editEventoMesInicio}
+                                onChange={(e) => setEditEventoMesInicio(e.target.value)}
+                                className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg font-quicksand text-xs focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] bg-gray-50"
+                              >
+                                <option value="">- Mes -</option>
+                                {MESES.map((m) => (
+                                  <option key={m.val} value={m.val}>{m.name}</option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                          <span className="font-quicksand text-[10px] text-gray-400 mt-1.5 block">
+                            {precedingList.length === 0 ? "Primer evento del año" : "Fecha manual"}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Fecha de fin */}
+                      <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-xs">
+                        <label className="font-quicksand text-[11px] font-bold text-gray-700 block mb-2">
+                          Fecha de fin (eliminar banner)
+                        </label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <span className="font-quicksand text-[10px] text-gray-400 block mb-1">Día</span>
+                            <select
+                              value={editEventoDiaFin}
+                              onChange={(e) => handleFechaFinChange(e.target.value, editEventoMesFin)}
+                              className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg font-quicksand text-xs focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] bg-gray-50"
+                            >
+                              <option value="">- Día -</option>
+                              {Array.from({ length: 31 }, (_, i) => String(i + 1)).map((d) => (
+                                <option key={d} value={d}>{d}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <span className="font-quicksand text-[10px] text-gray-400 block mb-1">Mes</span>
+                            <select
+                              value={editEventoMesFin}
+                              onChange={(e) => handleFechaFinChange(editEventoDiaFin, e.target.value)}
+                              className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg font-quicksand text-xs focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] bg-gray-50"
+                            >
+                              <option value="">- Mes -</option>
+                              {MESES.map((m) => (
+                                <option key={m.val} value={m.val}>{m.name}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                        <span className="font-quicksand text-[10px] text-gray-400 mt-1.5 block">Vacío = Permanente</span>
+                      </div>
+                    </div>
+
+                    {(editEventoDiaInicio || editEventoDiaFin) && (
+                      <div className="flex justify-end pt-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditEventoDiaInicio("");
+                            setEditEventoMesInicio("");
+                            setEditEventoDiaFin("");
+                            setEditEventoMesFin("");
+                            setEditEventoModoInicio("manual");
+                            setSelectedPrevEventoId(null);
+                          }}
+                          className="font-quicksand text-[10px] text-gray-400 hover:text-red-500 underline"
+                        >
+                          Limpiar fechas
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
+              {/* Banner Desktop */}
+              <label className="font-quicksand text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 block">
+                Banner Principal (Hero - PC / Desktop) <span className="text-gray-400 font-normal normal-case">(1200×675px o horizontal)</span>
+              </label>
               <input value={editEventoImagen} onChange={(e) => setEditEventoImagen(e.target.value)}
                 placeholder="https://..."
                 className="w-full px-3 py-2.5 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] mb-3"
@@ -1795,7 +2598,7 @@ export default function AdminPage() {
                   }
                 }}
                 onClick={() => eventoImgRef.current?.click()}
-                className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all mb-4 ${
+                className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-all mb-4 ${
                   heroDragOver === 4 ? "border-[#EE6B8D] bg-[#FDF4F7]" : "border-gray-200 hover:border-[#EE6B8D] hover:bg-[#FDF4F7]/50"
                 }`}
               >
@@ -1805,12 +2608,12 @@ export default function AdminPage() {
                   onChange={(e) => { const f = e.target.files?.[0]; if (f) subirEventoImg(f); }}
                 />
                 {eventoImgUploading ? (
-                  <Loader2 size={24} className="mx-auto animate-spin text-[#EE6B8D]" />
+                  <Loader2 size={22} className="mx-auto animate-spin text-[#EE6B8D]" />
                 ) : (
                   <>
-                    <Upload size={24} className="mx-auto text-[#EE6B8D] mb-1" />
-                    <p className="font-quicksand text-xs font-semibold text-gray-700">Click, arrastra o pega (Ctrl+V)</p>
-                    <p className="font-quicksand text-[10px] text-gray-400 mt-0.5">Sube una imagen para el evento</p>
+                    <Upload size={22} className="mx-auto text-[#EE6B8D] mb-1" />
+                    <p className="font-quicksand text-xs font-semibold text-gray-700">Subir Banner Desktop (Click, arrastra o pega)</p>
+                    <p className="font-quicksand text-[10px] text-gray-400 mt-0.5">Recomendado formato horizontal</p>
                   </>
                 )}
               </div>
@@ -1828,16 +2631,211 @@ export default function AdminPage() {
                 </div>
               )}
 
-              <div className="flex items-center gap-4 border-t border-gray-100 pt-4">
+              {/* Banner Móvil (Vertical) */}
+              <label className="font-quicksand text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 block">
+                Banner Móvil (Hero - Celulares) <span className="text-gray-400 font-normal normal-case">(Opcional, vertical 800×1000px)</span>
+              </label>
+              <input value={editEventoImagenMobile} onChange={(e) => setEditEventoImagenMobile(e.target.value)}
+                placeholder="https://..."
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg font-quicksand text-sm focus:outline-none focus:ring-2 focus:ring-[#EE6B8D] mb-3"
+              />
+
+              <div
+                onDragOver={(e) => { e.preventDefault(); setHeroDragOver(5); }}
+                onDragLeave={() => setHeroDragOver(null)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setHeroDragOver(null);
+                  const file = e.dataTransfer.files?.[0];
+                  if (file?.type.startsWith("image/")) subirEventoImgMobile(file);
+                  const text = e.dataTransfer.getData("text");
+                  if (text && esUrlImagen(text)) setEditEventoImagenMobile(text.trim());
+                }}
+                onPaste={(e) => {
+                  const items = e.clipboardData?.items;
+                  if (!items) return;
+                  for (const item of Array.from(items)) {
+                    if (item.type.startsWith("image/")) {
+                      const file = item.getAsFile();
+                      if (file) { e.preventDefault(); subirEventoImgMobile(file); return; }
+                    }
+                    if (item.type === "text/plain") {
+                      const text = e.clipboardData.getData("text");
+                      if (esUrlImagen(text)) { e.preventDefault(); setEditEventoImagenMobile(text.trim()); return; }
+                    }
+                  }
+                }}
+                onClick={() => eventoImgMobileRef.current?.click()}
+                className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-all mb-4 ${
+                  heroDragOver === 5 ? "border-[#EE6B8D] bg-[#FDF4F7]" : "border-gray-200 hover:border-[#EE6B8D] hover:bg-[#FDF4F7]/50"
+                }`}
+              >
+                <input
+                  ref={eventoImgMobileRef}
+                  type="file" accept="image/*" className="hidden"
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) subirEventoImgMobile(f); }}
+                />
+                {eventoImgMobileUploading ? (
+                  <Loader2 size={22} className="mx-auto animate-spin text-[#EE6B8D]" />
+                ) : (
+                  <>
+                    <Upload size={22} className="mx-auto text-[#EE6B8D] mb-1" />
+                    <p className="font-quicksand text-xs font-semibold text-gray-700">Subir Banner Móvil (Click, arrastra o pega)</p>
+                    <p className="font-quicksand text-[10px] text-gray-400 mt-0.5">Se verá en pantallas de celulares</p>
+                  </>
+                )}
+              </div>
+
+              {editEventoImagenMobile && (
+                <div className="relative aspect-[3/4] max-w-[200px] mx-auto rounded-xl bg-gray-50 border border-gray-200 overflow-hidden mb-4 group">
+                  <img src={editEventoImagenMobile} alt="" className="w-full h-full object-contain"
+                    onError={(e) => { (e.target as HTMLImageElement).src = ""; }}
+                  />
+                  <button onClick={() => setEditEventoImagenMobile("")}
+                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-md hover:bg-red-600"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              )}
+
+              {/* Fotos de Campaña para la Galería Rotonda 3D */}
+              <div className="border-t border-gray-100 pt-5 pb-2">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Sparkles size={16} className="text-[#EE6B8D]" />
+                    <label className="font-quicksand text-xs font-bold text-gray-700 uppercase tracking-wider block">
+                      Fotos de Campaña / Entregas (Rotonda de Portada)
+                    </label>
+                  </div>
+                  {editEventoFotosCampana.length > 0 && (
+                    <span className="font-quicksand text-xs font-bold text-[#C04267] bg-pink-100/70 px-2.5 py-0.5 rounded-full">
+                      {editEventoFotosCampana.length} {editEventoFotosCampana.length === 1 ? "foto" : "fotos"}
+                    </span>
+                  )}
+                </div>
+                <p className="font-quicksand text-[11px] text-gray-500 mb-3 leading-relaxed">
+                  Sube las fotos de clientes y entregas de esta campaña para el carrusel de inicio. Puedes seleccionar todas las que quieras a la vez.
+                </p>
+
+                {/* BOTÓN ÚNICO DE SUBIDA */}
+                <label className="w-full flex flex-col items-center justify-center p-4 rounded-xl border-2 border-dashed border-[#EE6B8D]/40 bg-[#FDF4F7]/60 hover:bg-[#FDF4F7] hover:border-[#EE6B8D] cursor-pointer transition-all text-center group mb-4">
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const files = Array.from(e.target.files || []);
+                      if (files.length === 0) return;
+                      setUploadingCampanaIdx(999);
+                      try {
+                        const { getSupabaseBrowserClient } = await import("@/lib/supabase/client");
+                        const supabase = getSupabaseBrowserClient();
+                        const uploadPromises = files.map(async (file, idx) => {
+                          const ext = file.name.split(".").pop() || "jpg";
+                          const nombre = `campana-${Date.now()}-${idx}-${Math.random().toString(36).slice(2)}.${ext}`;
+                          const { error } = await supabase.storage.from("heroes").upload(nombre, file, { upsert: true });
+                          if (error) return null;
+                          const { data: pub } = supabase.storage.from("heroes").getPublicUrl(nombre);
+                          return {
+                            url: pub.publicUrl,
+                            titulo: editEventoNombre || "Momento especial",
+                            etiqueta: editEventoNombre || "Campaña",
+                          };
+                        });
+                        const uploaded = (await Promise.all(uploadPromises)).filter(Boolean);
+                        setEditEventoFotosCampana((prev) => [...(prev || []), ...uploaded]);
+                      } catch (err) {
+                        console.error(err);
+                      } finally {
+                        setUploadingCampanaIdx(null);
+                      }
+                    }}
+                  />
+                  {uploadingCampanaIdx === 999 ? (
+                    <div className="flex items-center gap-2 text-[#C04267] font-quicksand font-bold text-xs py-1">
+                      <Loader2 size={18} className="animate-spin text-[#EE6B8D]" />
+                      <span>Subiendo fotos a la vez...</span>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-2 text-[#C04267] font-quicksand font-bold text-xs mb-0.5">
+                        <Upload size={18} className="text-[#EE6B8D]" />
+                        <span>Subir fotos de campaña (puedes seleccionar varias a la vez)</span>
+                      </div>
+                      <span className="font-quicksand text-[11px] text-gray-500">
+                        Click para elegir las fotos desde tu dispositivo
+                      </span>
+                    </>
+                  )}
+                </label>
+
+                {/* GALERÍA DE FOTOS SUBIDAS */}
+                {editEventoFotosCampana.length > 0 && (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2.5 mb-3">
+                    {editEventoFotosCampana.map((foto: any, idx: number) => {
+                      const src = typeof foto === "string" ? foto : foto?.url;
+                      if (!src) return null;
+                      return (
+                        <div key={idx} className="relative aspect-[3/4] rounded-xl overflow-hidden border border-pink-200 bg-gray-100 group shadow-xs">
+                          <img src={src} alt="" className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditEventoFotosCampana((prev) => prev.filter((_, i) => i !== idx));
+                            }}
+                            className="absolute top-1.5 right-1.5 bg-black/60 hover:bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            title="Eliminar foto"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Opciones adicionales */}
+              <div className="space-y-2.5 border-t border-gray-100 pt-4 mb-2">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="evento-mostrar-hero"
+                    checked={editEventoMostrarEnHero}
+                    onChange={(e) => setEditEventoMostrarEnHero(e.target.checked)}
+                    className="w-4 h-4 accent-[#EE6B8D] rounded"
+                  />
+                  <label htmlFor="evento-mostrar-hero" className="font-quicksand text-xs font-semibold text-gray-700 cursor-pointer">
+                    Mostrar en el Banner Principal (Hero) de la portada mientras esté vigente
+                  </label>
+                </div>
+
                 <div className="flex items-center gap-2">
                   <input
                     type="checkbox"
                     id="evento-destacado"
-                    checked={editingEvento.featured || false}
-                    onChange={(e) => setEditingEvento({ ...editingEvento, featured: e.target.checked })}
-                    className="w-4 h-4 accent-[#EE6B8D]"
+                    checked={editEventoFeatured}
+                    onChange={(e) => setEditEventoFeatured(e.target.checked)}
+                    className="w-4 h-4 accent-[#EE6B8D] rounded"
                   />
-                  <label htmlFor="evento-destacado" className="font-quicksand text-xs font-semibold text-gray-600">Destacar en navbar</label>
+                  <label htmlFor="evento-destacado" className="font-quicksand text-xs font-semibold text-gray-700 cursor-pointer">
+                    Destacar en la barra superior (Navbar)
+                  </label>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="evento-activo"
+                    checked={editEventoActivo}
+                    onChange={(e) => setEditEventoActivo(e.target.checked)}
+                    className="w-4 h-4 accent-[#EE6B8D] rounded"
+                  />
+                  <label htmlFor="evento-activo" className="font-quicksand text-xs font-semibold text-gray-700 cursor-pointer">
+                    Evento activo
+                  </label>
                 </div>
               </div>
 
@@ -1861,11 +2859,51 @@ export default function AdminPage() {
                   Cancelar
                 </button>
                 <button onClick={async () => {
+                  const currentYear = new Date().getFullYear();
+                  let inicioIso: string | null = null;
+                  let finIso: string | null = null;
+
+                  if (editEventoDiaFin && editEventoMesFin) {
+                    const dFin = new Date(currentYear, Number(editEventoMesFin) - 1, Number(editEventoDiaFin), 23, 59, 59);
+                    finIso = dFin.toISOString();
+                  }
+
+                  if (editEventoDiaInicio && editEventoMesInicio) {
+                    const hour = editEventoModoInicio === "auto" ? 23 : 0;
+                    const min = editEventoModoInicio === "auto" ? 59 : 0;
+                    const sec = editEventoModoInicio === "auto" ? 59 : 0;
+                    const dInicio = new Date(currentYear, Number(editEventoMesInicio) - 1, Number(editEventoDiaInicio), hour, min, sec);
+                    inicioIso = dInicio.toISOString();
+                  }
+
+                  if (inicioIso && finIso) {
+                    if (new Date(finIso).getTime() < new Date(inicioIso).getTime()) {
+                      alert("La fecha de fin no puede ser anterior a la fecha de inicio.");
+                      return;
+                    }
+                  }
+
+                  const fotosLimpias = (editEventoFotosCampana || [])
+                    .map((f: any) => (typeof f === "string" ? { url: f } : f))
+                    .filter((f: any) => Boolean(f?.url && f.url.trim()));
+
                   if (isNewEvento) {
                     const res = await fetch("/api/admin", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ nombre: editEventoNombre, slug: editEventoSlug, descripcion: editEventoDescripcion, imagen_url: editEventoImagen }),
+                      body: JSON.stringify({
+                        nombre: editEventoNombre,
+                        slug: editEventoSlug,
+                        descripcion: editEventoDescripcion || null,
+                        imagen_url: editEventoImagen || null,
+                        imagen_url_mobile: editEventoImagenMobile || null,
+                        fecha_inicio: inicioIso,
+                        fecha_fin: finIso,
+                        mostrar_en_hero: editEventoMostrarEnHero,
+                        activo: editEventoActivo,
+                        featured: editEventoFeatured,
+                        fotos_campana: fotosLimpias,
+                      }),
                     });
                     if (res.ok) { fetchData(); setEditingEvento(null); }
                   } else {
@@ -1874,9 +2912,15 @@ export default function AdminPage() {
                       slug: editEventoSlug,
                       descripcion: editEventoDescripcion || null,
                       imagen_url: editEventoImagen || null,
+                      imagen_url_mobile: editEventoImagenMobile || null,
+                      fecha_inicio: inicioIso,
+                      fecha_fin: finIso,
+                      mostrar_en_hero: editEventoMostrarEnHero,
+                      activo: editEventoActivo,
+                      fotos_campana: fotosLimpias,
                     };
-                    if (editingEvento.featured) {
-                      await apiPatch({ action: "destacar-evento", id: editingEvento.id });
+                    if (editEventoFeatured) {
+                      await apiPatch({ action: "destacar-evento", id: editingEvento.id, slug: editEventoSlug, nombre: editEventoNombre });
                     } else {
                       updateData.featured = false;
                     }
@@ -1884,9 +2928,9 @@ export default function AdminPage() {
                     if (ok) { fetchData(); setEditingEvento(null); }
                   }
                 }}
-                  className="px-6 py-2.5 bg-[#EE6B8D] hover:bg-[#C04267] text-white rounded-lg font-quicksand text-xs font-semibold transition-colors"
+                  className="px-6 py-2.5 bg-[#EE6B8D] hover:bg-[#C04267] text-white rounded-lg font-quicksand text-xs font-semibold transition-colors shadow-sm"
                 >
-                  {isNewEvento ? "Crear" : "Guardar"}
+                  {isNewEvento ? "Crear evento" : "Guardar cambios"}
                 </button>
               </div>
             </div>

@@ -6,11 +6,13 @@ import { Product } from "@/lib/ventify";
 import { Sparkles, Heart, Package, Truck, ChevronDown } from "lucide-react";
 import { useState, useEffect } from "react";
 import QuickViewDrawer from "@/components/QuickViewDrawer";
+import CampanaRotondaSection from "@/components/CampanaRotondaSection";
 
 interface HomeClientProps {
   products: Product[];
   sections: any[];
   heroData?: any[];
+  eventosData?: any[];
 }
 
 const BRAND = {
@@ -27,7 +29,7 @@ const BRAND = {
   line: '#EDE4D9',
 };
 
-function HeroCarousel({ products, heroData: initialHeroData }: { products: any[]; heroData?: any[] }) {
+function HeroCarousel({ products, heroData: initialHeroData, eventosData = [] }: { products: any[]; heroData?: any[]; eventosData?: any[] }) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [heroDesktop, setHeroDesktop] = useState(initialHeroData?.find((h: any) => h.clave === 'home_hero_1')?.imagen_url || "");
   const [heroMobile, setHeroMobile] = useState(initialHeroData?.find((h: any) => h.clave === 'home_hero_1')?.imagen_url_mobile || "");
@@ -39,13 +41,38 @@ function HeroCarousel({ products, heroData: initialHeroData }: { products: any[]
     return h[field];
   }
 
-  const slides = [
+  // Filtrar eventos vigentes por fechas para el banner principal
+  const now = new Date();
+  const activeHeroEvents = (eventosData || []).filter((e: any) => {
+    if (e.activo === false) return false;
+    if (e.mostrar_en_hero === false) return false;
+    if (!e.imagen_url && !e.imagen_url_mobile) return false;
+    if (e.fecha_inicio && new Date(e.fecha_inicio) > now) return false;
+    if (e.fecha_fin && new Date(e.fecha_fin) < now) return false;
+    return true;
+  });
+
+  const eventSlides = activeHeroEvents.map((e: any) => ({
+    isFlyer: true,
+    imageDesktop: e.imagen_url || e.imagen_url_mobile || '/dia-de-la-madre-horizontal.png',
+    imageMobile: e.imagen_url_mobile || e.imagen_url || '/dia-de-la-madre-vertical.png',
+    link: `/evento/${e.slug}`,
+    alt: e.nombre || 'Evento Especial',
+  }));
+
+  const defaultFlyer = (eventSlides.length === 0 && (heroDesktop || heroMobile)) ? [
     {
       isFlyer: true,
       imageDesktop: heroDesktop || '/dia-de-la-madre-horizontal.png',
       imageMobile: heroMobile || '/dia-de-la-madre-vertical.png',
       link: getHeroValue('home_hero_1', 'link_url', '/evento/dia-de-la-madre'),
-    },
+      alt: 'Promoción Especial Entre Hilos',
+    }
+  ] : [];
+
+  const slides: any[] = [
+    ...eventSlides,
+    ...defaultFlyer,
     {
       isFlyer: false,
       badge: getHeroValue('home_hero_2', 'badge', 'Especial'),
@@ -112,15 +139,15 @@ function HeroCarousel({ products, heroData: initialHeroData }: { products: any[]
               <Link href={slide.link} className="absolute inset-0 w-full h-full block group overflow-hidden">
                 <Image
                   src={slide.imageDesktop || '/logo.png'}
-                  alt="Promoción Especial Entre Hilos"
+                  alt={slide.alt || "Promoción Especial Entre Hilos"}
                   fill
                   className="object-cover object-center hidden lg:block group-hover:scale-105 transition-transform duration-700 ease-out"
                   priority={index === 0}
                   sizes="100vw"
                 />
                 <Image
-                  src={slide.imageMobile || '/logo.png'}
-                  alt="Promoción Especial Entre Hilos Móvil"
+                  src={slide.imageMobile || slide.imageDesktop || '/logo.png'}
+                  alt={slide.alt ? `${slide.alt} Móvil` : "Promoción Especial Entre Hilos Móvil"}
                   fill
                   className="object-cover object-center block lg:hidden group-hover:scale-105 transition-transform duration-700 ease-out"
                   priority={index === 0}
@@ -488,16 +515,68 @@ function FaqSection({ section }: { section: any }) {
   );
 }
 
-// ==================== COMPONENTE PRINCIPAL ====================
+function getRotondaEvento(eventosData: any[] = []): any | null {
+  if (!eventosData || eventosData.length === 0) return null;
+  const now = new Date();
+  const available = eventosData.filter((e) => e.activo !== false);
 
-export default function HomeClient({ products, sections, heroData }: HomeClientProps) {
+  const isCurrent = (e: any) => {
+    const start = e.fecha_inicio ? new Date(e.fecha_inicio) : null;
+    const end = e.fecha_fin ? new Date(e.fecha_fin) : null;
+    if (start && start > now) return false;
+    if (end && end < now) return false;
+    return true;
+  };
+
+  // 1. Campaña de temporada actualmente activa por fechas que tenga fotos subidas
+  const activeDatedWithPhotos = available.find(
+    (e) => (e.fecha_inicio || e.fecha_fin) && isCurrent(e) && Array.isArray(e.fotos_campana) && e.fotos_campana.length > 0
+  );
+  if (activeDatedWithPhotos) return activeDatedWithPhotos;
+
+  // 2. Campaña recientemente finalizada con fotos subidas (ej. Flores Amarillas que acaba de pasar)
+  const pastWithPhotos = available
+    .filter((e) => {
+      const hasPhotos = Array.isArray(e.fotos_campana) && e.fotos_campana.length > 0;
+      if (!hasPhotos || !e.fecha_fin) return false;
+      const end = new Date(e.fecha_fin);
+      return end < now;
+    })
+    .sort((a, b) => new Date(b.fecha_fin).getTime() - new Date(a.fecha_fin).getTime());
+  if (pastWithPhotos.length > 0) return pastWithPhotos[0];
+
+  // 3. Cualquier evento activo con fotos subidas
+  const anyActiveWithPhotos = available.find(
+    (e) => isCurrent(e) && Array.isArray(e.fotos_campana) && e.fotos_campana.length > 0
+  );
+  if (anyActiveWithPhotos) return anyActiveWithPhotos;
+
+  // 4. Cualquier evento que tenga fotos cargadas
+  const anyWithPhotos = available.find(
+    (e) => Array.isArray(e.fotos_campana) && e.fotos_campana.length > 0
+  );
+  if (anyWithPhotos) return anyWithPhotos;
+
+  // 5. Evento de temporada actualmente activo por fechas (aunque aún no tenga fotos)
+  const activeDated = available.find(
+    (e) => (e.fecha_inicio || e.fecha_fin) && isCurrent(e)
+  );
+  if (activeDated) return activeDated;
+
+  return available[0] || null;
+}
+
+export default function HomeClient({ products, sections, heroData, eventosData }: HomeClientProps) {
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
 
   useEffect(() => {
     import("@/lib/extras-cache").then(({ loadExtras }) => loadExtras(() => {}));
   }, []);
 
+  const rotondaEvento = getRotondaEvento(eventosData);
+
   const aboutSection = sections.find((s: any) => s.section_key === 'about_us');
+  const rotondaSection = sections.find((s: any) => s.section_key === 'campana_rotonda');
   const showcaseSection = sections.find((s: any) => s.section_key === 'showcase');
   const customSection = sections.find((s: any) => s.section_key === 'custom_amigurumi');
   const faqSection = sections.find((s: any) => s.section_key === 'faq');
@@ -511,7 +590,10 @@ export default function HomeClient({ products, sections, heroData }: HomeClientP
         />
       )}
 
-      <HeroCarousel products={products} heroData={heroData} />
+      <HeroCarousel products={products} heroData={heroData} eventosData={eventosData} />
+
+      {/* Galería Rotonda 3D de Campañas / Fotos de Clientes */}
+      <CampanaRotondaSection section={rotondaSection} eventoActual={rotondaEvento} />
 
       {showcaseSection && <ShowcaseSection section={showcaseSection} products={products} />}
 

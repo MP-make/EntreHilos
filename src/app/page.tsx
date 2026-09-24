@@ -33,9 +33,25 @@ async function getHeroConfig() {
   }
 }
 
+async function getEventosHero() {
+  try {
+    const { supabaseAdmin } = await import("@/lib/supabase/server");
+    const { data } = await supabaseAdmin
+      .from("eventos")
+      .select("*")
+      .eq("activo", true)
+      .order("featured", { ascending: false })
+      .order("created_at", { ascending: false });
+    return data || [];
+  } catch {
+    return [];
+  }
+}
+
 export default async function Home() {
   const products = await getVentifyProducts();
   const sections = await getHomeSections();
   const heroData = await getHeroConfig();
-  return <HomeClient products={products} sections={sections} heroData={heroData} />;
+  const eventosData = await getEventosHero();
+  return <HomeClient products={products} sections={sections} heroData={heroData} eventosData={eventosData} />;
 }
