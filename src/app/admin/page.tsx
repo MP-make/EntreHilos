@@ -9,22 +9,49 @@ import {
   Star, Package, Tag, Save,
 } from "lucide-react";
 
-type Tab = "dashboard" | "inicio" | "pedidos" | "mensajes" | "reclamaciones" | "personalizados" | "heroes" | "suscriptores" | "usuarios" | "eventos" | "resenas" | "productos" | "precios";
+type MainTab = "dashboard" | "pedidos" | "catalogo" | "diseno" | "eventos" | "resenas" | "atencion" | "clientes";
 
-const menuItems: { id: Tab; label: string; icon: any }[] = [
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { id: "inicio", label: "Inicio", icon: Home },
-  { id: "pedidos", label: "Pedidos", icon: ShoppingBag },
-  { id: "productos", label: "Productos", icon: Package },
-  { id: "precios", label: "Precios", icon: Tag },
-  { id: "personalizados", label: "Personalizados", icon: Mail },
-  { id: "eventos", label: "Eventos", icon: Sparkles },
-  { id: "resenas", label: "Reseñas", icon: Star },
-  { id: "mensajes", label: "Mensajes", icon: MessageSquare },
-  { id: "reclamaciones", label: "Reclamaciones", icon: ClipboardList },
-  { id: "heroes", label: "Heroes", icon: ImageIcon },
-  { id: "suscriptores", label: "Suscriptores", icon: Users },
-  { id: "usuarios", label: "Usuarios", icon: UserCheck },
+type SubTab = "pedidos" | "personalizados" | "productos" | "precios" | "heroes" | "inicio" | "eventos" | "resenas" | "mensajes" | "reclamaciones" | "usuarios" | "suscriptores";
+
+const SUBTABS_BY_MAIN: Record<MainTab, { id: SubTab; label: string; icon: any; desc: string }[]> = {
+  dashboard: [],
+  pedidos: [
+    { id: "pedidos", label: "Pedidos de Tienda", icon: ShoppingBag, desc: "Pedidos recibidos desde el carrito" },
+    { id: "personalizados", label: "Pedidos Personalizados", icon: Mail, desc: "Solicitudes de cotización a medida" },
+  ],
+  catalogo: [
+    { id: "productos", label: "Visibilidad de Productos", icon: Package, desc: "Activar o desactivar productos en la web" },
+    { id: "precios", label: "Precios por Tamaño", icon: Tag, desc: "Precios pequeño, mediano y grande para amigurumis" },
+  ],
+  diseno: [
+    { id: "heroes", label: "Banners (Heroes)", icon: ImageIcon, desc: "Carrusel principal y banners de colecciones" },
+    { id: "inicio", label: "Secciones de Inicio", icon: Home, desc: "Textos y bloques informativos de la portada" },
+  ],
+  eventos: [
+    { id: "eventos", label: "Eventos Especiales", icon: Sparkles, desc: "Campañas y fechas especiales activas" },
+  ],
+  resenas: [
+    { id: "resenas", label: "Reseñas y Calificaciones", icon: Star, desc: "Calificaciones de clientes y testimonios" },
+  ],
+  atencion: [
+    { id: "mensajes", label: "Mensajes de Contacto", icon: MessageSquare, desc: "Consultas enviadas desde el formulario" },
+    { id: "reclamaciones", label: "Libro de Reclamaciones", icon: ClipboardList, desc: "Reclamos y quejas formales de clientes" },
+  ],
+  clientes: [
+    { id: "usuarios", label: "Usuarios Registrados", icon: UserCheck, desc: "Cuentas de clientes con perfil registrado" },
+    { id: "suscriptores", label: "Suscriptores del Boletín", icon: Users, desc: "Correos suscritos para novedades" },
+  ],
+};
+
+const menuGroups: { id: MainTab; label: string; icon: any; desc: string; defaultSubTab: SubTab }[] = [
+  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, desc: "Vista general y accesos rápidos", defaultSubTab: "pedidos" },
+  { id: "pedidos", label: "Pedidos", icon: ShoppingBag, desc: "Pedidos de tienda y personalizados", defaultSubTab: "pedidos" },
+  { id: "catalogo", label: "Catálogo", icon: Package, desc: "Productos activos y precios por tamaño", defaultSubTab: "productos" },
+  { id: "diseno", label: "Banners y Diseño", icon: ImageIcon, desc: "Banners hero y secciones de inicio", defaultSubTab: "heroes" },
+  { id: "eventos", label: "Eventos", icon: Sparkles, desc: "Campañas y fechas especiales", defaultSubTab: "eventos" },
+  { id: "resenas", label: "Reseñas", icon: Star, desc: "Calificaciones y testimonios", defaultSubTab: "resenas" },
+  { id: "atencion", label: "Atención al Cliente", icon: MessageSquare, desc: "Mensajes de contacto y reclamaciones", defaultSubTab: "mensajes" },
+  { id: "clientes", label: "Clientes y Usuarios", icon: Users, desc: "Usuarios registrados y suscriptores", defaultSubTab: "usuarios" },
 ];
 
 const ALL_HERO_KEYS: { clave: string; label: string }[] = [
@@ -167,7 +194,8 @@ function filterProductos(products: any[], filter: string): any[] {
 export default function AdminPage() {
   const router = useRouter();
   const [authorized, setAuthorized] = useState(false);
-  const [tab, setTab] = useState<Tab>("dashboard");
+  const [mainTab, setMainTab] = useState<MainTab>("dashboard");
+  const [subTab, setSubTab] = useState<SubTab>("pedidos");
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -352,10 +380,10 @@ export default function AdminPage() {
   }, [router]);
 
   const fetchData = useCallback(async () => {
-    if (tab === "dashboard") { setLoading(false); return; }
+    if (mainTab === "dashboard") { setLoading(false); return; }
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin?tab=${tab}`);
+      const res = await fetch(`/api/admin?tab=${subTab}`);
       const json = await res.json();
       setData(Array.isArray(json) ? json : []);
     } catch (e) {
@@ -364,18 +392,18 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
-  }, [tab]);
+  }, [mainTab, subTab]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
   useEffect(() => {
-    if ((tab === "heroes" || tab === "resenas") && allProducts.length === 0) {
+    if ((subTab === "heroes" || subTab === "resenas") && allProducts.length === 0) {
       fetchVentifyData().then((d) => setAllProducts(d.active)).catch(() => {});
     }
-  }, [tab, allProducts.length]);
+  }, [subTab, allProducts.length]);
 
   useEffect(() => {
-    if (tab === "productos") {
+    if (subTab === "productos") {
       if (rawProducts.length === 0 || inactiveIds.size === 0) {
         fetchVentifyData().then((d) => {
           if (rawProducts.length === 0) setRawProducts(d.all);
@@ -386,20 +414,20 @@ export default function AdminPage() {
         fetch("/api/eventos").then((r) => r.json()).then(setEventos).catch(() => {});
       }
     }
-  }, [tab, rawProducts.length, inactiveIds.size, eventos.length]);
+  }, [subTab, rawProducts.length, inactiveIds.size, eventos.length]);
 
   useEffect(() => {
-    if (tab === "precios") {
+    if (subTab === "precios") {
       if (amiguProducts.length === 0) {
         fetchVentifyData()
           .then((d) => setAmiguProducts(d.all.filter((p) => p.sku?.startsWith("Amigu-"))))
           .catch(() => {});
       }
     }
-  }, [tab, amiguProducts.length]);
+  }, [subTab, amiguProducts.length]);
 
   useEffect(() => {
-    if (tab !== "precios") return;
+    if (subTab !== "precios") return;
     const map: Record<string, any> = {};
     (Array.isArray(data) ? data : []).forEach((r: any) => { if (r.sku) map[r.sku] = r; });
     setPreciosRows(map);
@@ -425,7 +453,7 @@ export default function AdminPage() {
       });
       return next;
     });
-  }, [tab, data, amiguProducts.length]);
+  }, [subTab, data, amiguProducts.length]);
 
   async function handleGuardarPrecios(sku: string) {
     const draft = preciosDraft[sku];
@@ -637,16 +665,20 @@ export default function AdminPage() {
       </div>
 
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-        {menuItems.map((item) => {
+        {menuGroups.map((item) => {
           const Icon = item.icon;
-          const active = tab === item.id;
+          const active = mainTab === item.id;
           return (
             <button
               key={item.id}
-              onClick={() => { setTab(item.id); setSidebarOpen(false); }}
+              onClick={() => {
+                setMainTab(item.id);
+                setSubTab(item.defaultSubTab);
+                setSidebarOpen(false);
+              }}
               className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-quicksand text-sm font-semibold transition-all text-left ${
                 active
-                  ? "bg-[#FDF4F7] text-[#EE6B8D] shadow-sm"
+                  ? "bg-[#FDF4F7] text-[#EE6B8D] shadow-sm font-bold"
                   : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
               }`}
             >
@@ -702,20 +734,47 @@ export default function AdminPage() {
       </button>
 
       <main className="flex-1 min-w-0 p-4 pt-20 sm:p-8 sm:pt-20 lg:pt-8">
-        {tab === "dashboard" && (
+        {mainTab === "dashboard" && (
           <div>
-            <h2 className="font-fredoka text-xl font-bold text-[#C04267] mb-6">Dashboard</h2>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              {menuItems.filter(m => m.id !== "dashboard").map((item) => {
-                const Icon = item.icon;
+            <div className="mb-6">
+              <h2 className="font-fredoka text-2xl font-bold text-[#C04267]">Dashboard</h2>
+              <p className="font-quicksand text-xs text-gray-500 mt-1">
+                Panel de control y gestión integral de Entre Hilos
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {menuGroups.filter(m => m.id !== "dashboard").map((group) => {
+                const Icon = group.icon;
+                const subtabs = SUBTABS_BY_MAIN[group.id] || [];
                 return (
                   <button
-                    key={item.id}
-                    onClick={() => setTab(item.id)}
-                    className="bg-white rounded-xl border border-[#FDE8EF] p-5 text-left hover:border-[#EE6B8D] transition-all hover:shadow-sm"
+                    key={group.id}
+                    onClick={() => {
+                      setMainTab(group.id);
+                      setSubTab(group.defaultSubTab);
+                    }}
+                    className="group bg-white rounded-2xl border border-[#FDE8EF] p-5 text-left hover:border-[#EE6B8D] hover:shadow-md transition-all flex flex-col justify-between"
                   >
-                    <Icon size={24} className="text-[#EE6B8D] mb-3" />
-                    <p className="font-quicksand text-sm font-semibold text-gray-700">{item.label}</p>
+                    <div>
+                      <div className="w-11 h-11 rounded-xl bg-[#FDF4F7] flex items-center justify-center text-[#EE6B8D] mb-3.5 group-hover:scale-110 group-hover:bg-[#EE6B8D] group-hover:text-white transition-all shadow-xs">
+                        <Icon size={22} strokeWidth={2} />
+                      </div>
+                      <h3 className="font-fredoka text-base font-bold text-[#C04267] mb-1 group-hover:text-[#EE6B8D] transition-colors">
+                        {group.label}
+                      </h3>
+                      <p className="font-quicksand text-xs text-gray-400 line-clamp-2 leading-relaxed">
+                        {group.desc}
+                      </p>
+                    </div>
+                    {subtabs.length > 1 && (
+                      <div className="mt-4 pt-3 border-t border-gray-50 flex items-center gap-1.5 flex-wrap">
+                        {subtabs.map((s) => (
+                          <span key={s.id} className="text-[10px] font-quicksand font-semibold bg-[#FDF4F7] text-[#C04267] px-2 py-0.5 rounded-md">
+                            {s.label}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </button>
                 );
               })}
@@ -723,19 +782,43 @@ export default function AdminPage() {
           </div>
         )}
 
-        {tab !== "dashboard" && loading && (
+        {/* Subpestañas superiores para secciones con múltiples vistas */}
+        {mainTab !== "dashboard" && SUBTABS_BY_MAIN[mainTab]?.length > 1 && (
+          <div className="flex flex-wrap items-center gap-2 mb-6 bg-white p-1.5 rounded-2xl border border-[#FDE8EF] w-fit shadow-xs">
+            {SUBTABS_BY_MAIN[mainTab].map((st) => {
+              const StIcon = st.icon;
+              const isSubActive = subTab === st.id;
+              return (
+                <button
+                  key={st.id}
+                  onClick={() => setSubTab(st.id)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl font-quicksand text-xs sm:text-sm font-semibold transition-all ${
+                    isSubActive
+                      ? "bg-[#EE6B8D] text-white shadow-sm"
+                      : "text-gray-600 hover:text-[#C04267] hover:bg-[#FDF4F7]"
+                  }`}
+                >
+                  <StIcon size={16} strokeWidth={isSubActive ? 2.5 : 1.5} />
+                  {st.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {mainTab !== "dashboard" && loading && (
           <div className="flex items-center justify-center py-20">
             <Loader2 size={24} className="animate-spin text-[#EE6B8D]" />
           </div>
         )}
 
-        {tab !== "dashboard" && tab !== "resenas" && tab !== "productos" && tab !== "precios" && !loading && data.length === 0 && (
+        {mainTab !== "dashboard" && subTab !== "resenas" && subTab !== "productos" && subTab !== "precios" && subTab !== "heroes" && subTab !== "inicio" && subTab !== "eventos" && !loading && data.length === 0 && (
           <div className="text-center py-20 bg-white rounded-2xl border border-[#FDE8EF]">
-            <p className="font-quicksand text-gray-400">No hay datos</p>
+            <p className="font-quicksand text-gray-400">No hay datos en esta sección</p>
           </div>
         )}
 
-        {tab === "heroes" && !loading && (
+        {subTab === "heroes" && !loading && (
           <div>
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-fredoka text-xl font-bold text-[#C04267]">Heroes</h2>
@@ -789,7 +872,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        {tab === "inicio" && !loading && (
+        {subTab === "inicio" && !loading && (
           <div>
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-fredoka text-xl font-bold text-[#C04267]">Inicio - Secciones</h2>
@@ -830,7 +913,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        {tab === "eventos" && !loading && (
+        {subTab === "eventos" && !loading && (
           <div>
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-fredoka text-xl font-bold text-[#C04267]">Eventos</h2>
@@ -1810,7 +1893,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        {tab === "productos" && (() => {
+        {subTab === "productos" && (() => {
           const featuredEvent = eventos.find((e: any) => e.featured);
           const featuredEventSlug = featuredEvent?.slug;
           const productosFiltrados = productosFilter === "evento-destacado"
@@ -1989,7 +2072,7 @@ export default function AdminPage() {
           );
         })()}
 
-        {tab === "precios" && (
+        {subTab === "precios" && (
           <div>
             <div className="mb-6">
               <h2 className="font-fredoka text-xl font-bold text-[#C04267]">Precios por tamaño</h2>
@@ -2101,7 +2184,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        {tab === "resenas" && !loading && (
+        {subTab === "resenas" && !loading && (
           <div>
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-fredoka text-xl font-bold text-[#C04267]">Reseñas</h2>
@@ -2310,11 +2393,16 @@ export default function AdminPage() {
           </div>
         )}
 
-        {tab !== "dashboard" && tab !== "heroes" && tab !== "inicio" && tab !== "eventos" && tab !== "resenas" && tab !== "productos" && tab !== "precios" && !loading && data.length > 0 && (
+        {mainTab !== "dashboard" && subTab !== "heroes" && subTab !== "inicio" && subTab !== "eventos" && subTab !== "resenas" && subTab !== "productos" && subTab !== "precios" && !loading && data.length > 0 && (
           <div>
-            <h2 className="font-fredoka text-xl font-bold text-[#C04267] mb-6 capitalize">
-              {menuItems.find(m => m.id === tab)?.label || tab}
-            </h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-fredoka text-xl font-bold text-[#C04267] capitalize">
+                {SUBTABS_BY_MAIN[mainTab]?.find(m => m.id === subTab)?.label || subTab}
+              </h2>
+              <span className="font-quicksand text-xs font-semibold text-gray-500 bg-white border border-[#FDE8EF] px-3 py-1 rounded-full shadow-xs">
+                {data.length} {data.length === 1 ? "registro" : "registros"}
+              </span>
+            </div>
             <div className="bg-white rounded-2xl border border-[#FDE8EF] shadow-sm overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>
@@ -2335,7 +2423,7 @@ export default function AdminPage() {
                         {cols.map((key) => {
                           const value = row[key];
 
-                          if (key === "estado" && tab === "pedidos") {
+                          if (key === "estado" && subTab === "pedidos") {
                             return (
                               <td key={key} className="px-3 py-3">
                                 <select value={value || "pendiente"}
@@ -2352,7 +2440,7 @@ export default function AdminPage() {
                             );
                           }
 
-                          if (key === "estado" && tab === "personalizados") {
+                          if (key === "estado" && subTab === "personalizados") {
                             return (
                               <td key={key} className="px-3 py-3">
                                 <select value={value || "pendiente"}
@@ -2370,7 +2458,7 @@ export default function AdminPage() {
                             );
                           }
 
-                          if (key === "usuario_id" && tab === "pedidos") {
+                          if (key === "usuario_id" && subTab === "pedidos") {
                             return (
                               <td key={key} className="px-3 py-3 font-quicksand text-xs text-gray-700">
                                 {rowIdx + 1}
@@ -2395,7 +2483,7 @@ export default function AdminPage() {
 
                         <td className="px-3 py-3">
                           <div className="flex flex-wrap gap-1.5">
-                            {tab === "mensajes" && !row.leido && (
+                            {subTab === "mensajes" && !row.leido && (
                               <button onClick={() => handleMarcarLeido(row.id)}
                                 className="flex items-center gap-1 text-xs text-[#EE6B8D] hover:text-[#C04267] font-quicksand font-medium"
                               >
@@ -2403,7 +2491,7 @@ export default function AdminPage() {
                               </button>
                             )}
 
-                            {(tab === "pedidos" || tab === "personalizados") && (
+                            {(subTab === "pedidos" || subTab === "personalizados") && (
                               <a href={whatsappLink(row)} target="_blank" rel="noopener noreferrer"
                                 className="flex items-center gap-1 text-xs text-[#25D366] hover:text-[#20BA5A] font-quicksand font-medium"
                               >
