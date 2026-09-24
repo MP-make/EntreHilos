@@ -104,6 +104,37 @@ function adaptVentifyProduct(ventifyProduct: VentifyProduct): Product {
 
 // ==================== FUNCIONES PRINCIPALES ====================
 
+let clientFetchPromise: Promise<{ all: Product[]; active: Product[]; inactiveIds: string[] }> | null = null;
+let clientFetchTime = 0;
+const CLIENT_CACHE_TTL = 30_000;
+
+async function fetchFromApiProxy(): Promise<{ all: Product[]; active: Product[]; inactiveIds: string[] }> {
+  const now = Date.now();
+  if (clientFetchPromise && now - clientFetchTime < CLIENT_CACHE_TTL) {
+    return clientFetchPromise;
+  }
+  clientFetchTime = now;
+  clientFetchPromise = (async () => {
+    try {
+      const res = await fetch('/api/ventify/products');
+      if (!res.ok) {
+        console.error('Error HTTP al obtener productos:', res.status);
+        return { all: [], active: [], inactiveIds: [] };
+      }
+      const data = await res.json();
+      return {
+        all: Array.isArray(data.all) ? data.all : [],
+        active: Array.isArray(data.active) ? data.active : [],
+        inactiveIds: Array.isArray(data.inactiveIds) ? data.inactiveIds : [],
+      };
+    } catch (err) {
+      console.error('Error al conectar con /api/ventify/products:', err);
+      return { all: [], active: [], inactiveIds: [] };
+    }
+  })();
+  return clientFetchPromise;
+}
+
 let inactiveIdsCache: string[] | null = null;
 let inactiveIdsFetchedAt = 0;
 const INACTIVE_CACHE_TTL = 30_000;
@@ -113,6 +144,11 @@ const INACTIVE_CACHE_TTL = 30_000;
  * Usa la key anónima (tabla con lectura pública), funciona en cliente y servidor.
  */
 export async function getInactiveProductIds(): Promise<string[]> {
+  if (typeof window !== 'undefined') {
+    const data = await fetchFromApiProxy();
+    return data.inactiveIds;
+  }
+
   const now = Date.now();
   if (inactiveIdsCache && now - inactiveIdsFetchedAt < INACTIVE_CACHE_TTL) {
     return inactiveIdsCache;
@@ -121,7 +157,9 @@ export async function getInactiveProductIds(): Promise<string[]> {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
     const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
     if (!url || !anon) return [];
-    const supabase = createClient(url, anon);
+    const supabase = createClient(url, anon, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+    });
     const { data } = await supabase.from('productos_inactivos').select('producto_id');
     inactiveIdsCache = (data || []).map((r) => r.producto_id);
     inactiveIdsFetchedAt = Date.now();
@@ -137,6 +175,11 @@ export async function getInactiveProductIds(): Promise<string[]> {
  * Endpoint oficial: GET /api/public/stores/{accountId}/products?active=true
  */
 export async function getAllVentifyProducts(): Promise<Product[]> {
+  if (typeof window !== 'undefined') {
+    const data = await fetchFromApiProxy();
+    return data.all;
+  }
+
   try {
     // Validar variables de entorno
     if (!config.apiUrl || !config.accountId || !config.apiKey) {
@@ -199,6 +242,11 @@ export async function getAllVentifyProducts(): Promise<Product[]> {
  * (filtra los que fueron desactivados desde el panel admin)
  */
 export async function getVentifyProducts(): Promise<Product[]> {
+  if (typeof window !== 'undefined') {
+    const data = await fetchFromApiProxy();
+    return data.active;
+  }
+
   const [all, inactiveIds] = await Promise.all([getAllVentifyProducts(), getInactiveProductIds()]);
   if (inactiveIds.length === 0) return all;
   const inactiveSet = new Set(inactiveIds);

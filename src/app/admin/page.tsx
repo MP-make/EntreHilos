@@ -8,7 +8,6 @@ import {
   UserCheck, Upload, X, Check, ChevronRight, Search, Plus, Trash2, Sparkles,
   Star, Package, Tag, Save,
 } from "lucide-react";
-import { getVentifyProducts, getAllVentifyProducts, getInactiveProductIds } from "@/lib/ventify";
 
 type Tab = "dashboard" | "inicio" | "pedidos" | "mensajes" | "reclamaciones" | "personalizados" | "heroes" | "suscriptores" | "usuarios" | "eventos" | "resenas" | "productos" | "precios";
 
@@ -121,6 +120,16 @@ function filterByEventSlug(products: any[], slug: string): any[] {
       );
     default:
       return [...products];
+  }
+}
+
+async function fetchVentifyData(): Promise<{ all: any[]; active: any[]; inactiveIds: string[] }> {
+  try {
+    const res = await fetch("/api/ventify/products", { cache: "no-store" });
+    if (!res.ok) return { all: [], active: [], inactiveIds: [] };
+    return await res.json();
+  } catch {
+    return { all: [], active: [], inactiveIds: [] };
   }
 }
 
@@ -361,17 +370,17 @@ export default function AdminPage() {
 
   useEffect(() => {
     if ((tab === "heroes" || tab === "resenas") && allProducts.length === 0) {
-      getVentifyProducts().then(setAllProducts).catch(() => {});
+      fetchVentifyData().then((d) => setAllProducts(d.active)).catch(() => {});
     }
   }, [tab, allProducts.length]);
 
   useEffect(() => {
     if (tab === "productos") {
-      if (rawProducts.length === 0) {
-        getAllVentifyProducts().then(setRawProducts).catch(() => {});
-      }
-      if (inactiveIds.size === 0) {
-        getInactiveProductIds().then((ids) => setInactiveIds(new Set(ids))).catch(() => {});
+      if (rawProducts.length === 0 || inactiveIds.size === 0) {
+        fetchVentifyData().then((d) => {
+          if (rawProducts.length === 0) setRawProducts(d.all);
+          if (inactiveIds.size === 0) setInactiveIds(new Set(d.inactiveIds));
+        }).catch(() => {});
       }
       if (eventos.length === 0) {
         fetch("/api/eventos").then((r) => r.json()).then(setEventos).catch(() => {});
@@ -382,8 +391,8 @@ export default function AdminPage() {
   useEffect(() => {
     if (tab === "precios") {
       if (amiguProducts.length === 0) {
-        getAllVentifyProducts()
-          .then((all) => setAmiguProducts(all.filter((p) => p.sku?.startsWith("Amigu-"))))
+        fetchVentifyData()
+          .then((d) => setAmiguProducts(d.all.filter((p) => p.sku?.startsWith("Amigu-"))))
           .catch(() => {});
       }
     }
@@ -449,7 +458,7 @@ export default function AdminPage() {
       setEditLinkUrl(hero?.link_url || "");
       setProductSearch("");
       if (isProductSlide(editingHero.clave) && allProducts.length === 0) {
-        getVentifyProducts().then(setAllProducts).catch(() => {});
+        fetchVentifyData().then((d) => setAllProducts(d.active)).catch(() => {});
       }
     }
   }, [editingHero, data]);
@@ -1444,7 +1453,7 @@ export default function AdminPage() {
                         />
                         <button
                           onClick={() => {
-                            if (allProducts.length === 0) getVentifyProducts().then(setAllProducts).catch(() => {});
+                            if (allProducts.length === 0) fetchVentifyData().then((d) => setAllProducts(d.active)).catch(() => {});
                             setPickingProductFor(pickingProductFor === i ? null : i);
                           }}
                           className="w-full flex items-center justify-center gap-2 py-2 border-2 border-dashed border-[#EE6B8D]/50 rounded-lg font-quicksand text-xs font-semibold text-[#EE6B8D] hover:bg-[#FDF4F7] transition-colors"
@@ -1503,7 +1512,7 @@ export default function AdminPage() {
                   })()}
                   <button
                     onClick={() => {
-                      if (allProducts.length === 0) getVentifyProducts().then(setAllProducts).catch(() => {});
+                      if (allProducts.length === 0) fetchVentifyData().then((d) => setAllProducts(d.active)).catch(() => {});
                       setShowProductPicker(!showProductPicker);
                     }}
                     className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-[#EE6B8D] rounded-xl font-quicksand text-sm font-semibold text-[#EE6B8D] hover:bg-[#FDF4F7] transition-colors mb-4"
@@ -2098,7 +2107,7 @@ export default function AdminPage() {
               <h2 className="font-fredoka text-xl font-bold text-[#C04267]">Reseñas</h2>
               <button onClick={() => {
                 setShowResenaForm(!showResenaForm);
-                if (!allProducts.length) getVentifyProducts().then(setAllProducts).catch(() => {});
+                if (!allProducts.length) fetchVentifyData().then((d) => setAllProducts(d.active)).catch(() => {});
               }}
                 className="flex items-center gap-2 text-xs text-white bg-[#EE6B8D] hover:bg-[#C04267] px-4 py-2.5 rounded-lg font-quicksand font-semibold transition-colors shadow-sm"
               >

@@ -24,10 +24,21 @@ export async function getPreciosTamanos(): Promise<PrecioTamanos[]> {
     return preciosCache;
   }
   try {
+    if (typeof window !== 'undefined') {
+      const { getSupabaseBrowserClient } = await import('@/lib/supabase/client');
+      const supabase = getSupabaseBrowserClient();
+      const { data } = await supabase.from('precios_tamanos').select('*');
+      preciosCache = (data || []) as PrecioTamanos[];
+      preciosFetchedAt = Date.now();
+      return preciosCache;
+    }
+
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
     const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
     if (!url || !anon) return [];
-    const supabase = createClient(url, anon);
+    const supabase = createClient(url, anon, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+    });
     const { data } = await supabase.from('precios_tamanos').select('*');
     preciosCache = (data || []) as PrecioTamanos[];
     preciosFetchedAt = Date.now();
